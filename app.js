@@ -903,7 +903,7 @@ async function abrirEdicao(id) {
   document.getElementById('e-mes-d').value   = data.mes_desmont  || '';
   document.getElementById('e-kms-d').value   = data.kms_desmont  || '';
   document.getElementById('e-esc').value     = data.escultura_final != null ? data.escultura_final : '';
-  document.getElementById('e-dest').value    = data.destino      || 'Remix';
+  document.getElementById('e-dest').value    = data.destino      || '';
 
   document.getElementById('e-feedback').classList.add('hidden');
   document.getElementById('painel-editar').classList.add('open');
@@ -930,7 +930,7 @@ async function guardarEdicao() {
   const mesD   = document.getElementById('e-mes-d').value.trim() || null;
   const kmsD   = document.getElementById('e-kms-d').value !== '' ? parseInt(document.getElementById('e-kms-d').value) : null;
   const esc    = document.getElementById('e-esc').value   !== '' ? parseFloat(document.getElementById('e-esc').value)  : null;
-  const dest   = document.getElementById('e-dest').value || null;
+  const dest   = document.getElementById('e-dest').value || null; // vazio = null
 
   // Validações básicas
   if (!mat) { showFeedback('e-feedback', 'Matrícula é obrigatória.', true); return; }
