@@ -406,9 +406,10 @@ async function loadFrota() {
     const esc   = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
     const escCls= (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
     const custoTot = (r.custo_pneu || 0) + (r.custo_mo || 0);
-    const acBtn = !r.mes_desmont
-      ? `<button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>`
-      : '<span style="color:var(--text3);font-size:11px">✓ Concluído</span>';
+    const acBtn = `<div style="display:flex;gap:4px">
+        ${!r.mes_desmont ? `<button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>` : '<span style="color:var(--text3);font-size:11px">✓</span>'}
+        <button class="btn btn-sm" onclick="abrirEdicao(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
+      </div>`;
     return `<tr>
       <td>${r.mes_mont || '—'}</td>
       <td>${r.posicao  || '—'}</td>
@@ -685,4 +686,93 @@ async function loadMarcas() {
       COLORS.slice(0, keysComKms.length)
     );
   }
+}
+
+// ── EDITAR REGISTO ────────────────────────────────────────────────
+
+let editId = null;
+
+async function abrirEdicao(id) {
+  loading(true);
+  const { data, error } = await sb.from('pneus').select('*').eq('id', id).single();
+  loading(false);
+  if (error || !data) return;
+
+  editId = id;
+
+  // Preencher painel de edição
+  document.getElementById('e-mat').value     = data.matricula    || '';
+  document.getElementById('e-mes').value     = data.mes_mont     || '';
+  document.getElementById('e-kms').value     = data.kms_mont     || '';
+  document.getElementById('e-pos').value     = data.posicao      || '';
+  document.getElementById('e-marca').value   = data.marca        || '';
+  document.getElementById('e-medida').value  = data.medida       || '';
+  document.getElementById('e-tipo').value    = data.tipo         || 'Novo';
+  document.getElementById('e-forn').value    = data.fornecedor   || '';
+  document.getElementById('e-custo').value   = data.custo_pneu   != null ? data.custo_pneu : '';
+  document.getElementById('e-mo').value      = data.custo_mo     != null ? data.custo_mo   : '';
+  document.getElementById('e-mes-d').value   = data.mes_desmont  || '';
+  document.getElementById('e-kms-d').value   = data.kms_desmont  || '';
+  document.getElementById('e-esc').value     = data.escultura_final != null ? data.escultura_final : '';
+  document.getElementById('e-dest').value    = data.destino      || 'Remix';
+
+  document.getElementById('e-feedback').classList.add('hidden');
+  document.getElementById('painel-editar').classList.add('open');
+}
+
+function fecharEdicao() {
+  document.getElementById('painel-editar').classList.remove('open');
+  editId = null;
+}
+
+async function guardarEdicao() {
+  if (editId == null) return;
+
+  const mat    = document.getElementById('e-mat').value.trim().toUpperCase();
+  const mes    = document.getElementById('e-mes').value.trim();
+  const kms    = parseInt(document.getElementById('e-kms').value) || null;
+  const pos    = document.getElementById('e-pos').value.trim().toUpperCase();
+  const marca  = document.getElementById('e-marca').value.trim().toUpperCase();
+  const medida = document.getElementById('e-medida').value.trim();
+  const tipo   = document.getElementById('e-tipo').value;
+  const forn   = document.getElementById('e-forn').value.trim().toUpperCase();
+  const custoP = document.getElementById('e-custo').value !== '' ? parseFloat(document.getElementById('e-custo').value) : null;
+  const custoMO= document.getElementById('e-mo').value    !== '' ? parseFloat(document.getElementById('e-mo').value)    : null;
+  const mesD   = document.getElementById('e-mes-d').value.trim() || null;
+  const kmsD   = document.getElementById('e-kms-d').value !== '' ? parseInt(document.getElementById('e-kms-d').value) : null;
+  const esc    = document.getElementById('e-esc').value   !== '' ? parseFloat(document.getElementById('e-esc').value)  : null;
+  const dest   = document.getElementById('e-dest').value || null;
+
+  // Validações básicas
+  if (!mat) { showFeedback('e-feedback', 'Matrícula é obrigatória.', true); return; }
+  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('e-feedback', 'Mês de montagem inválido. Usa AAAA-MM.', true); return; }
+  if (!kms || kms <= 0) { showFeedback('e-feedback', 'KMs de montagem são obrigatórios.', true); return; }
+  if (kmsD && kmsD <= kms) { showFeedback('e-feedback', `KMs de desmontagem (${kmsD}) têm de ser maiores que os de montagem (${kms}).`, true); return; }
+  if (esc != null && (esc < 0 || esc > 25)) { showFeedback('e-feedback', 'Escultura tem de ser entre 0 e 25mm.', true); return; }
+
+  const updates = {
+    matricula:       mat,
+    mes_mont:        mes,
+    kms_mont:        kms,
+    posicao:         pos    || null,
+    marca:           marca  || null,
+    medida:          medida || null,
+    tipo:            tipo   || null,
+    fornecedor:      forn   || null,
+    custo_pneu:      custoP,
+    custo_mo:        custoMO,
+    mes_desmont:     mesD,
+    kms_desmont:     kmsD,
+    escultura_final: esc,
+    destino:         dest,
+  };
+
+  loading(true);
+  const { error } = await sb.from('pneus').update(updates).eq('id', editId);
+  loading(false);
+
+  if (error) { showFeedback('e-feedback', 'Erro: ' + error.message, true); return; }
+
+  showFeedback('e-feedback', 'Registo actualizado.');
+  setTimeout(() => { fecharEdicao(); loadFrota(); loadDashboard(); }, 800);
 }
