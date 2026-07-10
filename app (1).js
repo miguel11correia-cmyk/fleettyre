@@ -1243,11 +1243,11 @@ async function abrirSelStock() {
       </div>`).join('');
   }
 
-  document.getElementById('painel-stock-sel').classList.add('open');
+  document.getElementById('painel-stock-sel').style.display = 'flex';
 }
 
 function fecharSelStock() {
-  document.getElementById('painel-stock-sel').classList.remove('open');
+  document.getElementById('painel-stock-sel').style.display = 'none';
 }
 
 function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco) {
