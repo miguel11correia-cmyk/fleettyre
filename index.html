@@ -49,6 +49,9 @@
       <div class="ni" onclick="nav('marcas',this)" data-page="marcas">
         <span class="ni-icon">🏷️</span>Marcas
       </div>
+      <div class="ni" onclick="nav('stock',this)" data-page="stock">
+        <span class="ni-icon">📦</span>Stock
+      </div>
     </div>
     <div class="sidebar-footer">
       <button class="btn-logout" onclick="logout()">Sair</button>
@@ -126,6 +129,12 @@
         <div class="g2">
           <div class="frow"><label>Fornecedor</label><input type="text" id="r-forn" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Matrícula do pneu (opcional)</label><input type="text" id="r-matpneu" placeholder="ex: HLZ22889B" oninput="this.value=this.value.toUpperCase()"></div>
+        </div>
+        <div style="margin-bottom:12px">
+          <button class="btn" onclick="abrirSelStock()" type="button" style="background:#e8f0fb;color:var(--blue);border-color:#c5d8f5;width:100%;justify-content:center">
+            📦 Seleccionar pneu de stock — preenche marca, fornecedor e custo automaticamente
+          </button>
+          <div id="r-stock-info" class="hidden" style="margin-top:6px;padding:8px 10px;background:#e8f0fb;border-radius:var(--radius);font-size:12px;color:var(--blue)"></div>
         </div>
         <div class="g2">
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="r-custo" placeholder="ex: 450" min="0" step="0.01"></div>

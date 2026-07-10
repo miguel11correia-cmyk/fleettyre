@@ -198,6 +198,7 @@ function nav(id, el) {
   else if (id === 'alertas') loadAlertas();
   else if (id === 'fornecedores') loadFornecedores();
   else if (id === 'marcas')  loadMarcas();
+  else if (id === 'stock')   loadStock();
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────
@@ -330,6 +331,11 @@ async function guardarRegisto() {
     showFeedback('r-feedback', 'Erro ao guardar: ' + error.message, true);
     return;
   }
+  // Descontar stock se foi seleccionado
+  if (stockLinhaSelId) {
+    await descontarStock(stockLinhaSelId);
+    stockLinhaSelId = null;
+  }
   showFeedback('r-feedback', 'Montagem guardada com sucesso.');
   limparForm();
 }
@@ -338,6 +344,9 @@ function limparForm() {
   ['r-mat','r-mes','r-kms','r-pos','r-marca','r-medida','r-forn','r-matpneu','r-custo','r-mo']
     .forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('r-tipo').value = 'Novo';
+  stockLinhaSelId = null;
+  const info = document.getElementById('r-stock-info');
+  if (info) info.classList.add('hidden');
 }
 
 // ── POR MATRÍCULA ─────────────────────────────────────────────────
@@ -964,4 +973,298 @@ async function guardarEdicao() {
 
   showFeedback('e-feedback', 'Registo actualizado.');
   setTimeout(() => { fecharEdicao(); loadFrota(); loadDashboard(); }, 800);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STOCK
+// ══════════════════════════════════════════════════════════════════
+
+let linhasFatura = [];       // linhas temporárias ao criar fatura
+let stockSelCallback = null; // função a chamar ao seleccionar pneu de stock
+let stockLinhaSelId = null;  // id da linha de stock seleccionada no registo actual
+
+// ── CARREGAR STOCK ─────────────────────────────────────────────────
+async function loadStock() {
+  loading(true);
+
+  // Buscar faturas com pelo menos 1 linha com stock disponível
+  const { data: faturas, error: errF } = await sb
+    .from('stock_faturas')
+    .select('*, stock_linhas(*)')
+    .order('created_at', { ascending: false });
+
+  loading(false);
+  if (errF || !faturas) return;
+
+  // Filtrar só faturas com pelo menos 1 linha com stock disponível
+  const faturasAtivas = faturas.filter(f =>
+    f.stock_linhas && f.stock_linhas.some(l => l.quantidade_disp > 0)
+  );
+
+  // KPIs
+  let totalPneus = 0;
+  let totalValor = 0;
+  faturasAtivas.forEach(f => {
+    f.stock_linhas.filter(l => l.quantidade_disp > 0).forEach(l => {
+      totalPneus += l.quantidade_disp;
+      totalValor += l.quantidade_disp * (l.preco_unitario || 0);
+    });
+  });
+
+  document.getElementById('sk-faturas').textContent = faturasAtivas.length;
+  document.getElementById('sk-pneus').textContent   = totalPneus;
+  document.getElementById('sk-valor').textContent   = totalValor > 0 ? fmtEur(totalValor) : '—';
+
+  // Renderizar faturas
+  const container = document.getElementById('stock-faturas-container');
+  if (faturasAtivas.length === 0) {
+    container.innerHTML = '<div class="card"><p class="empty-msg">Sem stock disponível. Clica em "+ Nova fatura" para registar.</p></div>';
+    return;
+  }
+
+  container.innerHTML = faturasAtivas.map(f => {
+    const linhasDisp = f.stock_linhas.filter(l => l.quantidade_disp > 0);
+    const totalFat   = linhasDisp.reduce((s, l) => s + l.quantidade_disp * (l.preco_unitario || 0), 0);
+
+    const linhasHTML = linhasDisp.map(l => {
+      const pct = Math.round((l.quantidade_disp / l.quantidade_ini) * 100);
+      const cor = pct <= 25 ? '#c93030' : pct <= 50 ? '#c47b0a' : '#1baf7a';
+      return `<tr>
+        <td>${l.marca || '—'}</td>
+        <td>${l.medida || '—'}</td>
+        <td>${tipoBadge(l.tipo)}</td>
+        <td style="text-align:center">
+          <span style="color:${cor};font-weight:500">${l.quantidade_disp}</span>
+          <span style="color:var(--text3)"> / ${l.quantidade_ini}</span>
+        </td>
+        <td style="text-align:right">${l.preco_unitario ? fmtEur(l.preco_unitario) : '—'}</td>
+        <td style="text-align:right">${l.preco_unitario ? fmtEur(l.quantidade_disp * l.preco_unitario) : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    return `<div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <span style="font-size:14px;font-weight:500">📄 ${f.num_fatura}</span>
+          <span style="color:var(--text2);font-size:12px;margin-left:10px">${f.fornecedor}</span>
+          ${f.data_fatura ? `<span style="color:var(--text3);font-size:11px;margin-left:8px">${f.data_fatura}</span>` : ''}
+        </div>
+        <span style="font-size:12px;font-weight:500;color:var(--amber)">${fmtEur(totalFat)} em stock</span>
+      </div>
+      ${f.notas ? `<p style="font-size:11px;color:var(--text3);margin-bottom:10px;font-style:italic">${f.notas}</p>` : ''}
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Marca</th><th>Medida</th><th>Tipo</th>
+            <th style="text-align:center">Disponível / Total</th>
+            <th style="text-align:right">Preço unit. (€)</th>
+            <th style="text-align:right">Valor disp. (€)</th>
+          </tr></thead>
+          <tbody>${linhasHTML}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── NOVA FATURA ────────────────────────────────────────────────────
+function abrirNovaFatura() {
+  linhasFatura = [];
+  document.getElementById('f-num').value   = '';
+  document.getElementById('f-forn').value  = '';
+  document.getElementById('f-data').value  = '';
+  document.getElementById('f-notas').value = '';
+  document.getElementById('f-feedback').classList.add('hidden');
+  renderLinhasFatura();
+  document.getElementById('painel-fatura').classList.add('open');
+}
+
+function fecharPainelFatura() {
+  document.getElementById('painel-fatura').classList.remove('open');
+}
+
+function adicionarLinhaFatura() {
+  linhasFatura.push({ marca: '', medida: '', tipo: 'Novo', quantidade: '', preco: '' });
+  renderLinhasFatura();
+}
+
+function removerLinhaFatura(idx) {
+  linhasFatura.splice(idx, 1);
+  renderLinhasFatura();
+}
+
+function renderLinhasFatura() {
+  const container = document.getElementById('f-linhas');
+  if (linhasFatura.length === 0) {
+    container.innerHTML = `<p style="font-size:12px;color:var(--text3);text-align:center;padding:8px">
+      Clica "+ Linha" para adicionar pneus desta fatura.</p>`;
+    return;
+  }
+  container.innerHTML = linhasFatura.map((l, i) => `
+    <div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;background:var(--surface1)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:500;color:var(--text2)">Linha ${i+1}</span>
+        <button class="btn-close" onclick="removerLinhaFatura(${i})" style="font-size:12px">✕</button>
+      </div>
+      <div class="g3" style="gap:8px;margin-bottom:8px">
+        <div class="frow" style="margin:0"><label>Marca</label>
+          <input type="text" value="${l.marca}" oninput="linhasFatura[${i}].marca=this.value.toUpperCase();this.value=this.value.toUpperCase()" placeholder="MICHELIN"></div>
+        <div class="frow" style="margin:0"><label>Medida</label>
+          <input type="text" value="${l.medida}" oninput="linhasFatura[${i}].medida=this.value" placeholder="315/80"></div>
+        <div class="frow" style="margin:0"><label>Tipo</label>
+          <select onchange="linhasFatura[${i}].tipo=this.value">
+            <option ${l.tipo==='Novo'?'selected':''}>Novo</option>
+            <option ${l.tipo==='Remix'?'selected':''}>Remix</option>
+            <option ${l.tipo==='Piso Aberto'?'selected':''}>Piso Aberto</option>
+          </select></div>
+      </div>
+      <div class="g2" style="gap:8px">
+        <div class="frow" style="margin:0"><label>Quantidade *</label>
+          <input type="number" value="${l.quantidade}" oninput="linhasFatura[${i}].quantidade=this.value" placeholder="ex: 4" min="1"></div>
+        <div class="frow" style="margin:0"><label>Preço unitário (€)</label>
+          <input type="number" value="${l.preco}" oninput="linhasFatura[${i}].preco=this.value" placeholder="ex: 320" min="0" step="0.01"></div>
+      </div>
+    </div>`).join('');
+}
+
+async function guardarFatura() {
+  const numFat = document.getElementById('f-num').value.trim().toUpperCase();
+  const forn   = document.getElementById('f-forn').value.trim().toUpperCase();
+  const data   = document.getElementById('f-data').value.trim() || null;
+  const notas  = document.getElementById('f-notas').value.trim() || null;
+
+  if (!numFat) { showFeedback('f-feedback', 'Nº de fatura é obrigatório.', true); return; }
+  if (!forn)   { showFeedback('f-feedback', 'Fornecedor é obrigatório.', true); return; }
+  if (linhasFatura.length === 0) { showFeedback('f-feedback', 'Adiciona pelo menos um pneu.', true); return; }
+
+  // Validar linhas
+  for (let i = 0; i < linhasFatura.length; i++) {
+    const l = linhasFatura[i];
+    const qty = parseInt(l.quantidade);
+    if (!qty || qty <= 0) {
+      showFeedback('f-feedback', `Linha ${i+1}: quantidade inválida.`, true); return;
+    }
+  }
+
+  loading(true);
+
+  // Criar fatura
+  const { data: faturaData, error: errF } = await sb
+    .from('stock_faturas')
+    .insert([{ num_fatura: numFat, fornecedor: forn, data_fatura: data, notas }])
+    .select()
+    .single();
+
+  if (errF) {
+    loading(false);
+    showFeedback('f-feedback', 'Erro ao criar fatura: ' + errF.message, true);
+    return;
+  }
+
+  // Criar linhas
+  const linhasInsert = linhasFatura.map(l => ({
+    fatura_id:      faturaData.id,
+    marca:          l.marca   || null,
+    medida:         l.medida  || null,
+    tipo:           l.tipo    || 'Novo',
+    quantidade_ini: parseInt(l.quantidade),
+    quantidade_disp:parseInt(l.quantidade),
+    preco_unitario: l.preco ? parseFloat(l.preco) : null,
+  }));
+
+  const { error: errL } = await sb.from('stock_linhas').insert(linhasInsert);
+  loading(false);
+
+  if (errL) {
+    showFeedback('f-feedback', 'Erro ao guardar linhas: ' + errL.message, true);
+    return;
+  }
+
+  showFeedback('f-feedback', 'Fatura guardada com sucesso.');
+  linhasFatura = [];
+  setTimeout(() => { fecharPainelFatura(); loadStock(); }, 800);
+}
+
+// ── SELECCIONAR DE STOCK (usado no registo de montagem) ────────────
+async function abrirSelStock() {
+  loading(true);
+  const { data: faturas, error } = await sb
+    .from('stock_faturas')
+    .select('*, stock_linhas(*)')
+    .order('created_at', { ascending: false });
+  loading(false);
+
+  if (error || !faturas) return;
+
+  // Só linhas com stock disponível
+  const linhasDisp = [];
+  faturas.forEach(f => {
+    (f.stock_linhas || []).filter(l => l.quantidade_disp > 0).forEach(l => {
+      linhasDisp.push({ ...l, num_fatura: f.num_fatura, fornecedor: f.fornecedor });
+    });
+  });
+
+  const lista = document.getElementById('stock-sel-lista');
+  if (linhasDisp.length === 0) {
+    lista.innerHTML = '<p class="empty-msg">Sem stock disponível. Regista uma fatura primeiro.</p>';
+  } else {
+    lista.innerHTML = linhasDisp.map(l => `
+      <div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer;transition:background .1s"
+           onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"
+           onclick="selecionarDeStock(${l.id},'${(l.marca||'').replace(/'/g,"\\'")}','${(l.medida||'').replace(/'/g,"\\'")}','${l.tipo||''}','${(l.fornecedor||'').replace(/'/g,"\\'")}',${l.preco_unitario||0})">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <span style="font-weight:500;font-size:13px">${l.marca || '—'} ${l.medida || ''}</span>
+            <span style="margin-left:8px">${tipoBadge(l.tipo)}</span>
+          </div>
+          <span style="color:var(--amber);font-weight:500;font-size:13px">${l.preco_unitario ? fmtEur(l.preco_unitario) : '—'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">
+          📄 ${l.num_fatura} · ${l.fornecedor} · 
+          <span style="color:var(--aqua);font-weight:500">${l.quantidade_disp} disponíveis</span>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('painel-stock-sel').classList.add('open');
+}
+
+function fecharSelStock() {
+  document.getElementById('painel-stock-sel').classList.remove('open');
+}
+
+function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco) {
+  // Preencher campos do formulário de registo
+  document.getElementById('r-marca').value  = marca;
+  document.getElementById('r-medida').value = medida;
+  document.getElementById('r-tipo').value   = tipo;
+  document.getElementById('r-forn').value   = fornecedor;
+  document.getElementById('r-custo').value  = preco > 0 ? preco : '';
+
+  // Guardar id da linha para descontar stock ao guardar
+  stockLinhaSelId = linhaId;
+
+  // Mostrar info do stock seleccionado
+  const info = document.getElementById('r-stock-info');
+  info.textContent = `✓ Pneu seleccionado de stock: ${marca} ${medida} ${tipo} — ${preco > 0 ? fmtEur(preco) : 'sem preço'} — Fornecedor: ${fornecedor}`;
+  info.classList.remove('hidden');
+
+  fecharSelStock();
+}
+
+// ── DESCONTO DE STOCK (chamado ao guardar montagem) ────────────────
+async function descontarStock(linhaId) {
+  if (!linhaId) return;
+
+  // Buscar quantidade actual
+  const { data: linha, error: errL } = await sb
+    .from('stock_linhas')
+    .select('quantidade_disp')
+    .eq('id', linhaId)
+    .single();
+
+  if (errL || !linha) return;
+
+  const novaQty = Math.max(0, linha.quantidade_disp - 1);
+  await sb.from('stock_linhas').update({ quantidade_disp: novaQty }).eq('id', linhaId);
 }
