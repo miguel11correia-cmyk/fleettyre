@@ -337,6 +337,54 @@
       </div>
     </div>
 
+    <!-- STOCK -->
+    <div class="page hidden" id="page-stock">
+      <div class="page-header">
+        <h2>Stock de pneus</h2>
+        <button class="btn btn-p" onclick="abrirNovaFatura()">+ Nova fatura</button>
+      </div>
+      <div class="krow">
+        <div class="kpi"><div class="kpi-l">Faturas em aberto</div><div class="kpi-v blue" id="sk-faturas">—</div><div class="kpi-s">com stock disponível</div></div>
+        <div class="kpi"><div class="kpi-l">Pneus em stock</div><div class="kpi-v green" id="sk-pneus">—</div><div class="kpi-s">unidades disponíveis</div></div>
+        <div class="kpi"><div class="kpi-l">Valor em stock (€)</div><div class="kpi-v amber" id="sk-valor">—</div><div class="kpi-s">custo total disponível</div></div>
+      </div>
+      <div id="stock-faturas-container"></div>
+
+      <!-- PAINEL NOVA FATURA -->
+      <div class="panel" id="painel-fatura">
+        <div class="panel-head">
+          <span>Registar fatura de stock</span>
+          <button class="btn-close" onclick="fecharPainelFatura()">✕</button>
+        </div>
+        <div class="panel-body">
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Dados da fatura</div>
+          <div class="frow"><label>Nº Fatura *</label><input type="text" id="f-num" placeholder="ex: FT2026/1234" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Fornecedor *</label><input type="text" id="f-forn" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Data da fatura (AAAA-MM)</label><input type="text" id="f-data" placeholder="ex: 2026-07" maxlength="7"></div>
+          <div class="frow"><label>Notas</label><input type="text" id="f-notas" placeholder="opcional"></div>
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin:14px 0 10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">
+            Pneus na fatura
+            <button class="btn btn-sm" onclick="adicionarLinhaFatura()" style="float:right">+ Linha</button>
+          </div>
+          <div id="f-linhas"></div>
+          <button class="btn btn-p w100" onclick="guardarFatura()" style="margin-top:14px">💾 Guardar fatura</button>
+          <div id="f-feedback" class="feedback hidden"></div>
+        </div>
+      </div>
+
+      <!-- PAINEL SELECCIONAR DE STOCK -->
+      <div class="panel" id="painel-stock-sel" style="z-index:30">
+        <div class="panel-head">
+          <span>Seleccionar pneu de stock</span>
+          <button class="btn-close" onclick="fecharSelStock()">✕</button>
+        </div>
+        <div class="panel-body">
+          <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Selecciona o pneu que queres montar. O custo e fornecedor preenchem-se automaticamente.</p>
+          <div id="stock-sel-lista"></div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
