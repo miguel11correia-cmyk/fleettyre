@@ -120,4 +120,6 @@ function mkChart(id, type, labels, data, colors, extraOpts = {}) {
         pointRadius: type === 'line' ? 3 : 0,
       }],
     },
+    options: { ...opts, ...extraOpts },
+  });
     }
