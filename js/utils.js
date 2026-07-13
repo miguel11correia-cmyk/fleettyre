@@ -110,11 +110,13 @@ function mkChart(id, type, labels, data, colors, extraOpts = {}) {
       labels,
       datasets: [{
         data,
-        backgroundColor: colors,
-        borderWidth: 0,
+        backgroundColor: type === 'line' ? 'transparent' : colors,
+        borderColor: type === 'line' ? colors[0] : undefined,
+        borderWidth: type === 'line' ? 2 : 0,
         borderRadius: type === 'bar' ? 4 : 0,
+        tension: type === 'line' ? 0.3 : 0,
+        fill: false,
+        pointBackgroundColor: type === 'line' ? colors[0] : undefined,
+        pointRadius: type === 'line' ? 3 : 0,
       }],
     },
-    options: { ...opts, ...extraOpts },
-  });
-}
