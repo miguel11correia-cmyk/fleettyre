@@ -85,9 +85,10 @@ async function loadDashboard() {
   const meses = Object.keys(porMes).sort();
   if (meses.length > 0) {
     mkChart('c-mensal', 'line', meses, meses.map(m => porMes[m]), ['#2a78d6'], {
-      elements: {
-        line: { borderColor: '#2a78d6', borderWidth: 2, tension: 0.3, fill: false, backgroundColor: 'rgba(42,120,214,0.08)' },
-        point: { backgroundColor: '#2a78d6', radius: 3 }
+  showLine: true,
+  elements: {
+    line: { borderColor: '#2a78d6', borderWidth: 2, tension: 0.3, fill: false },
+    point: { backgroundColor: '#2a78d6', radius: 3 }
       }
     });
   }
