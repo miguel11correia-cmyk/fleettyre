@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FleetTyre — Gestão de Pneus</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2a78d6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FleetTyre">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <div style="text-align:center;margin-bottom:8px">
+      <img src="logo_login.png" alt="FleetTyre" style="height:80px;object-fit:contain">
+    </div>
+    <h1 class="login-logo" style="font-size:18px">FleetTyre</h1>
+    <p class="login-sub">Gestão de pneus para frotas pesadas</p>
+    <div class="frow"><label>Email</label><input type="email" id="l-email" placeholder="email@empresa.pt"></div>
+    <div class="frow"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
+    <button class="btn btn-p w100" onclick="login()">Entrar</button>
+    <p id="l-err" class="err-msg"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app hidden">
+  <nav class="sidebar">
+    <div class="logo">
+      <h1 style="display:flex;align-items:center;gap:6px">
+        <img src="logo_login.png" alt="FleetTyre" style="height:28px;object-fit:contain">
+      </h1>
+      <p id="user-email"></p>
+    </div>
+    <div class="nav">
+      <!-- SELECTOR DE SECÇÃO -->
+      <div class="secao-btns">
+        <button id="btn-veiculos" class="secao-btn secao-active" onclick="toggleSecao('veiculos')">
+          🚛 Veículos
+        </button>
+        <button id="btn-reboques" class="secao-btn" onclick="toggleSecao('reboques')">
+          🔗 Reboques
+        </button>
+      </div>
+
+      <!-- MENU VEÍCULOS -->
+      <div id="menu-veiculos">
+        <div class="nav-section">Geral</div>
+        <div class="ni active" onclick="nav('dashboard',this)" data-page="dashboard">
+          <span class="ni-icon">📊</span>Dashboard
+        </div>
+        <div class="ni" onclick="nav('registar',this)" data-page="registar">
+          <span class="ni-icon">➕</span>Registar pneu
+        </div>
+        <div class="nav-section">Frota</div>
+        <div class="ni" onclick="nav('frota',this)" data-page="frota">
+          <span class="ni-icon">🚛</span>Por matrícula
+        </div>
+        <div class="ni" onclick="nav('alertas',this)" data-page="alertas">
+          <span class="ni-icon">🔔</span>Alertas
+          <span class="badge-n hidden" id="badge-alertas">0</span>
+        </div>
+        <div class="nav-section">Análise</div>
+        <div class="ni" onclick="nav('fornecedores',this)" data-page="fornecedores">
+          <span class="ni-icon">🏪</span>Fornecedores
+        </div>
+        <div class="ni" onclick="nav('marcas',this)" data-page="marcas">
+          <span class="ni-icon">🏷️</span>Marcas
+        </div>
+        <div class="nav-section">Armazém</div>
+        <div class="ni" onclick="nav('stock',this)" data-page="stock">
+          <span class="ni-icon">📦</span>Stock
+        </div>
+      </div>
+
+      <!-- MENU REBOQUES -->
+      <div id="menu-reboques" class="hidden">
+        <div class="nav-section">Geral</div>
+        <div class="ni" onclick="navR('dashboard-r',this)" data-page="dashboard-r">
+          <span class="ni-icon">📊</span>Dashboard
+        </div>
+        <div class="ni" onclick="navR('registar-r',this)" data-page="registar-r">
+          <span class="ni-icon">➕</span>Registar pneu
+        </div>
+        <div class="nav-section">Frota</div>
+        <div class="ni" onclick="navR('frota-r',this)" data-page="frota-r">
+          <span class="ni-icon">🔗</span>Por reboque
+        </div>
+        <div class="ni" onclick="navR('alertas-r',this)" data-page="alertas-r">
+          <span class="ni-icon">🔔</span>Alertas
+          <span class="badge-n hidden" id="badge-alertas-r">0</span>
+        </div>
+        <div class="nav-section">Análise</div>
+        <div class="ni" onclick="navR('fornecedores-r',this)" data-page="fornecedores-r">
+          <span class="ni-icon">🏪</span>Fornecedores
+        </div>
+        <div class="ni" onclick="navR('marcas-r',this)" data-page="marcas-r">
+          <span class="ni-icon">🏷️</span>Marcas
+        </div>
+        <div class="nav-section">Armazém</div>
+        <div class="ni" onclick="navR('stock-r',this)" data-page="stock-r">
+          <span class="ni-icon">📦</span>Stock
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2>Dashboard</h2>
+        <button class="btn btn-sm" onclick="loadDashboard()">↻ Actualizar</button>
+      </div>
+      <div class="krow" id="dash-kpis">
+        <div class="kpi blue"><div class="kpi-l">Pneus activos</div><div class="kpi-v blue" id="k-activos">—</div><div class="kpi-s">sem desmontagem</div></div>
+        <div class="kpi"><div class="kpi-l">Total registados</div><div class="kpi-v" id="k-total">—</div><div class="kpi-s">histórico completo</div></div>
+        <div class="kpi green"><div class="kpi-l">Matrículas</div><div class="kpi-v green" id="k-mats">—</div><div class="kpi-s">veículos na frota</div></div>
+        <div class="kpi red"><div class="kpi-l">Alertas activos</div><div class="kpi-v red" id="k-alerts">—</div><div class="kpi-s">escultura ≤ 3mm</div></div>
+        <div class="kpi amber"><div class="kpi-l">Custo total (€)</div><div class="kpi-v amber" id="k-custo">—</div><div class="kpi-s">com valor registado</div></div>
+        <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="k-med">—</div><div class="kpi-s">só com custo preenchido</div></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ct">Pneus por tipo</div>
+          <div class="legend" id="leg-tipo"></div>
+          <div class="cw"><canvas id="c-tipo" aria-label="Distribuição por tipo de pneu"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="ct">Pneus por fornecedor</div>
+          <div class="legend" id="leg-forn"></div>
+          <div class="cw"><canvas id="c-forn" aria-label="Pneus por fornecedor"></canvas></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ct">Pneus por marca</div>
+          <div class="legend" id="leg-marc"></div>
+          <div class="cw"><canvas id="c-marc" aria-label="Pneus por marca"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="ct">Top veículos — nº de pneus montados</div>
+          <div class="cw-t"><canvas id="c-top" aria-label="Top veículos"></canvas></div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ct">Evolução mensal do custo de pneus (€)</div>
+          <div class="cw-t"><canvas id="c-mensal" aria-label="Evolução mensal de custos"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="ct">Gasto anual em pneus</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Ano</th><th style="text-align:center">Pneus</th><th style="text-align:right">Custo total (€)</th><th style="text-align:right">Custo médio/pneu (€)</th></tr></thead>
+              <tbody id="tabela-anual-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTAR -->
+    <div class="page hidden" id="page-registar">
+      <div class="page-header"><h2>Registar montagem</h2></div>
+      <div class="card">
+        <div class="ct">Veículo</div>
+        <div class="g2">
+          <div class="frow"><label>Matrícula do camião *</label><input type="text" id="r-mat" placeholder="ex: 51-PQ-43" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="r-mes" placeholder="ex: 2026-07" maxlength="7"></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>KMs no conta-quilómetros *</label><input type="number" id="r-kms" placeholder="ex: 638591" min="0"></div>
+          <div class="frow"><label>Posição do pneu</label><input type="text" id="r-pos" placeholder="ex: FRENTE, TRAÇÃO, TRÁS" oninput="this.value=this.value.toUpperCase()"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Pneu</div>
+        <div class="g3">
+          <div class="frow"><label>Marca</label><input type="text" id="r-marca" placeholder="ex: MICHELIN" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Medida</label><input type="text" id="r-medida" placeholder="ex: 315/80"></div>
+          <div class="frow"><label>Tipo</label>
+            <select id="r-tipo">
+              <option value="Novo">Novo</option>
+              <option value="Remix">Remix</option>
+              <option value="Piso Aberto">Piso Aberto</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Fornecedor</label><input type="text" id="r-forn" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Matrícula do pneu (opcional)</label><input type="text" id="r-matpneu" placeholder="ex: HLZ22889B" oninput="this.value=this.value.toUpperCase()"></div>
+        </div>
+        <div style="margin-bottom:12px">
+          <button class="btn" onclick="abrirSelStock()" type="button" style="background:#e8f0fb;color:var(--blue);border-color:#c5d8f5;width:100%;justify-content:center">
+            📦 Seleccionar pneu de stock — preenche marca, fornecedor e custo automaticamente
+          </button>
+          <div id="r-stock-info" class="hidden" style="margin-top:6px;padding:8px 10px;background:#e8f0fb;border-radius:var(--radius);font-size:12px;color:var(--blue)"></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Custo pneu (€)</label><input type="number" id="r-custo" placeholder="ex: 450" min="0" step="0.01"></div>
+          <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="r-mo" placeholder="ex: 45" min="0" step="0.01"></div>
+        </div>
+      </div>
+         <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-p" onclick="guardarRegisto()">💾 Guardar montagem</button>
+        <div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:34px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
+          <span style="font-size:11px;color:var(--text2)">Qtd.</span>
+          <input type="number" id="r-quantidade" value="1" min="1" max="20" style="width:44px;height:24px;text-align:center;border:0.5px solid var(--border);border-radius:4px;font-size:13px;font-weight:500;padding:0 4px">
+        </div>
+        <button class="btn" onclick="limparForm()">✕ Limpar</button>
+      </div>
+      <div id="r-feedback" class="feedback hidden"></div>
+    </div>
+
+    <!-- POR MATRÍCULA -->
+    <div class="page hidden" id="page-frota" style="position:relative">
+      <div id="frota-inner">
+        <div class="page-header">
+          <h2>Por matrícula</h2>
+          <button class="btn btn-sm" onclick="loadFrota()">↻ Actualizar</button>
+        </div>
+        <div class="sel-bar">
+          <label>🚛 Matrícula</label>
+          <select id="sel-mat" onchange="loadFrota()"></select>
+        </div>
+        <div class="krow">
+          <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="fk1">—</div><div class="kpi-s">histórico</div></div>
+          <div class="kpi green"><div class="kpi-l">Activos</div><div class="kpi-v green" id="fk2">—</div><div class="kpi-s">sem desmontagem</div></div>
+          <div class="kpi"><div class="kpi-l">KMs médios/pneu</div><div class="kpi-v" id="fk3">—</div><div class="kpi-s">com desmontagem regist.</div></div>
+          <div class="kpi amber"><div class="kpi-l">Custo total (€)</div><div class="kpi-v amber" id="fk4">—</div><div class="kpi-s">com custo preenchido</div></div>
+          <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="fk5">—</div><div class="kpi-s">só com valor</div></div>
+          <div class="kpi"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk6">—</div><div class="kpi-s">custo ÷ km médio</div></div>
+        </div>
+        <div class="card">
+          <div class="ct">Histórico de pneus — clica em "Desmontar" para registar saída</div>
+          <div class="table-wrap">
+            <table id="frota-table">
+              <thead><tr>
+                <th>Mês Mont.</th><th>Posição</th><th>Marca</th><th>Medida</th><th>Tipo</th>
+                <th>KMs Mont.</th><th>Mês Desmont.</th><th>KMs Desmont.</th>
+                <th>KMs Efect.</th><th>Escultura</th><th>Destino</th>
+                <th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Acção</th>
+              </tr></thead>
+              <tbody id="frota-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAINEL DESMONTAGEM -->
+      <div class="panel" id="painel">
+        <div class="panel-head">
+          <span>Registar desmontagem</span>
+          <button class="btn-close" onclick="fecharPainel()">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-info" id="painel-info"></div>
+          <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="d-mes" placeholder="ex: 2026-07" maxlength="7"></div>
+          <div class="frow"><label>KMs conta-quilómetros *</label><input type="number" id="d-kms" placeholder="ex: 785000" min="0"></div>
+          <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="d-esc" placeholder="ex: 3" min="0" max="25" step="0.5"></div>
+          <div class="frow"><label>Destino do pneu</label>
+            <select id="d-dest">
+              <option>Remix</option><option>Lixo</option><option>Stock</option>
+              <option>Transferido</option><option>Abrir Piso</option>
+            </select>
+          </div>
+          <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="d-mo" placeholder="ex: 45" min="0" step="0.01"></div>
+          <button class="btn btn-p w100" onclick="guardarDesmontagem()" style="margin-top:12px">✓ Guardar desmontagem</button>
+          <div id="d-feedback" class="feedback hidden"></div>
+        </div>
+      </div>
+
+    <!-- PAINEL EDIÇÃO -->
+    <div class="panel" id="painel-editar">
+      <div class="panel-head">
+        <span>Editar registo</span>
+        <button class="btn-close" onclick="fecharEdicao()">✕</button>
+      </div>
+      <div class="panel-body">
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Podes editar qualquer campo. Os custos são os mais comuns de actualizar depois.</p>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Montagem</div>
+        <div class="frow"><label>Matrícula *</label><input type="text" id="e-mat" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="e-mes" maxlength="7"></div>
+        <div class="frow"><label>KMs montagem *</label><input type="number" id="e-kms" min="0"></div>
+        <div class="frow"><label>Posição</label><input type="text" id="e-pos" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="frow"><label>Marca</label><input type="text" id="e-marca" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="frow"><label>Medida</label><input type="text" id="e-medida"></div>
+        <div class="frow"><label>Tipo</label>
+          <select id="e-tipo"><option>Novo</option><option>Remix</option><option>Piso Aberto</option></select>
+        </div>
+        <div class="frow"><label>Fornecedor</label><input type="text" id="e-forn" oninput="this.value=this.value.toUpperCase()"></div>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Custos</div>
+        <div class="frow"><label>Custo pneu (€)</label><input type="number" id="e-custo" min="0" step="0.01"></div>
+        <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="e-mo" min="0" step="0.01"></div>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Desmontagem</div>
+        <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="e-mes-d" maxlength="7"></div>
+        <div class="frow"><label>KMs desmontagem</label><input type="number" id="e-kms-d" min="0"></div>
+        <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="e-esc" min="0" max="25" step="0.5"></div>
+        <div class="frow"><label>Destino</label>
+          <select id="e-dest"><option value="">— sem destino —</option><option>Remix</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
+        </div>
+        <button class="btn btn-p w100" onclick="guardarEdicao()" style="margin-top:12px">💾 Guardar alterações</button>
+        <div id="e-feedback" class="feedback hidden"></div>
+      </div>
+    </div>
+
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="page hidden" id="page-alertas">
+      <div class="page-header">
+        <h2>Alertas</h2>
+        <button class="btn btn-sm" onclick="loadAlertas()">↻ Actualizar</button>
+      </div>
+      <div class="card">
+        <div class="ct alert-title">⚠️ Pneus com escultura registada ≤ 3mm</div>
+        <div id="alertas-list"><p class="empty-msg">A carregar...</p></div>
+      </div>
+      <div class="card">
+        <div class="ct">📐 Como o sistema calcula o desgaste</div>
+        <div class="info-box">
+          <p>A taxa de desgaste é calculada a partir dos registos de desmontagem que já tens:</p>
+          <p class="formula">Taxa (mm/1000km) = (Escultura inicial − Escultura final) ÷ KMs efectuados × 1000</p>
+          <p>Escultura inicial assumida: <strong>16mm</strong> para pneus Novos · <strong>14mm</strong> para Remix · <strong>12mm</strong> para Piso Aberto.</p>
+          <p>À medida que registares mais desmontagens com escultura, o sistema fica mais preciso.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Taxa de desgaste calculada por registo</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Matrícula</th><th>Posição</th><th>Marca</th><th>Tipo</th>
+              <th>KMs efectuados</th><th>Escultura final (mm)</th><th>Taxa (mm/1000km)</th>
+            </tr></thead>
+            <tbody id="desgaste-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORNECEDORES -->
+    <div class="page hidden" id="page-fornecedores">
+      <div class="page-header">
+        <h2>Fornecedores</h2>
+        <button class="btn btn-sm" onclick="loadFornecedores()">↻ Actualizar</button>
+      </div>
+      <div class="card">
+        <div class="ct">Resumo por fornecedor</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Fornecedor</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Piso Aberto</th>
+              <th>Com custo regist.</th><th>Custo total (€)</th><th>Custo médio/pneu (€)</th>
+            </tr></thead>
+            <tbody id="forn-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ct">Volume por fornecedor</div>
+          <div class="legend" id="leg-forn2"></div>
+          <div class="cw-t"><canvas id="c-forn2" aria-label="Volume por fornecedor"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="ct">Custo médio por pneu — por fornecedor (€)</div>
+          <div class="cw-t"><canvas id="c-forn-custo" aria-label="Custo médio por fornecedor"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MARCAS -->
+    <div class="page hidden" id="page-marcas">
+      <div class="page-header">
+        <h2>Marcas</h2>
+        <button class="btn btn-sm" onclick="loadMarcas()">↻ Actualizar</button>
+      </div>
+      <div class="card">
+        <div class="ct">Desempenho por marca</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Piso Aberto</th>
+              <th>KMs médios/pneu</th><th>Taxa desgaste média (mm/1000km)</th><th>Custo médio/pneu (€)</th>
+            </tr></thead>
+            <tbody id="marc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ct">Pneus por marca</div>
+          <div class="legend" id="leg-marc2"></div>
+          <div class="cw-t"><canvas id="c-marc2" aria-label="Pneus por marca"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="ct">KMs médios por marca</div>
+          <div class="cw-t"><canvas id="c-marc-km" aria-label="KMs médios por marca"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STOCK -->
+    <div class="page hidden" id="page-stock">
+      <div class="page-header">
+        <h2>Stock de pneus</h2>
+        <button class="btn btn-p" onclick="abrirNovaFatura()">+ Nova fatura</button>
+      </div>
+      <div class="krow">
+        <div class="kpi blue"><div class="kpi-l">Faturas em aberto</div><div class="kpi-v blue" id="sk-faturas">—</div><div class="kpi-s">com stock disponível</div></div>
+        <div class="kpi green"><div class="kpi-l">Pneus em armazém</div><div class="kpi-v green" id="sk-pneus">—</div><div class="kpi-s">faturas + desmontados</div></div>
+        <div class="kpi amber"><div class="kpi-l">Valor em stock (€)</div><div class="kpi-v amber" id="sk-valor">—</div><div class="kpi-s">só faturas com preço</div></div>
+        <div class="kpi"><div class="kpi-l">Aguardam oficina</div><div class="kpi-v" id="sk-desmont">—</div><div class="kpi-s">Abrir Piso / Stock</div></div>
+      </div>
+      <!-- PNEUS DESMONTADOS EM ARMAZÉM -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">🔧 Pneus desmontados em armazém — Abrir Piso / Stock</div>
+        <div id="stock-desmontados-container">
+          <p class="empty-msg">Nenhum pneu desmontado em armazém.</p>
+        </div>
+      </div>
+
+      <!-- FATURAS -->
+      <div id="stock-faturas-container"></div>
+
+      <!-- PAINEL NOVA FATURA -->
+      <div class="panel" id="painel-fatura">
+        <div class="panel-head">
+          <span>Registar fatura de stock</span>
+          <button class="btn-close" onclick="fecharPainelFatura()">✕</button>
+        </div>
+        <div class="panel-body">
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Dados da fatura</div>
+          <div class="frow"><label>Nº Fatura *</label><input type="text" id="f-num" placeholder="ex: FT2026/1234" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Fornecedor *</label><input type="text" id="f-forn" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Data da fatura (AAAA-MM)</label><input type="text" id="f-data" placeholder="ex: 2026-07" maxlength="7"></div>
+          <div class="frow"><label>Notas</label><input type="text" id="f-notas" placeholder="opcional"></div>
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin:14px 0 10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">
+            Pneus na fatura
+            <button class="btn btn-sm" onclick="adicionarLinhaFatura()" style="float:right">+ Linha</button>
+          </div>
+          <div id="f-linhas"></div>
+          <button class="btn btn-p w100" onclick="guardarFatura()" style="margin-top:14px">💾 Guardar fatura</button>
+          <div id="f-feedback" class="feedback hidden"></div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- REBOQUES — DASHBOARD -->
+    <div class="page hidden" id="page-dashboard-r">
+      <div class="page-header">
+        <h2>Dashboard — Reboques</h2>
+        <button class="btn btn-sm" onclick="loadDashboardReboques()">↻ Actualizar</button>
+      </div>
+      <div class="krow">
+        <div class="kpi blue"><div class="kpi-l">Pneus activos</div><div class="kpi-v blue" id="rk-activos">—</div><div class="kpi-s">sem desmontagem</div></div>
+        <div class="kpi"><div class="kpi-l">Total registados</div><div class="kpi-v" id="rk-total">—</div><div class="kpi-s">histórico completo</div></div>
+        <div class="kpi green"><div class="kpi-l">Reboques</div><div class="kpi-v green" id="rk-mats">—</div><div class="kpi-s">matrículas</div></div>
+        <div class="kpi red"><div class="kpi-l">Alertas activos</div><div class="kpi-v red" id="rk-alerts">—</div><div class="kpi-s">acima do limite</div></div>
+        <div class="kpi amber"><div class="kpi-l">Custo total (€)</div><div class="kpi-v amber" id="rk-custo">—</div><div class="kpi-s">com valor registado</div></div>
+        <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="rk-med">—</div><div class="kpi-s">só com custo preenchido</div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">Pneus por tipo</div><div class="legend" id="rleg-tipo"></div><div class="cw"><canvas id="rc-tipo"></canvas></div></div>
+        <div class="card"><div class="ct">Pneus por fornecedor</div><div class="legend" id="rleg-forn"></div><div class="cw"><canvas id="rc-forn"></canvas></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">Evolução mensal do custo (€)</div><div class="cw-t"><canvas id="rc-mensal"></canvas></div></div>
+        <div class="card">
+          <div class="ct">Gasto anual — reboques</div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Ano</th><th style="text-align:center">Pneus</th><th style="text-align:right">Custo total (€)</th><th style="text-align:right">Custo médio/pneu (€)</th></tr></thead>
+            <tbody id="r-tabela-anual-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="card"><div class="ct">Top reboques — nº de pneus montados</div><div class="cw-t"><canvas id="rc-top"></canvas></div></div>
+    </div>
+
+    <!-- REBOQUES — REGISTAR -->
+    <div class="page hidden" id="page-registar-r">
+      <div class="page-header"><h2>Registar pneu — Reboque</h2></div>
+      <div class="card">
+        <div class="ct">Identificação</div>
+        <div class="g2">
+          <div class="frow"><label>Matrícula do reboque *</label><input type="text" id="rr-mat" placeholder="ex: RC-12-34" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="rr-mes" placeholder="ex: 2026-07" maxlength="7"></div>
+        </div>
+        <div class="g3">
+          <div class="frow"><label>Posição</label><input type="text" id="rr-pos" placeholder="ex: EIXO 1 ESQ" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Eixo</label>
+            <select id="rr-eixo">
+              <option value="1">Eixo 1 (dianteiro) — 12/14 meses</option>
+              <option value="2">Eixo 2 (meio) — 20/24 meses</option>
+              <option value="3">Eixo 3 (traseiro) — 12/14 meses</option>
+            </select>
+          </div>
+          <div class="frow"><label>Tipo</label><select id="rr-tipo"><option>Novo</option><option>Remix</option><option>Piso Aberto</option></select></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Pneu</div>
+        <div class="g2">
+          <div class="frow"><label>Marca</label><input type="text" id="rr-marca" placeholder="ex: MICHELIN" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Medida</label><input type="text" id="rr-medida" placeholder="ex: 385/65"></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Fornecedor</label><input type="text" id="rr-forn" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Matrícula do pneu (opcional)</label><input type="text" id="rr-matpneu" oninput="this.value=this.value.toUpperCase()"></div>
+        </div>
+        <div style="margin-bottom:12px">
+          <button class="btn" onclick="abrirSelStock()" type="button" style="background:#e8f0fb;color:var(--blue);border-color:#c5d8f5;width:100%;justify-content:center">
+            📦 Seleccionar pneu de stock — preenche marca, fornecedor e custo automaticamente
+          </button>
+          <div id="rr-stock-info" class="hidden" style="margin-top:6px;padding:8px 10px;background:#e8f0fb;border-radius:var(--radius);font-size:12px;color:var(--blue)"></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Custo pneu (€)</label><input type="number" id="rr-custo" min="0" step="0.01"></div>
+          <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="rr-mo" min="0" step="0.01"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-p" onclick="guardarRegistoReboque()">💾 Guardar montagem</button>
+        <button class="btn" onclick="limparFormReboque()">✕ Limpar</button>
+      </div>
+      <div id="rr-feedback" class="feedback hidden"></div>
+    </div>
+
+    <!-- REBOQUES — POR REBOQUE -->
+    <div class="page hidden" id="page-frota-r" style="position:relative">
+      <div id="rfrota-inner">
+        <div class="page-header">
+          <h2>Por reboque</h2>
+          <button class="btn btn-sm" onclick="loadFrotaReboques()">↻ Actualizar</button>
+        </div>
+        <div class="sel-bar">
+          <label>🔗 Reboque</label>
+          <select id="sel-mat-r" onchange="loadFrotaReboques()"></select>
+        </div>
+        <div class="krow">
+          <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="rfk1">—</div><div class="kpi-s">histórico</div></div>
+          <div class="kpi green"><div class="kpi-l">Activos</div><div class="kpi-v green" id="rfk2">—</div><div class="kpi-s">sem desmontagem</div></div>
+          <div class="kpi"><div class="kpi-l">Duração média</div><div class="kpi-v" id="rfk3">—</div><div class="kpi-s">pneus desmontados</div></div>
+          <div class="kpi amber"><div class="kpi-l">Custo total (€)</div><div class="kpi-v amber" id="rfk4">—</div><div class="kpi-s">com custo preenchido</div></div>
+          <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="rfk5">—</div></div>
+          <div class="kpi"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk6">—</div><div class="kpi-s">custo ÷ duração</div></div>
+        </div>
+        <div class="card">
+          <div class="ct">Histórico — clica em "Desmontar" para registar saída</div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Mês Mont.</th><th>Posição</th><th>Eixo</th><th>Marca</th><th>Medida</th><th>Tipo</th><th>Meses activo</th><th>Mês Desmont.</th><th>Escultura</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Acção</th></tr></thead>
+            <tbody id="rfrota-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- PAINEL DESMONTAGEM -->
+      <div class="panel" id="rpainel-desmont">
+        <div class="panel-head"><span>Registar desmontagem — Reboque</span><button class="btn-close" onclick="fecharPainelReboque()">✕</button></div>
+        <div class="panel-body">
+          <div class="panel-info" id="rpainel-info"></div>
+          <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="rd-mes" placeholder="ex: 2026-07" maxlength="7"></div>
+          <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="rd-esc" min="0" max="25" step="0.5"></div>
+          <div class="frow"><label>Destino</label><select id="rd-dest"><option>Remix</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
+          <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="rd-mo" min="0" step="0.01"></div>
+          <button class="btn btn-p w100" onclick="guardarDesmontazemReboque()" style="margin-top:12px">✓ Guardar desmontagem</button>
+          <div id="rd-feedback" class="feedback hidden"></div>
+        </div>
+      </div>
+
+      <!-- PAINEL EDIÇÃO -->
+      <div class="panel" id="rpainel-editar">
+        <div class="panel-head"><span>Editar registo — Reboque</span><button class="btn-close" onclick="fecharEdicaoReboque()">✕</button></div>
+        <div class="panel-body">
+          <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
+          <div class="frow"><label>Posição</label><input type="text" id="re-pos" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Eixo</label><select id="re-eixo"><option value="1">Eixo 1</option><option value="2">Eixo 2</option><option value="3">Eixo 3</option></select></div>
+          <div class="frow"><label>Marca</label><input type="text" id="re-marca" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
+          <div class="frow"><label>Tipo</label><select id="re-tipo"><option>Novo</option><option>Remix</option><option>Piso Aberto</option></select></div>
+          <div class="frow"><label>Fornecedor</label><input type="text" id="re-forn" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
+          <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
+          <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7"></div>
+          <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="re-esc" min="0" max="25" step="0.5"></div>
+          <div class="frow"><label>Destino</label><select id="re-dest"><option value="">— sem destino —</option><option>Remix</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
+          <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px">💾 Guardar alterações</button>
+          <div id="re-feedback" class="feedback hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REBOQUES — ALERTAS -->
+    <div class="page hidden" id="page-alertas-r">
+      <div class="page-header"><h2>Alertas — Reboques</h2><button class="btn btn-sm" onclick="loadAlertasReboques()">↻ Actualizar</button></div>
+      <div class="card">
+        <div class="ct">📐 Limites por eixo — Semirreboque 3 eixos c/ suspensão pneumática</div>
+        <div class="info-box">
+          <p><strong>Eixo 1 (dianteiro)</strong> — Aviso: 12 meses · Crítico: 14 meses</p>
+          <p><strong>Eixo 2 (meio)</strong> — Aviso: 20 meses · Crítico: 24 meses</p>
+          <p><strong>Eixo 3 (traseiro)</strong> — Aviso: 12 meses · Crítico: 14 meses</p>
+        </div>
+      </div>
+      <div class="card"><div class="ct alert-title">🔴 Crítico</div><div id="r-alertas-criticos"><p class="empty-msg">A calcular...</p></div></div>
+      <div class="card"><div class="ct" style="color:var(--amber)">🟡 Atenção</div><div id="r-alertas-avisos"><p class="empty-msg">A calcular...</p></div></div>
+      <div class="card">
+        <div class="ct">📊 Todos os pneus activos</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Matrícula</th><th>Posição</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Mês mont.</th><th>Meses activo</th><th>Limite</th></tr></thead>
+          <tbody id="r-alertas-tbody"></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="ct">📁 Histórico de durações</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Matrícula</th><th>Posição</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Duração</th><th>Escultura final</th></tr></thead>
+          <tbody id="r-hist-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- REBOQUES — FORNECEDORES -->
+    <div class="page hidden" id="page-fornecedores-r">
+      <div class="page-header"><h2>Fornecedores — Reboques</h2><button class="btn btn-sm" onclick="loadFornecedoresReboques()">↻ Actualizar</button></div>
+      <div class="card">
+        <div class="ct">Resumo por fornecedor</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Fornecedor</th><th>Total</th><th>Novos</th><th>Remix</th><th>Piso Ab.</th><th>Com custo</th><th>Custo total (€)</th><th>Custo médio/pneu (€)</th></tr></thead>
+          <tbody id="rforn-tbody"></tbody>
+        </table></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">Volume por fornecedor</div><div class="legend" id="rleg-forn2"></div><div class="cw-t"><canvas id="rc-forn2"></canvas></div></div>
+        <div class="card"><div class="ct">Custo médio/pneu por fornecedor (€)</div><div class="cw-t"><canvas id="rc-forn-custo"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- REBOQUES — MARCAS -->
+    <div class="page hidden" id="page-marcas-r">
+      <div class="page-header"><h2>Marcas — Reboques</h2><button class="btn btn-sm" onclick="loadMarcasReboques()">↻ Actualizar</button></div>
+      <div class="card">
+        <div class="ct">Desempenho por marca</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Marca</th><th>Total</th><th>Novos</th><th>Remix</th><th>Piso Ab.</th><th>Duração média</th><th>Custo médio/pneu (€)</th></tr></thead>
+          <tbody id="rmarc-tbody"></tbody>
+        </table></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ct">Pneus por marca</div><div class="legend" id="rleg-marc2"></div><div class="cw-t"><canvas id="rc-marc2"></canvas></div></div>
+        <div class="card"><div class="ct">Duração média por marca (meses)</div><div class="cw-t"><canvas id="rc-marc-dur"></canvas></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- OVERLAY escurecido por baixo do painel -->
+<div id="stock-overlay" onclick="fecharSelStock()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:98"></div>
+
+<!-- PAINEL SELECCIONAR DE STOCK — global, sempre por cima -->
+<div id="painel-stock-sel" style="display:none;position:fixed;top:0;right:0;width:340px;height:100vh;background:var(--surface);border-left:0.5px solid var(--border);flex-direction:column;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,0.15);z-index:99">
+  <div style="padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-weight:500;font-size:13px;position:sticky;top:0;background:var(--surface)">
+    <span>📦 Seleccionar pneu de stock</span>
+    <button class="btn-close" onclick="fecharSelStock()">✕</button>
+  </div>
+  <div style="padding:14px 16px;flex:1">
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Selecciona o pneu. O custo, marca e fornecedor preenchem-se automaticamente no formulário.</p>
+    <div id="stock-sel-lista"></div>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading" class="loading-overlay hidden">
+  <div class="spinner"></div>
+</div>
+
+<!-- Configuração e estado global -->
+<script src="js/config.js"></script>
+<!-- Utilitários partilhados -->
+<script src="js/utils.js"></script>
+<!-- Módulos veículos -->
+<script src="js/dashboard.js"></script>
+<script src="js/registar.js"></script>
+<script src="js/frota.js"></script>
+<script src="js/alertas.js"></script>
+<script src="js/fornecedores.js"></script>
+<script src="js/marcas.js"></script>
+<script src="js/stock.js"></script>
+<!-- Módulos reboques -->
+<script src="js/reboques/dashboard_r.js"></script>
+<script src="js/reboques/registar_r.js"></script>
+<script src="js/reboques/frota_r.js"></script>
+<script src="js/reboques/alertas_r.js"></script>
+<script src="js/reboques/fornecedores_marcas_r.js"></script>
+<!-- Navegação -->
+<script src="js/nav.js"></script>
+<!-- Autenticação (último — depende de tudo o resto) -->
+<script src="js/auth.js"></script>
+
+</body>
+</html>
