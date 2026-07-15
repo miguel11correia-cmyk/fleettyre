@@ -536,7 +536,11 @@
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-p" onclick="guardarRegistoReboque()">💾 Guardar montagem</button>
-        <button class="btn" onclick="limparFormReboque()">✕ Limpar</button>
+<div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:34px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
+  <span style="font-size:11px;color:var(--text2)">Qtd.</span>
+  <input type="number" id="rr-quantidade" value="1" min="1" max="20" style="width:44px;height:24px;text-align:center;border:0.5px solid var(--border);border-radius:4px;font-size:13px;font-weight:500;padding:0 4px">
+</div>
+<button class="btn" onclick="limparFormReboque()">✕ Limpar</button>
       </div>
       <div id="rr-feedback" class="feedback hidden"></div>
     </div>
