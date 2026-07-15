@@ -42,8 +42,6 @@ window.addEventListener('load', async () => {
     mostrarApp();
   }
   // Registar service worker
-  if ('serviceWorker' in navigator) {
-    // navigator.serviceWorker.register('/sw.js')
-      .catch(e => console.log('SW erro:', e));
-  }
+  // navigator.serviceWorker.register('/sw.js')
+  //   .catch(e => console.log('SW erro:', e));
 });
