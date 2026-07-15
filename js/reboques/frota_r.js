@@ -74,6 +74,7 @@ async function loadFrotaReboques() {
       <td>${r.posicao  || '—'}</td>
       <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
       <td>${r.marca    || '—'}</td>
+      <td>${r.fornecedor || '—'}</td>
       <td>${r.medida   || '—'}</td>
       <td>${tipoBadge(r.tipo)}</td>
       <td>${mesesStr}</td>
