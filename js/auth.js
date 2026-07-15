@@ -43,7 +43,7 @@ window.addEventListener('load', async () => {
   }
   // Registar service worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
+    // navigator.serviceWorker.register('/sw.js')
       .catch(e => console.log('SW erro:', e));
   }
 });
