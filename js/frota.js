@@ -73,6 +73,7 @@ async function loadFrota() {
       <td>${r.mes_mont || '—'}</td>
       <td>${r.posicao  || '—'}</td>
       <td>${r.marca    || '—'}</td>
+      <td>${r.fornecedor || '—'}</td>
       <td>${r.medida   || '—'}</td>
       <td>${tipoBadge(r.tipo)}</td>
       <td style="text-align:right">${fmt(r.kms_mont)}</td>
