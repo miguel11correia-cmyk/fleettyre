@@ -94,7 +94,4 @@ window.addEventListener('load', async () => {
     currentUser = data.session.user;
     await prosseguirAposAutenticacao();
   }
-  // Registar service worker
-  // navigator.serviceWorker.register('/sw.js')
-  //   .catch(e => console.log('SW erro:', e));
 });
