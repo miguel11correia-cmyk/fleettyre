@@ -4,6 +4,10 @@
 let linhasFatura  = [];
 let stockContexto = 'veiculos'; // definido pelo nav antes de loadStock()
 
+// Destinos que implicam trabalho de oficina antes de estarem prontos a montar.
+// 'Stock' está sempre pronto por definição (não precisa de confirmação).
+const DESTINOS_OFICINA = ['Abrir Piso', 'Remix', 'Rechapar'];
+
 // ── CARREGAR STOCK ────────────────────────────────────────────────
 
 async function loadStock() {
@@ -18,7 +22,7 @@ async function loadStock() {
       .order('created_at', { ascending: false }),
     sb.from(tabela)
       .select('*')
-      .in('destino', ['Abrir Piso', 'Stock', 'Rechapar'])
+      .in('destino', [...DESTINOS_OFICINA, 'Stock'])
       .not('mes_desmont', 'is', null)
       .eq('remontado', false)
       .order('mes_desmont', { ascending: false })
@@ -106,13 +110,25 @@ function renderStockDesmontados(pneus, tabela) {
   }
 
   let html = '<div class="table-wrap"><table>';
-  html += '<thead><tr><th>Matrícula</th><th>Mês desmont.</th><th>Posição</th><th>Marca</th><th>Medida</th><th>Tipo</th><th>Escultura</th><th>Destino</th><th>Duração</th></tr></thead><tbody>';
+  html += '<thead><tr><th>Matrícula</th><th>Mês desmont.</th><th>Posição</th><th>Marca</th><th>Medida</th><th>Tipo</th><th>Escultura</th><th>Destino</th><th>Estado</th><th>Duração</th></tr></thead><tbody>';
   pneus.forEach(r => {
     const duracao = tabela === 'pneus'
       ? (r.kms_desmont && r.kms_mont ? fmt(r.kms_desmont - r.kms_mont) + ' km' : '—')
       : (r.mes_desmont && r.mes_mont ? mesesEntre(r.mes_mont, r.mes_desmont) + ' meses' : '—');
     const escStr  = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
     const destCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
+
+    let estadoHtml;
+    if (!DESTINOS_OFICINA.includes(r.destino)) {
+      estadoHtml = '<span class="badge b-novo">Pronto</span>';
+    } else if (r.pronto) {
+      estadoHtml = '<span class="badge b-novo">✓ Pronto</span> '
+        + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button>';
+    } else {
+      estadoHtml = '<span class="badge b-alert">Pendente</span> '
+        + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:22px;padding:0 8px;font-size:10px">✓ Marcar pronto</button>';
+    }
+
     html += '<tr>'
       + '<td><strong>' + r.matricula + '</strong></td>'
       + '<td>' + (r.mes_desmont || '—') + '</td>'
@@ -122,11 +138,20 @@ function renderStockDesmontados(pneus, tabela) {
       + '<td>' + tipoBadge(r.tipo) + '</td>'
       + '<td>' + escStr + '</td>'
       + '<td><span class="badge ' + destCls + '">' + r.destino + '</span></td>'
+      + '<td style="white-space:nowrap">' + estadoHtml + '</td>'
       + '<td>' + duracao + '</td>'
       + '</tr>';
   });
   html += '</tbody></table></div>';
   container.innerHTML = html;
+}
+
+async function marcarProntoDesmontado(id, tabela, pronto) {
+  loading(true);
+  const { error } = await sb.from(tabela).update({ pronto }).eq('id', id);
+  loading(false);
+  if (error) { alert('Erro: ' + error.message); return; }
+  loadStock();
 }
 
 // ── NOVA FATURA ───────────────────────────────────────────────────
@@ -243,16 +268,19 @@ async function abrirSelStock() {
   const [resV, resR, resDV, resDR] = await Promise.all([
     sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','veiculos').order('created_at',{ascending:false}),
     sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','reboques').order('created_at',{ascending:false}),
-    sb.from('pneus').select('*').in('destino',['Abrir Piso','Stock','Rechapar']).not('mes_desmont','is',null).eq('remontado',false),
-    sb.from('reboques').select('*').in('destino',['Abrir Piso','Stock','Rechapar']).not('mes_desmont','is',null).eq('remontado',false),
+    sb.from('pneus').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false),
+    sb.from('reboques').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false),
   ]);
 
   loading(false);
 
+  // Só entram no seletor os "Stock" (sempre prontos) e os de oficina já marcados como prontos.
+  const pronto = r => r.destino === 'Stock' || r.pronto;
+
   const faturasV    = resV.data  || [];
   const faturasR    = resR.data  || [];
-  const desmontadosV = resDV.data || [];
-  const desmontadosR = resDR.data || [];
+  const desmontadosV = (resDV.data || []).filter(pronto);
+  const desmontadosR = (resDR.data || []).filter(pronto);
 
   const todasFaturas = [...faturasV, ...faturasR];
   const linhasDisp = [];
