@@ -127,7 +127,7 @@ async function adicionarFornecedor() {
   if (!cod || !nome) { showFeedback('forn-gestao-feedback', 'Preenche código e nome.', true); return; }
 
   loading(true);
-  const { error } = await sb.from('fornecedores').insert([{ codigo: cod, nome }]);
+  const { error } = await sb.from('fornecedores').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome }]);
   loading(false);
 
   if (error) { showFeedback('forn-gestao-feedback', 'Erro: ' + error.message, true); return; }

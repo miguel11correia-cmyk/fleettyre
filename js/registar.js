@@ -42,6 +42,7 @@ async function _guardarRegistoUnico() {
   if (!kms || kms <= 0) { showFeedback('r-feedback', 'KMs do conta-quilómetros é obrigatório.', true); return; }
 
   const registo = {
+    empresa_id:  currentEmpresaId,
     matricula:   mat,
     mes_mont:    mes,
     kms_mont:    kms,

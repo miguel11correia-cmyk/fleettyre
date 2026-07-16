@@ -18,6 +18,8 @@ const COLORS = [
 
 // ── ESTADO GLOBAL ─────────────────────────────────────────────────
 let currentUser       = null;
+let currentEmpresaId  = null;
+let isAdmin           = false;
 let painelId          = null;
 let editId            = null;
 let stockLinhaSelId   = null;
