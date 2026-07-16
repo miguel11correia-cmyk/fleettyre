@@ -36,18 +36,16 @@ async function logout() {
   document.getElementById('l-err').textContent = '';
 }
 
-// Depois de autenticar: descobre se é admin e a que empresas tem acesso.
-// Se só houver 1 empresa possível, avança logo; senão, pede para escolher.
+// Depois de autenticar: descobre se é admin e a que empresas tem acesso,
+// e mostra sempre o passo de escolha de empresa (confirmação manual).
 async function prosseguirAposAutenticacao() {
   const { data: resAdmin } = await sb.from('admins').select('user_id').eq('user_id', currentUser.id).maybeSingle();
   isAdmin = !!resAdmin;
 
   empresasDisponiveis = await carregarEmpresasDisponiveis();
 
-  if (empresasDisponiveis.length <= 1) {
-    currentEmpresaId = empresasDisponiveis[0]?.id || null;
-    localStorage.setItem(EMPRESA_STORAGE_KEY, currentEmpresaId || '');
-    mostrarApp();
+  if (empresasDisponiveis.length === 0) {
+    document.getElementById('l-err').textContent = 'A tua conta não está associada a nenhuma empresa. Contacta o administrador.';
     return;
   }
 
@@ -70,6 +68,7 @@ async function carregarEmpresasDisponiveis() {
 function mostrarSeletorEmpresa(lista, seleccionada) {
   const sel = document.getElementById('l-empresa');
   sel.innerHTML = lista.map(e => `<option value="${e.id}"${e.id === seleccionada ? ' selected' : ''}>${e.nome}</option>`).join('');
+  document.getElementById('l-err').textContent = '';
   document.getElementById('login-step-cred').classList.add('hidden');
   document.getElementById('login-step-empresa').classList.remove('hidden');
 }
