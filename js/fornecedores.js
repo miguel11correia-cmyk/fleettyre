@@ -48,10 +48,11 @@ async function loadFornecedores() {
   const agg = {};
   data.forEach(r => {
     const k = r.fornecedor || '(sem registo)';
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, piso: 0, comCusto: 0, custo: 0 };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
     agg[k].total++;
     if (r.tipo === 'Novo')             agg[k].novo++;
     else if (r.tipo === 'Remix')       agg[k].remix++;
+    else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
     else if (r.tipo === 'Piso Aberto') agg[k].piso++;
     if (r.custo_pneu > 0) { agg[k].comCusto++; agg[k].custo += Number(r.custo_pneu); }
   });
@@ -64,7 +65,7 @@ async function loadFornecedores() {
       const med = f.comCusto > 0 ? fmtEur(f.custo / f.comCusto) : '—';
       return `<tr>
         <td><strong>${k}</strong></td>
-        <td>${f.total}</td><td>${f.novo}</td><td>${f.remix}</td><td>${f.piso}</td>
+        <td>${f.total}</td><td>${f.novo}</td><td>${f.remix}</td><td>${f.rechapado}</td><td>${f.piso}</td>
         <td>${f.comCusto}</td>
         <td style="text-align:right">${f.custo > 0 ? fmtEur(f.custo) : '—'}</td>
         <td style="text-align:right">${med}</td>

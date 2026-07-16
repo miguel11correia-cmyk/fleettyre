@@ -138,7 +138,7 @@ Só calculado quando ambos os valores estão disponíveis.
 ```
 Taxa (mm/1000km) = (Escultura inicial − Escultura final) ÷ KMs efectuados × 1000
 ```
-Escultura inicial assumida: 16mm (Novo), 14mm (Remix), 12mm (Piso Aberto).
+Escultura inicial assumida: 16mm (Novo), 14mm (Remix/Rechapado), 12mm (Piso Aberto).
 Só calculada para registos com escultura final entre 0 e 20mm.
 
 ---
