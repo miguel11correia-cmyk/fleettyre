@@ -26,6 +26,7 @@ create table if not exists public.pneus (
   kms_desmont     integer check (kms_desmont is null or kms_desmont > 0),
   escultura_final numeric(4,1) check (escultura_final is null or (escultura_final >= 0 and escultura_final <= 25)),
   destino         text,
+  pronto          boolean default false, -- true quando volta pronto da oficina (Abrir Piso/Remix/Rechapar)
 
   -- Custos
   custo_pneu      numeric(8,2) check (custo_pneu is null or custo_pneu >= 0),
