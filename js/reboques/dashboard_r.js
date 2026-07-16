@@ -54,8 +54,8 @@ async function loadDashboardReboques() {
   document.getElementById('rleg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('rc-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
 
-  // ── Gráfico fornecedor ──
-  const forns = countBy(data, 'fornecedor');
+  // ── Gráfico fornecedor (só pneus activos) ──
+  const forns = countBy(activos, 'fornecedor');
   const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
   document.getElementById('rleg-forn').innerHTML = makeLegend(fKeys, COLORS);
   mkChart('rc-forn', 'doughnut', fKeys, fKeys.map(k => forns[k]), COLORS.slice(0, fKeys.length));

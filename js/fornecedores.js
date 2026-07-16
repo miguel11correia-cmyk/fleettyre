@@ -72,9 +72,6 @@ async function loadFornecedores() {
     }).join('');
   }
 
-  document.getElementById('leg-forn2').innerHTML = makeLegend(keys, COLORS);
-  mkChart('c-forn2', 'bar', keys, keys.map(k => agg[k].total), COLORS.slice(0, keys.length));
-
   const keysComCusto = keys.filter(k => agg[k].comCusto > 0);
   if (keysComCusto.length > 0) {
     mkChart('c-forn-custo', 'bar',

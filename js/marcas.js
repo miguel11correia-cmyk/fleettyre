@@ -42,9 +42,6 @@ async function loadMarcas() {
     }).join('');
   }
 
-  document.getElementById('leg-marc2').innerHTML = makeLegend(keys, COLORS);
-  mkChart('c-marc2', 'doughnut', keys, keys.map(k => agg[k].total), COLORS.slice(0, keys.length));
-
   const keysComKms = keys.filter(k => agg[k].kmsArr.length > 0);
   if (keysComKms.length > 0) {
     mkChart('c-marc-km', 'bar',
