@@ -24,9 +24,17 @@
     </div>
     <h1 class="login-logo" style="font-size:18px">FleetTyre</h1>
     <p class="login-sub">Gestão de pneus para frotas pesadas</p>
-    <div class="frow"><label>Email</label><input type="email" id="l-email" placeholder="email@empresa.pt"></div>
-    <div class="frow"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
-    <button class="btn btn-p w100" onclick="login()">Entrar</button>
+    <div id="login-step-cred">
+      <div class="frow"><label>Email</label><input type="email" id="l-email" placeholder="email@empresa.pt"></div>
+      <div class="frow"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
+      <button class="btn btn-p w100" onclick="login()">Entrar</button>
+    </div>
+    <div id="login-step-empresa" class="hidden">
+      <div class="frow"><label>Empresa</label>
+        <select id="l-empresa"></select>
+      </div>
+      <button class="btn btn-p w100" onclick="confirmarEmpresaLogin()">Continuar</button>
+    </div>
     <p id="l-err" class="err-msg"></p>
   </div>
 </div>

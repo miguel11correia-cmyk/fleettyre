@@ -1,5 +1,8 @@
 // ── AUTENTICAÇÃO ──────────────────────────────────────────────────
 
+const EMPRESA_STORAGE_KEY = 'ft_empresa_id';
+let empresasDisponiveis = [];
+
 async function login() {
   const email = document.getElementById('l-email').value.trim();
   const pass  = document.getElementById('l-pass').value;
@@ -15,8 +18,7 @@ async function login() {
     return;
   }
   currentUser = data.user;
-  await carregarEmpresaUser();
-  mostrarApp();
+  await prosseguirAposAutenticacao();
 }
 
 async function logout() {
@@ -24,19 +26,58 @@ async function logout() {
   currentUser = null;
   currentEmpresaId = null;
   isAdmin = false;
+  empresasDisponiveis = [];
+  localStorage.removeItem(EMPRESA_STORAGE_KEY);
   document.getElementById('app').classList.add('hidden');
   document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-step-empresa').classList.add('hidden');
+  document.getElementById('login-step-cred').classList.remove('hidden');
   document.getElementById('l-pass').value = '';
+  document.getElementById('l-err').textContent = '';
 }
 
-// Carrega a empresa do utilizador (membros) e se tem acesso global (admins)
-async function carregarEmpresaUser() {
-  const [resMembro, resAdmin] = await Promise.all([
-    sb.from('membros').select('empresa_id').eq('user_id', currentUser.id).maybeSingle(),
-    sb.from('admins').select('user_id').eq('user_id', currentUser.id).maybeSingle(),
-  ]);
-  currentEmpresaId = resMembro.data?.empresa_id || null;
-  isAdmin = !!resAdmin.data;
+// Depois de autenticar: descobre se é admin e a que empresas tem acesso.
+// Se só houver 1 empresa possível, avança logo; senão, pede para escolher.
+async function prosseguirAposAutenticacao() {
+  const { data: resAdmin } = await sb.from('admins').select('user_id').eq('user_id', currentUser.id).maybeSingle();
+  isAdmin = !!resAdmin;
+
+  empresasDisponiveis = await carregarEmpresasDisponiveis();
+
+  if (empresasDisponiveis.length <= 1) {
+    currentEmpresaId = empresasDisponiveis[0]?.id || null;
+    localStorage.setItem(EMPRESA_STORAGE_KEY, currentEmpresaId || '');
+    mostrarApp();
+    return;
+  }
+
+  const guardada = localStorage.getItem(EMPRESA_STORAGE_KEY);
+  const valida   = empresasDisponiveis.some(e => e.id === guardada);
+  mostrarSeletorEmpresa(empresasDisponiveis, valida ? guardada : empresasDisponiveis[0].id);
+}
+
+// Empresas a que o utilizador tem acesso: todas se for admin, ou só a própria.
+async function carregarEmpresasDisponiveis() {
+  if (isAdmin) {
+    const { data } = await sb.from('empresas').select('id, nome').order('nome');
+    return data || [];
+  }
+  const { data } = await sb.from('membros').select('empresa_id, empresas(nome)').eq('user_id', currentUser.id).maybeSingle();
+  if (!data) return [];
+  return [{ id: data.empresa_id, nome: data.empresas?.nome || '—' }];
+}
+
+function mostrarSeletorEmpresa(lista, seleccionada) {
+  const sel = document.getElementById('l-empresa');
+  sel.innerHTML = lista.map(e => `<option value="${e.id}"${e.id === seleccionada ? ' selected' : ''}>${e.nome}</option>`).join('');
+  document.getElementById('login-step-cred').classList.add('hidden');
+  document.getElementById('login-step-empresa').classList.remove('hidden');
+}
+
+function confirmarEmpresaLogin() {
+  currentEmpresaId = document.getElementById('l-empresa').value;
+  localStorage.setItem(EMPRESA_STORAGE_KEY, currentEmpresaId);
+  mostrarApp();
 }
 
 function mostrarApp() {
@@ -52,8 +93,7 @@ window.addEventListener('load', async () => {
   const { data } = await sb.auth.getSession();
   if (data.session) {
     currentUser = data.session.user;
-    await carregarEmpresaUser();
-    mostrarApp();
+    await prosseguirAposAutenticacao();
   }
   // Registar service worker
   // navigator.serviceWorker.register('/sw.js')
