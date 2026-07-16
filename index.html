@@ -82,6 +82,9 @@
         <div class="ni" onclick="nav('marcas',this)" data-page="marcas">
           <span class="ni-icon">🏷️</span>Marcas
         </div>
+        <div class="ni" onclick="nav('analytics',this)" data-page="analytics">
+          <span class="ni-icon">📈</span>Analytics
+        </div>
         <div class="nav-section">Armazém</div>
         <div class="ni" onclick="nav('stock',this)" data-page="stock">
           <span class="ni-icon">📦</span>Stock
@@ -111,6 +114,9 @@
         </div>
         <div class="ni" onclick="navR('marcas-r',this)" data-page="marcas-r">
           <span class="ni-icon">🏷️</span>Marcas
+        </div>
+        <div class="ni" onclick="navR('analytics-r',this)" data-page="analytics-r">
+          <span class="ni-icon">📈</span>Analytics
         </div>
         <div class="nav-section">Armazém</div>
         <div class="ni" onclick="navR('stock-r',this)" data-page="stock-r">
@@ -416,6 +422,57 @@
       </div>
     </div>
 
+    <!-- ANALYTICS -->
+    <div class="page hidden" id="page-analytics">
+      <div class="page-header">
+        <h2>Analytics</h2>
+        <button class="btn btn-sm" onclick="loadAnalytics()">↻ Actualizar</button>
+      </div>
+
+      <div class="card">
+        <div class="ct">ROI por tipo de pneu</div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Histórico completo — só regista tipos com KMs de montagem, desmontagem e custo do pneu preenchidos.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Tipo</th><th style="text-align:right">Duração média (km)</th><th style="text-align:right">Custo médio (€)</th>
+              <th style="text-align:right">KMs por €</th><th style="text-align:center">Nº registos</th>
+            </tr></thead>
+            <tbody id="roi-tipo-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">KMs por € investido — por tipo de pneu</div>
+        <div class="cw-t"><canvas id="c-roi-tipo" aria-label="KMs por euro investido, por tipo de pneu"></canvas></div>
+      </div>
+
+      <div class="krow">
+        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="an-media-frota">—</div><div class="kpi-s">custo por km</div></div>
+        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="an-mais-eficiente">—</div><div class="kpi-s">menor custo/km</div></div>
+        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="an-menos-eficiente">—</div><div class="kpi-s">maior custo/km</div></div>
+        <div class="kpi"><div class="kpi-l">Veículos comparados</div><div class="kpi-v" id="an-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">Comparação de custo por km — ranking de eficiência</div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Mostra os 5 mais eficientes, os 5 menos eficientes e os mais próximos da média — a tabela abaixo tem sempre todos os veículos.</p>
+        <div class="cw-t" style="height:320px"><canvas id="c-an-veiculos" aria-label="Comparação de custo por km entre veículos"></canvas></div>
+        <p id="an-chart-media" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px"></p>
+      </div>
+      <div class="card">
+        <div class="ct">Detalhe por veículo</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Matrícula</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">KMs médios/pneu</th>
+              <th style="text-align:right">Custo médio/pneu (€)</th><th style="text-align:right">€/km</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="an-veiculos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- STOCK -->
     <div class="page hidden" id="page-stock">
       <div class="page-header">
@@ -664,6 +721,57 @@
       <div class="card"><div class="ct">Duração média por marca (meses)</div><div class="cw-t"><canvas id="rc-marc-dur"></canvas></div></div>
     </div>
 
+    <!-- REBOQUES — ANALYTICS -->
+    <div class="page hidden" id="page-analytics-r">
+      <div class="page-header">
+        <h2>Analytics — Reboques</h2>
+        <button class="btn btn-sm" onclick="loadAnalyticsReboques()">↻ Actualizar</button>
+      </div>
+
+      <div class="card">
+        <div class="ct">ROI por tipo de pneu</div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Histórico completo — só regista tipos com meses de duração e custo do pneu preenchidos.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Tipo</th><th style="text-align:right">Duração média</th><th style="text-align:right">Custo médio (€)</th>
+              <th style="text-align:right">Meses por €</th><th style="text-align:center">Nº registos</th>
+            </tr></thead>
+            <tbody id="rroi-tipo-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Meses por € investido — por tipo de pneu</div>
+        <div class="cw-t"><canvas id="rc-roi-tipo" aria-label="Meses por euro investido, por tipo de pneu"></canvas></div>
+      </div>
+
+      <div class="krow">
+        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="ran-media-frota">—</div><div class="kpi-s">custo por mês</div></div>
+        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="ran-mais-eficiente">—</div><div class="kpi-s">menor custo/mês</div></div>
+        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="ran-menos-eficiente">—</div><div class="kpi-s">maior custo/mês</div></div>
+        <div class="kpi"><div class="kpi-l">Reboques comparados</div><div class="kpi-v" id="ran-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">Comparação de custo por mês — ranking de eficiência</div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Mostra os 5 mais eficientes, os 5 menos eficientes e os mais próximos da média — a tabela abaixo tem sempre todos os reboques.</p>
+        <div class="cw-t" style="height:320px"><canvas id="rc-an-veiculos" aria-label="Comparação de custo por mês entre reboques"></canvas></div>
+        <p id="ran-chart-media" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px"></p>
+      </div>
+      <div class="card">
+        <div class="ct">Detalhe por reboque</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Matrícula</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">Duração média</th>
+              <th style="text-align:right">Custo médio/pneu (€)</th><th style="text-align:right">€/mês</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="ran-veiculos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -698,6 +806,7 @@
 <script src="js/alertas.js"></script>
 <script src="js/fornecedores.js"></script>
 <script src="js/marcas.js"></script>
+<script src="js/analytics.js"></script>
 <script src="js/stock.js"></script>
 <!-- Módulos reboques -->
 <script src="js/reboques/dashboard_r.js"></script>
@@ -705,6 +814,7 @@
 <script src="js/reboques/frota_r.js"></script>
 <script src="js/reboques/alertas_r.js"></script>
 <script src="js/reboques/fornecedores_marcas_r.js"></script>
+<script src="js/reboques/analytics_r.js"></script>
 <!-- Navegação -->
 <script src="js/nav.js"></script>
 <!-- Autenticação (último — depende de tudo o resto) -->

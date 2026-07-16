@@ -30,6 +30,7 @@ function nav(id, el) {
   else if (id === 'alertas')       loadAlertas();
   else if (id === 'fornecedores')  loadFornecedores();
   else if (id === 'marcas')        loadMarcas();
+  else if (id === 'analytics')     loadAnalytics();
   else if (id === 'stock')         { stockContexto = 'veiculos'; loadStock(); }
 }
 
@@ -50,5 +51,6 @@ function navR(id, el) {
   else if (id === 'alertas-r')      loadAlertasReboques();
   else if (id === 'fornecedores-r') loadFornecedoresReboques();
   else if (id === 'marcas-r')       loadMarcasReboques();
+  else if (id === 'analytics-r')    loadAnalyticsReboques();
   else if (id === 'stock-r')        { stockContexto = 'reboques'; loadStock(); }
 }
