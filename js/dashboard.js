@@ -19,7 +19,8 @@ async function loadDashboard() {
     return;
   }
 
-  const activos  = data.filter(r => !r.mes_desmont).length;
+  const registosAtivos = data.filter(r => !r.mes_desmont);
+  const activos  = registosAtivos.length;
   const mats     = [...new Set(data.map(r => r.matricula))].length;
   const alertas  = data.filter(r =>
     r.escultura_final != null &&
@@ -53,14 +54,14 @@ async function loadDashboard() {
   document.getElementById('leg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('c-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
 
-  // ── Gráfico fornecedor ──
-  const forns   = countBy(data, 'fornecedor');
+  // ── Gráfico fornecedor (só pneus activos) ──
+  const forns   = countBy(registosAtivos, 'fornecedor');
   const fKeys   = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
   document.getElementById('leg-forn').innerHTML = makeLegend(fKeys, COLORS);
   mkChart('c-forn', 'doughnut', fKeys, fKeys.map(k => forns[k]), COLORS.slice(0, fKeys.length));
 
-  // ── Gráfico marca ──
-  const marcs   = countBy(data.filter(r => r.marca), 'marca');
+  // ── Gráfico marca (só pneus activos) ──
+  const marcs   = countBy(registosAtivos.filter(r => r.marca), 'marca');
   const mKeys   = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
   document.getElementById('leg-marc').innerHTML = makeLegend(mKeys, COLORS);
   mkChart('c-marc', 'doughnut', mKeys, mKeys.map(k => marcs[k]), COLORS.slice(0, mKeys.length));

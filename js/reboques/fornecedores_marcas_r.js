@@ -33,9 +33,6 @@ async function loadFornecedoresReboques() {
     }).join('');
   }
 
-  document.getElementById('rleg-forn2').innerHTML = makeLegend(keys, COLORS);
-  mkChart('rc-forn2', 'bar', keys, keys.map(k => agg[k].total), COLORS.slice(0, keys.length));
-
   const keysComCusto = keys.filter(k => agg[k].comCusto > 0);
   if (keysComCusto.length > 0) {
     mkChart('rc-forn-custo', 'bar',
@@ -86,9 +83,6 @@ async function loadMarcasReboques() {
       </tr>`;
     }).join('');
   }
-
-  document.getElementById('rleg-marc2').innerHTML = makeLegend(keys, COLORS);
-  mkChart('rc-marc2', 'doughnut', keys, keys.map(k => agg[k].total), COLORS.slice(0, keys.length));
 
   const keysComMeses = keys.filter(k => agg[k].mesesArr.length > 0);
   if (keysComMeses.length > 0) {
