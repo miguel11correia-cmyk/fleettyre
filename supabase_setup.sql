@@ -18,7 +18,7 @@ create table if not exists public.pneus (
   posicao         text,
   marca           text,
   medida          text,
-  tipo            text check (tipo in ('Novo', 'Remix', 'Piso Aberto')),
+  tipo            text check (tipo in ('Novo', 'Remix', 'Piso Aberto', 'Rechapado')),
   fornecedor      text,
 
   -- Desmontagem (preenchido depois)

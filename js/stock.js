@@ -18,7 +18,7 @@ async function loadStock() {
       .order('created_at', { ascending: false }),
     sb.from(tabela)
       .select('*')
-      .in('destino', ['Abrir Piso', 'Stock'])
+      .in('destino', ['Abrir Piso', 'Stock', 'Rechapar'])
       .not('mes_desmont', 'is', null)
       .eq('remontado', false)
       .order('mes_desmont', { ascending: false })
@@ -112,7 +112,7 @@ function renderStockDesmontados(pneus, tabela) {
       ? (r.kms_desmont && r.kms_mont ? fmt(r.kms_desmont - r.kms_mont) + ' km' : '—')
       : (r.mes_desmont && r.mes_mont ? mesesEntre(r.mes_mont, r.mes_desmont) + ' meses' : '—');
     const escStr  = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
-    const destCls = r.destino === 'Abrir Piso' ? 'b-piso' : 'b-remix';
+    const destCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
     html += '<tr>'
       + '<td><strong>' + r.matricula + '</strong></td>'
       + '<td>' + (r.mes_desmont || '—') + '</td>'
@@ -173,7 +173,7 @@ function renderLinhasFatura() {
       + '<div class="g3" style="gap:8px;margin-bottom:8px">'
       + '<div class="frow" style="margin:0"><label>Marca</label><input type="text" value="' + l.marca + '" oninput="linhasFatura[' + i + '].marca=this.value.toUpperCase();this.value=this.value.toUpperCase()" placeholder="MICHELIN"></div>'
       + '<div class="frow" style="margin:0"><label>Medida</label><input type="text" value="' + l.medida + '" oninput="linhasFatura[' + i + '].medida=this.value" placeholder="315/80"></div>'
-      + '<div class="frow" style="margin:0"><label>Tipo</label><select onchange="linhasFatura[' + i + '].tipo=this.value"><option ' + (l.tipo==='Novo'?'selected':'') + '>Novo</option><option ' + (l.tipo==='Remix'?'selected':'') + '>Remix</option><option ' + (l.tipo==='Piso Aberto'?'selected':'') + '>Piso Aberto</option></select></div>'
+      + '<div class="frow" style="margin:0"><label>Tipo</label><select onchange="linhasFatura[' + i + '].tipo=this.value"><option ' + (l.tipo==='Novo'?'selected':'') + '>Novo</option><option ' + (l.tipo==='Remix'?'selected':'') + '>Remix</option><option ' + (l.tipo==='Rechapado'?'selected':'') + '>Rechapado</option><option ' + (l.tipo==='Piso Aberto'?'selected':'') + '>Piso Aberto</option></select></div>'
       + '</div>'
       + '<div class="g2" style="gap:8px">'
       + '<div class="frow" style="margin:0"><label>Quantidade *</label><input type="number" value="' + l.quantidade + '" oninput="linhasFatura[' + i + '].quantidade=this.value" placeholder="ex: 4" min="1"></div>'
@@ -243,8 +243,8 @@ async function abrirSelStock() {
   const [resV, resR, resDV, resDR] = await Promise.all([
     sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','veiculos').order('created_at',{ascending:false}),
     sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','reboques').order('created_at',{ascending:false}),
-    sb.from('pneus').select('*').in('destino',['Abrir Piso','Stock']).not('mes_desmont','is',null).eq('remontado',false),
-    sb.from('reboques').select('*').in('destino',['Abrir Piso','Stock']).not('mes_desmont','is',null).eq('remontado',false),
+    sb.from('pneus').select('*').in('destino',['Abrir Piso','Stock','Rechapar']).not('mes_desmont','is',null).eq('remontado',false),
+    sb.from('reboques').select('*').in('destino',['Abrir Piso','Stock','Rechapar']).not('mes_desmont','is',null).eq('remontado',false),
   ]);
 
   loading(false);
@@ -306,7 +306,8 @@ async function abrirSelStock() {
         html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipo + '\',\'' + rMat + '\',\'' + rTab + '\')">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
         html += '<div><span style="font-weight:500;font-size:13px">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span><span style="margin-left:8px">' + tipoBadge(r.tipo) + '</span></div>';
-        html += '<span class="badge b-piso">' + r.destino + '</span>';
+        const rDestCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
+        html += '<span class="badge ' + rDestCls + '">' + r.destino + '</span>';
         html += '</div>';
         html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + '</div>';
         html += '</div>';

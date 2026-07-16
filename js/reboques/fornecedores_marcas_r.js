@@ -9,10 +9,11 @@ async function loadFornecedoresReboques() {
   const agg = {};
   data.forEach(r => {
     const k = r.fornecedor || '(sem registo)';
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, piso: 0, comCusto: 0, custo: 0 };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
     agg[k].total++;
     if (r.tipo === 'Novo')        agg[k].novo++;
     else if (r.tipo === 'Remix')  agg[k].remix++;
+    else if (r.tipo === 'Rechapado') agg[k].rechapado++;
     else if (r.tipo === 'Piso Aberto') agg[k].piso++;
     if (r.custo_pneu > 0) { agg[k].comCusto++; agg[k].custo += Number(r.custo_pneu); }
   });
@@ -25,7 +26,7 @@ async function loadFornecedoresReboques() {
       const med = f.comCusto > 0 ? fmtEur(f.custo / f.comCusto) : '—';
       return `<tr>
         <td><strong>${k}</strong></td>
-        <td>${f.total}</td><td>${f.novo}</td><td>${f.remix}</td><td>${f.piso}</td>
+        <td>${f.total}</td><td>${f.novo}</td><td>${f.remix}</td><td>${f.rechapado}</td><td>${f.piso}</td>
         <td>${f.comCusto}</td>
         <td style="text-align:right">${f.custo > 0 ? fmtEur(f.custo) : '—'}</td>
         <td style="text-align:right">${med}</td>
@@ -53,10 +54,11 @@ async function loadMarcasReboques() {
   const agg = {};
   data.filter(r => r.marca).forEach(r => {
     const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, piso: 0, mesesArr: [], custos: [] };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, mesesArr: [], custos: [] };
     agg[k].total++;
     if (r.tipo === 'Novo')        agg[k].novo++;
     else if (r.tipo === 'Remix')  agg[k].remix++;
+    else if (r.tipo === 'Rechapado') agg[k].rechapado++;
     else if (r.tipo === 'Piso Aberto') agg[k].piso++;
     if (r.mes_desmont && r.mes_mont) {
       agg[k].mesesArr.push(mesesEntre(r.mes_mont, r.mes_desmont));
@@ -77,7 +79,7 @@ async function loadMarcasReboques() {
         : '—';
       return `<tr>
         <td><strong>${k}</strong></td>
-        <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.piso}</td>
+        <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
         <td style="text-align:right">${mesesM}</td>
         <td style="text-align:right">${custoM}</td>
       </tr>`;

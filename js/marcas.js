@@ -13,10 +13,11 @@ async function loadMarcas() {
   const agg  = {};
   data.filter(r => r.marca).forEach(r => {
     const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, piso: 0, kmsArr: [], custos: [] };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [] };
     agg[k].total++;
     if (r.tipo === 'Novo')             agg[k].novo++;
     else if (r.tipo === 'Remix')       agg[k].remix++;
+    else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
     else if (r.tipo === 'Piso Aberto') agg[k].piso++;
     if (r.kms_desmont && r.kms_mont)   agg[k].kmsArr.push(r.kms_desmont - r.kms_mont);
     if (r.custo_pneu > 0)              agg[k].custos.push(Number(r.custo_pneu));
@@ -35,7 +36,7 @@ async function loadMarcas() {
         : '—';
       return `<tr>
         <td><strong>${k}</strong></td>
-        <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.piso}</td>
+        <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
         <td style="text-align:right">${kmsM}</td>
         <td style="text-align:right">${custoM}</td>
       </tr>`;

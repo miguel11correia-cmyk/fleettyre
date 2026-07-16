@@ -50,7 +50,7 @@ async function loadDashboardReboques() {
   // ── Gráfico tipo ──
   const tipos   = countBy(data, 'tipo');
   const tLabels = Object.keys(tipos);
-  const tColors = tLabels.map(l => l === 'Novo' ? '#0ca30c' : l === 'Remix' ? '#2a78d6' : '#eda100');
+  const tColors = tLabels.map(l => l === 'Novo' ? '#0ca30c' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#6d28d9' : '#eda100');
   document.getElementById('rleg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('rc-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
 

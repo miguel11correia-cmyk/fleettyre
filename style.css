@@ -373,6 +373,7 @@ tbody tr:hover td { background: var(--bg); }
 .b-novo  { background: #f0fdf4; color: #15803d; }
 .b-remix { background: #eff6ff; color: #1d4ed8; }
 .b-piso  { background: #fffbeb; color: #b45309; }
+.b-rechapado { background: #f5f3ff; color: #6d28d9; }
 .b-alert { background: #fef2f2; color: #991b1b; }
 .b-warn  { background: #fffbeb; color: #b45309; }
 

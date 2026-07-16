@@ -202,6 +202,7 @@
             <select id="r-tipo">
               <option value="Novo">Novo</option>
               <option value="Remix">Remix</option>
+              <option value="Rechapado">Rechapado</option>
               <option value="Piso Aberto">Piso Aberto</option>
             </select>
           </div>
@@ -280,7 +281,7 @@
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="d-esc" placeholder="ex: 3" min="0" max="25" step="0.5"></div>
           <div class="frow"><label>Destino do pneu</label>
             <select id="d-dest">
-              <option>Remix</option><option>Lixo</option><option>Stock</option>
+              <option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option>
               <option>Transferido</option><option>Abrir Piso</option>
             </select>
           </div>
@@ -306,7 +307,7 @@
         <div class="frow"><label>Marca</label><input type="text" id="e-marca" oninput="this.value=this.value.toUpperCase()"></div>
         <div class="frow"><label>Medida</label><input type="text" id="e-medida"></div>
         <div class="frow"><label>Tipo</label>
-          <select id="e-tipo"><option>Novo</option><option>Remix</option><option>Piso Aberto</option></select>
+          <select id="e-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select>
         </div>
         <div class="frow"><label>Fornecedor</label><input type="text" id="e-forn" oninput="this.value=this.value.toUpperCase()"></div>
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Custos</div>
@@ -317,7 +318,7 @@
         <div class="frow"><label>KMs desmontagem</label><input type="number" id="e-kms-d" min="0"></div>
         <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="e-esc" min="0" max="25" step="0.5"></div>
         <div class="frow"><label>Destino</label>
-          <select id="e-dest"><option value="">— sem destino —</option><option>Remix</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
+          <select id="e-dest"><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
         </div>
         <button class="btn btn-p w100" onclick="guardarEdicao()" style="margin-top:12px">💾 Guardar alterações</button>
         <div id="e-feedback" class="feedback hidden"></div>
@@ -341,7 +342,7 @@
         <div class="info-box">
           <p>A taxa de desgaste é calculada a partir dos registos de desmontagem que já tens:</p>
           <p class="formula">Taxa (mm/1000km) = (Escultura inicial − Escultura final) ÷ KMs efectuados × 1000</p>
-          <p>Escultura inicial assumida: <strong>16mm</strong> para pneus Novos · <strong>14mm</strong> para Remix · <strong>12mm</strong> para Piso Aberto.</p>
+          <p>Escultura inicial assumida: <strong>16mm</strong> para pneus Novos · <strong>14mm</strong> para Remix/Rechapado · <strong>12mm</strong> para Piso Aberto.</p>
           <p>À medida que registares mais desmontagens com escultura, o sistema fica mais preciso.</p>
         </div>
       </div>
@@ -374,7 +375,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Fornecedor</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Piso Aberto</th>
+              <th>Fornecedor</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
               <th>Com custo regist.</th><th>Custo total (€)</th><th>Custo médio/pneu (€)</th>
             </tr></thead>
             <tbody id="forn-tbody"></tbody>
@@ -402,7 +403,7 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Piso Aberto</th>
+              <th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
               <th>KMs médios/pneu</th><th>Taxa desgaste média (mm/1000km)</th><th>Custo médio/pneu (€)</th>
             </tr></thead>
             <tbody id="marc-tbody"></tbody>
@@ -425,11 +426,11 @@
         <div class="kpi blue"><div class="kpi-l">Faturas em aberto</div><div class="kpi-v blue" id="sk-faturas">—</div><div class="kpi-s">com stock disponível</div></div>
         <div class="kpi green"><div class="kpi-l">Pneus em armazém</div><div class="kpi-v green" id="sk-pneus">—</div><div class="kpi-s">faturas + desmontados</div></div>
         <div class="kpi amber"><div class="kpi-l">Valor em stock (€)</div><div class="kpi-v amber" id="sk-valor">—</div><div class="kpi-s">só faturas com preço</div></div>
-        <div class="kpi"><div class="kpi-l">Aguardam oficina</div><div class="kpi-v" id="sk-desmont">—</div><div class="kpi-s">Abrir Piso / Stock</div></div>
+        <div class="kpi"><div class="kpi-l">Aguardam oficina</div><div class="kpi-v" id="sk-desmont">—</div><div class="kpi-s">Abrir Piso / Stock / Rechapar</div></div>
       </div>
       <!-- PNEUS DESMONTADOS EM ARMAZÉM -->
       <div class="card" style="margin-bottom:14px">
-        <div class="ct">🔧 Pneus desmontados em armazém — Abrir Piso / Stock</div>
+        <div class="ct">🔧 Pneus desmontados em armazém — Abrir Piso / Stock / Rechapar</div>
         <div id="stock-desmontados-container">
           <p class="empty-msg">Nenhum pneu desmontado em armazém.</p>
         </div>
@@ -512,7 +513,7 @@
               <option value="3">Eixo 3 (traseiro) — 12/14 meses</option>
             </select>
           </div>
-          <div class="frow"><label>Tipo</label><select id="rr-tipo"><option>Novo</option><option>Remix</option><option>Piso Aberto</option></select></div>
+          <div class="frow"><label>Tipo</label><select id="rr-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
         </div>
       </div>
       <div class="card">
@@ -578,7 +579,7 @@
           <div class="panel-info" id="rpainel-info"></div>
           <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="rd-mes" placeholder="ex: 2026-07" maxlength="7"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="rd-esc" min="0" max="25" step="0.5"></div>
-          <div class="frow"><label>Destino</label><select id="rd-dest"><option>Remix</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
+          <div class="frow"><label>Destino</label><select id="rd-dest"><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="rd-mo" min="0" step="0.01"></div>
           <button class="btn btn-p w100" onclick="guardarDesmontazemReboque()" style="margin-top:12px">✓ Guardar desmontagem</button>
           <div id="rd-feedback" class="feedback hidden"></div>
@@ -595,13 +596,13 @@
           <div class="frow"><label>Eixo</label><select id="re-eixo"><option value="1">Eixo 1</option><option value="2">Eixo 2</option><option value="3">Eixo 3</option></select></div>
           <div class="frow"><label>Marca</label><input type="text" id="re-marca" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
-          <div class="frow"><label>Tipo</label><select id="re-tipo"><option>Novo</option><option>Remix</option><option>Piso Aberto</option></select></div>
+          <div class="frow"><label>Tipo</label><select id="re-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
           <div class="frow"><label>Fornecedor</label><input type="text" id="re-forn" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
           <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="re-esc" min="0" max="25" step="0.5"></div>
-          <div class="frow"><label>Destino</label><select id="re-dest"><option value="">— sem destino —</option><option>Remix</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
+          <div class="frow"><label>Destino</label><select id="re-dest"><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px">💾 Guardar alterações</button>
           <div id="re-feedback" class="feedback hidden"></div>
         </div>
@@ -643,7 +644,7 @@
       <div class="card">
         <div class="ct">Resumo por fornecedor</div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Fornecedor</th><th>Total</th><th>Novos</th><th>Remix</th><th>Piso Ab.</th><th>Com custo</th><th>Custo total (€)</th><th>Custo médio/pneu (€)</th></tr></thead>
+          <thead><tr><th>Fornecedor</th><th>Total</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Ab.</th><th>Com custo</th><th>Custo total (€)</th><th>Custo médio/pneu (€)</th></tr></thead>
           <tbody id="rforn-tbody"></tbody>
         </table></div>
       </div>
@@ -656,7 +657,7 @@
       <div class="card">
         <div class="ct">Desempenho por marca</div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Marca</th><th>Total</th><th>Novos</th><th>Remix</th><th>Piso Ab.</th><th>Duração média</th><th>Custo médio/pneu (€)</th></tr></thead>
+          <thead><tr><th>Marca</th><th>Total</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Ab.</th><th>Duração média</th><th>Custo médio/pneu (€)</th></tr></thead>
           <tbody id="rmarc-tbody"></tbody>
         </table></div>
       </div>

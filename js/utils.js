@@ -17,6 +17,7 @@ function tipoBadge(t) {
   if (t === 'Novo')        return `<span class="badge b-novo">Novo</span>`;
   if (t === 'Remix')       return `<span class="badge b-remix">Remix</span>`;
   if (t === 'Piso Aberto') return `<span class="badge b-piso">Piso Aberto</span>`;
+  if (t === 'Rechapado')   return `<span class="badge b-rechapado">Rechapado</span>`;
   return `<span class="badge">${t}</span>`;
 }
 
@@ -38,6 +39,7 @@ function makeLegend(labels, colors) {
 
 function escIni(tipo) {
   if (tipo === 'Remix')       return 14;
+  if (tipo === 'Rechapado')   return 14;
   if (tipo === 'Piso Aberto') return 12;
   return 16;
 }
