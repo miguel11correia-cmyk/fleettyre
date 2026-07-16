@@ -201,7 +201,7 @@ async function guardarFatura() {
   loading(true);
   const { data: faturaData, error: errF } = await sb
     .from('stock_faturas')
-    .insert([{ num_fatura: numFat, fornecedor: forn, data_fatura: data, notas, contexto: stockContexto }])
+    .insert([{ empresa_id: currentEmpresaId, num_fatura: numFat, fornecedor: forn, data_fatura: data, notas, contexto: stockContexto }])
     .select().single();
 
   if (errF) { loading(false); showFeedback('f-feedback', 'Erro: ' + errF.message, true); return; }

@@ -97,7 +97,7 @@ async function adicionarMarca() {
   if (!cod || !nome) { showFeedback('marc-gestao-feedback', 'Preenche código e nome.', true); return; }
 
   loading(true);
-  const { error } = await sb.from('marcas').insert([{ codigo: cod, nome }]);
+  const { error } = await sb.from('marcas').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome }]);
   loading(false);
 
   if (error) { showFeedback('marc-gestao-feedback', 'Erro: ' + error.message, true); return; }

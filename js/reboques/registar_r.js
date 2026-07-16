@@ -37,6 +37,7 @@ async function _guardarRegistoReboqueUnico() {
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('rr-feedback', 'Mês inválido. Usa AAAA-MM.', true); return false; }
 
   const registo = {
+    empresa_id: currentEmpresaId,
     matricula:  mat,
     mes_mont:   mes,
     posicao:    pos    || null,
