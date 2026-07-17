@@ -26,7 +26,7 @@ async function _guardarRegistoUnico() {
   const mat    = document.getElementById('r-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('r-mes').value.trim();
   const kmsStr = document.getElementById('r-kms').value;
-  const pos    = document.getElementById('r-pos').value.trim().toUpperCase();
+  const pos    = document.getElementById('r-pos').value;
   const marca  = document.getElementById('r-marca').value.trim().toUpperCase();
   const medida = document.getElementById('r-medida').value.trim();
   const tipo   = document.getElementById('r-tipo').value;
