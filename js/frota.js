@@ -209,7 +209,7 @@ async function guardarEdicao() {
   const mat    = document.getElementById('e-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('e-mes').value.trim();
   const kms    = parseInt(document.getElementById('e-kms').value) || null;
-  const pos    = document.getElementById('e-pos').value.trim().toUpperCase();
+  const pos    = document.getElementById('e-pos').value;
   const marca  = document.getElementById('e-marca').value.trim().toUpperCase();
   const medida = document.getElementById('e-medida').value.trim();
   const tipo   = document.getElementById('e-tipo').value;
