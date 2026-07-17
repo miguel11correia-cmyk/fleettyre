@@ -117,5 +117,43 @@ async function loadDashboard() {
       </tr>`;
     }).join('');
   }
+
+  // ── Taxa de desgaste por posição (Direção vs Tração) ──
+  const posAgg = {};
+  data.forEach(r => {
+    const taxa = taxaDesgaste(r);
+    if (taxa === null) return;
+    const k = r.posicao || '(sem posição)';
+    if (!posAgg[k]) posAgg[k] = { taxaArr: [], kmsArr: [] };
+    posAgg[k].taxaArr.push(taxa);
+    posAgg[k].kmsArr.push(r.kms_desmont - r.kms_mont);
+  });
+
+  const posKeys = ['Direção', 'Tração', ...Object.keys(posAgg).filter(k => k !== 'Direção' && k !== 'Tração')]
+    .filter(k => posAgg[k]);
+  const tbodyPos = document.getElementById('desgaste-pos-tbody');
+  if (tbodyPos) {
+    if (posKeys.length === 0) {
+      tbodyPos.innerHTML = '<tr><td colspan="4" class="empty-msg" style="text-align:center;padding:12px">Sem registos históricos com escultura final ainda.</td></tr>';
+    } else {
+      tbodyPos.innerHTML = posKeys.map(k => {
+        const a       = posAgg[k];
+        const taxaM   = a.taxaArr.reduce((s, v) => s + v, 0) / a.taxaArr.length;
+        const kmsM    = a.kmsArr.reduce((s, v) => s + v, 0) / a.kmsArr.length;
+        return `<tr>
+          <td>${k}</td>
+          <td style="text-align:right">${taxaM.toFixed(3)}</td>
+          <td style="text-align:right">${fmt(Math.round(kmsM))}</td>
+          <td style="text-align:center">${a.taxaArr.length}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  if (posKeys.length > 0) {
+    const vals   = posKeys.map(k => Number((posAgg[k].taxaArr.reduce((s, v) => s + v, 0) / posAgg[k].taxaArr.length).toFixed(3)));
+    const colors = posKeys.map((k, i) => k === 'Direção' ? '#2a78d6' : k === 'Tração' ? '#0ca30c' : COLORS[(i + 2) % COLORS.length]);
+    mkChart('c-desgaste-pos', 'bar', posKeys, vals, colors);
+  }
 }
 

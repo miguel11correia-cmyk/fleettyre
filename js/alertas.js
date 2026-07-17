@@ -1,11 +1,12 @@
 // ── ALERTAS ──────────────────────────────────────────────
 
-function calcularTaxasPorMarcaTipo(dados) {
+// Agrupa a taxa de desgaste (mm/1000km) de registos históricos por uma chave à escolha.
+function calcularTaxasPor(dados, chaveFn) {
   const taxas = {};
   dados.forEach(r => {
     const t = taxaDesgaste(r);
     if (t === null) return;
-    const chave = `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}`;
+    const chave = chaveFn(r);
     if (!taxas[chave]) taxas[chave] = [];
     taxas[chave].push(t);
   });
@@ -17,14 +18,21 @@ function calcularTaxasPorMarcaTipo(dados) {
   return medias;
 }
 
-function taxaEstimada(r, taxasPorMarcaTipo, todasTaxas) {
-  const chave = `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}`;
-  if (taxasPorMarcaTipo[chave]) return taxasPorMarcaTipo[chave];
-  const chavesMarca = Object.keys(taxasPorMarcaTipo).filter(k => k.startsWith((r.marca || 'DESCONHECIDA') + '|'));
-  if (chavesMarca.length > 0) {
-    const vals = chavesMarca.map(k => taxasPorMarcaTipo[k]);
-    return vals.reduce((s, v) => s + v, 0) / vals.length;
-  }
+// Cascata de fallback, da estimativa mais específica para a mais genérica:
+// marca+tipo+posição → marca+tipo → marca → média global → constante fixa.
+function taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas) {
+  const marca = r.marca    || 'DESCONHECIDA';
+  const tipo  = r.tipo     || 'Novo';
+  const posic = r.posicao  || 'DESCONHECIDA';
+
+  const chaveMTP = `${marca}|${tipo}|${posic}`;
+  if (taxasPorMTP[chaveMTP] != null) return taxasPorMTP[chaveMTP];
+
+  const chaveMT = `${marca}|${tipo}`;
+  if (taxasPorMT[chaveMT] != null) return taxasPorMT[chaveMT];
+
+  if (taxasPorM[marca] != null) return taxasPorM[marca];
+
   if (todasTaxas.length > 0) {
     return todasTaxas.reduce((s, v) => s + v, 0) / todasTaxas.length;
   }
@@ -74,8 +82,10 @@ async function loadAlertas() {
   loading(false);
   if (error || !data) return;
 
-  const taxasPorMarcaTipo = calcularTaxasPorMarcaTipo(data);
-  const todasTaxas = data.map(r => taxaDesgaste(r)).filter(t => t !== null);
+  const taxasPorMTP = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}|${r.posicao || 'DESCONHECIDA'}`);
+  const taxasPorMT  = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}`);
+  const taxasPorM   = calcularTaxasPor(data, r => r.marca || 'DESCONHECIDA');
+  const todasTaxas  = data.map(r => taxaDesgaste(r)).filter(t => t !== null);
 
   // Agrupar por matrícula
   const porMat = {};
@@ -90,7 +100,7 @@ async function loadAlertas() {
 
   activos.forEach(r => {
     const kmsFeitos = kmsReaisOuEstimados(r, porMat[r.matricula] || [r]);
-    const taxa      = taxaEstimada(r, taxasPorMarcaTipo, todasTaxas);
+    const taxa      = taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas);
     const escInicial = escIni(r.tipo);
     const escEstimada = Math.max(0, Math.round((escInicial - (kmsFeitos / 1000 * taxa)) * 10) / 10);
 

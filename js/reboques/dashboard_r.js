@@ -76,6 +76,46 @@ async function loadDashboardReboques() {
 
   // ── Tabela anual ──
   renderTabelaAnualReboques(data);
+
+  // ── Duração média por eixo ──
+  renderDuracaoPorEixo(data);
+}
+
+function renderDuracaoPorEixo(data) {
+  const agg = {};
+  data.forEach(r => {
+    if (!r.mes_desmont || !r.mes_mont) return;
+    const meses = mesesEntre(r.mes_mont, r.mes_desmont);
+    if (meses <= 0) return;
+    const k = r.eixo ? `Eixo ${r.eixo}` : '(sem eixo)';
+    if (!agg[k]) agg[k] = [];
+    agg[k].push(meses);
+  });
+
+  const keys = ['Eixo 1', 'Eixo 2', 'Eixo 3', ...Object.keys(agg).filter(k => !['Eixo 1', 'Eixo 2', 'Eixo 3'].includes(k))]
+    .filter(k => agg[k]);
+
+  const tbody = document.getElementById('duracao-eixo-tbody');
+  if (tbody) {
+    if (keys.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty-msg" style="text-align:center;padding:12px">Sem desmontagens registadas ainda.</td></tr>';
+    } else {
+      tbody.innerHTML = keys.map(k => {
+        const arr = agg[k];
+        const med = Math.round(arr.reduce((s, v) => s + v, 0) / arr.length);
+        return `<tr>
+          <td>${k}</td>
+          <td style="text-align:right">${med} meses</td>
+          <td style="text-align:center">${arr.length}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  if (keys.length > 0) {
+    const vals = keys.map(k => Math.round(agg[k].reduce((s, v) => s + v, 0) / agg[k].length));
+    mkChart('rc-duracao-eixo', 'bar', keys, vals, COLORS.slice(0, keys.length));
+  }
 }
 
 function renderGraficoMensalReboques(data) {
