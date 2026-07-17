@@ -13,7 +13,7 @@ async function loadMarcas() {
   const agg  = {};
   data.filter(r => r.marca).forEach(r => {
     const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [] };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [], taxaArr: [] };
     agg[k].total++;
     if (r.tipo === 'Novo')             agg[k].novo++;
     else if (r.tipo === 'Remix')       agg[k].remix++;
@@ -21,6 +21,8 @@ async function loadMarcas() {
     else if (r.tipo === 'Piso Aberto') agg[k].piso++;
     if (r.kms_desmont && r.kms_mont)   agg[k].kmsArr.push(r.kms_desmont - r.kms_mont);
     if (r.custo_pneu > 0)              agg[k].custos.push(Number(r.custo_pneu));
+    const taxa = taxaDesgaste(r);
+    if (taxa !== null)                 agg[k].taxaArr.push(taxa);
   });
 
   const keys = Object.keys(agg).sort((a, b) => agg[b].total - agg[a].total);
@@ -34,10 +36,14 @@ async function loadMarcas() {
       const custoM = m.custos.length > 0
         ? fmtEur(m.custos.reduce((s,v) => s+v, 0) / m.custos.length)
         : '—';
+      const taxaM = m.taxaArr.length > 0
+        ? (m.taxaArr.reduce((s,v) => s+v, 0) / m.taxaArr.length).toFixed(3)
+        : '—';
       return `<tr>
         <td><strong>${k}</strong></td>
         <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
         <td style="text-align:right">${kmsM}</td>
+        <td style="text-align:right">${taxaM}</td>
         <td style="text-align:right">${custoM}</td>
       </tr>`;
     }).join('');

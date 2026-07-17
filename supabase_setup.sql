@@ -15,7 +15,7 @@ create table if not exists public.pneus (
   -- Montagem
   mes_mont        text not null,  -- formato AAAA-MM
   kms_mont        integer not null check (kms_mont > 0),
-  posicao         text,
+  posicao         text check (posicao is null or posicao in ('Direção', 'Tração')),
   marca           text,
   medida          text,
   tipo            text check (tipo in ('Novo', 'Remix', 'Piso Aberto', 'Rechapado')),
