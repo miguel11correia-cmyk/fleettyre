@@ -101,7 +101,7 @@ async function loadAlertasReboques() {
         const meses = mesesEntre(r.mes_mont, r.mes_desmont);
         const lim   = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
         const cls   = meses >= lim.critico ? 'badge b-alert' :
-                      meses >= lim.aviso   ? 'badge b-warn'  : 'badge b-novo';
+                      meses >= lim.aviso   ? 'badge b-warn'  : 'badge b-ok';
         return `<tr>
           <td>${r.matricula}</td>
           <td>${r.posicao || '—'}</td>

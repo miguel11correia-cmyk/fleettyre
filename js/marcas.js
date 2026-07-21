@@ -54,7 +54,7 @@ async function loadMarcas() {
     mkChart('c-marc-km', 'bar',
       keysComKms,
       keysComKms.map(k => Math.round(agg[k].kmsArr.reduce((s,v) => s+v, 0) / agg[k].kmsArr.length)),
-      COLORS.slice(0, keysComKms.length)
+      CHART_NEUTRAL
     );
   }
 }
