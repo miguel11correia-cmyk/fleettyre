@@ -15,8 +15,8 @@ async function carregarListasFornMarca() {
 }
 
 function preencherSelectores() {
-  // Selectores de veículos
-  ['r-forn', 'rr-forn'].forEach(id => {
+  // Selectores de veículos e da fatura de stock
+  ['r-forn', 'rr-forn', 'f-forn'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;

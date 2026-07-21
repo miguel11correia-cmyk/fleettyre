@@ -210,7 +210,7 @@ function renderLinhasFatura() {
 
 async function guardarFatura() {
   const numFat = document.getElementById('f-num').value.trim().toUpperCase();
-  const forn   = document.getElementById('f-forn').value.trim().toUpperCase();
+  const forn   = document.getElementById('f-forn').value;
   const data   = document.getElementById('f-data').value.trim() || null;
   const notas  = document.getElementById('f-notas').value.trim() || null;
 

@@ -60,6 +60,20 @@ async function _guardarRegistoReboqueUnico() {
   loading(false);
 
   if (error) { showFeedback('rr-feedback', 'Erro ao guardar: ' + error.message, true); return false; }
+
+  // Descontar stock de fatura se foi seleccionado
+  if (stockLinhaSelId) {
+    await descontarStock(stockLinhaSelId);
+    stockLinhaSelId = null;
+  }
+
+  // Marcar pneu desmontado como remontado — na tabela correcta (pneus ou reboques)
+  if (stockDesmontadoSelId) {
+    const { id, tabela } = stockDesmontadoSelId;
+    await sb.from(tabela).update({ remontado: true }).eq('id', id);
+    stockDesmontadoSelId = null;
+  }
+
   return true;
 }
 
@@ -70,6 +84,8 @@ function limparFormReboque() {
   if (eixo) eixo.value = '1';
   const tipo = document.getElementById('rr-tipo');
   if (tipo) tipo.value = 'Novo';
+  stockLinhaSelId      = null;
+  stockDesmontadoSelId = null;
   const info = document.getElementById('rr-stock-info');
   if (info) info.classList.add('hidden');
 }
