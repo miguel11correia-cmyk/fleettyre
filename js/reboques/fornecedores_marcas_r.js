@@ -39,7 +39,7 @@ async function loadFornecedoresReboques() {
     mkChart('rc-forn-custo', 'bar',
       keysComCusto,
       keysComCusto.map(k => Math.round(agg[k].custo / agg[k].comCusto)),
-      COLORS.slice(0, keysComCusto.length)
+      CHART_NEUTRAL
     );
   }
 }
@@ -91,7 +91,7 @@ async function loadMarcasReboques() {
     mkChart('rc-marc-dur', 'bar',
       keysComMeses,
       keysComMeses.map(k => Math.round(agg[k].mesesArr.reduce((s,v)=>s+v,0)/agg[k].mesesArr.length)),
-      COLORS.slice(0, keysComMeses.length)
+      CHART_NEUTRAL
     );
   }
 }

@@ -51,9 +51,8 @@ function renderRoiPorTipoReboques(data) {
   }
 
   if (keys.length > 0) {
-    const vals   = keys.map(t => Number((agg[t].mesesPorEuroArr.reduce((s, v) => s + v, 0) / agg[t].mesesPorEuroArr.length).toFixed(2)));
-    const colors = keys.map(corTipo);
-    mkChart('rc-roi-tipo', 'bar', keys, vals, colors);
+    const vals = keys.map(t => Number((agg[t].mesesPorEuroArr.reduce((s, v) => s + v, 0) / agg[t].mesesPorEuroArr.length).toFixed(2)));
+    mkChart('rc-roi-tipo', 'bar', keys, vals, CHART_NEUTRAL);
   }
 }
 
@@ -106,7 +105,7 @@ function renderComparacaoReboques(data) {
   if (tbody) {
     tbody.innerHTML = linhas.map((l, i) => {
       const acima    = l.eurMes > media;
-      const badgeCls = acima ? 'b-alert' : 'b-novo';
+      const badgeCls = acima ? 'b-alert' : 'b-ok';
       const badgeTxt = acima ? 'Acima da média' : 'Abaixo da média';
       return `<tr>
         <td>${i + 1}</td>

@@ -49,7 +49,7 @@ async function loadDashboard() {
   const tipos   = countBy(registosAtivos, 'tipo');
   const tLabels = Object.keys(tipos);
   const tColors = tLabels.map(l =>
-    l === 'Novo' ? '#0ca30c' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#6d28d9' : '#eda100'
+    l === 'Novo' ? '#008300' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#4a3aa7' : '#eda100'
   );
   document.getElementById('leg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('c-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
@@ -74,11 +74,11 @@ async function loadDashboard() {
   });
   const meses = Object.keys(porMes).sort();
   if (meses.length > 0) {
-    mkChart('c-mensal', 'line', meses, meses.map(m => porMes[m]), ['#2a78d6'], {
+    mkChart('c-mensal', 'line', meses, meses.map(m => porMes[m]), [CHART_NEUTRAL], {
   showLine: true,
   elements: {
-    line: { borderColor: '#2a78d6', borderWidth: 2, tension: 0.3, fill: false },
-    point: { backgroundColor: '#2a78d6', radius: 3 }
+    line: { borderColor: CHART_NEUTRAL, borderWidth: 2, tension: 0.3, fill: false },
+    point: { backgroundColor: CHART_NEUTRAL, radius: 3 }
       }
     });
   }
@@ -140,9 +140,8 @@ async function loadDashboard() {
   }
 
   if (posKeys.length > 0) {
-    const vals   = posKeys.map(k => Number((posAgg[k].taxaArr.reduce((s, v) => s + v, 0) / posAgg[k].taxaArr.length).toFixed(3)));
-    const colors = posKeys.map((k, i) => k === 'Direção' ? '#2a78d6' : k === 'Tração' ? '#0ca30c' : COLORS[(i + 2) % COLORS.length]);
-    mkChart('c-desgaste-pos', 'bar', posKeys, vals, colors);
+    const vals = posKeys.map(k => Number((posAgg[k].taxaArr.reduce((s, v) => s + v, 0) / posAgg[k].taxaArr.length).toFixed(3)));
+    mkChart('c-desgaste-pos', 'bar', posKeys, vals, CHART_NEUTRAL);
   }
 }
 

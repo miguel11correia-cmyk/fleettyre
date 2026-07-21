@@ -120,9 +120,9 @@ function renderStockDesmontados(pneus, tabela) {
 
     let estadoHtml;
     if (!DESTINOS_OFICINA.includes(r.destino)) {
-      estadoHtml = '<span class="badge b-novo">Pronto</span>';
+      estadoHtml = '<span class="badge b-ok">Pronto</span>';
     } else if (r.pronto) {
-      estadoHtml = '<span class="badge b-novo">✓ Pronto</span> '
+      estadoHtml = '<span class="badge b-ok">✓ Pronto</span> '
         + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button>';
     } else {
       estadoHtml = '<span class="badge b-alert">Pendente</span> '

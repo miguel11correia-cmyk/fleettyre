@@ -227,17 +227,13 @@ body {
   transition: box-shadow .15s;
 }
 .kpi:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.kpi.blue  { border-top-color: var(--blue); }
-.kpi.green { border-top-color: var(--green); }
-.kpi.amber { border-top-color: var(--amber); }
-.kpi.red   { border-top-color: #e57373; }
+/* Acentos decorativos neutralizados de propósito — os KPIs distinguem-se
+   pelo rótulo, não pela cor. Border-top uniforme para todos. */
+.kpi.blue, .kpi.green, .kpi.amber, .kpi.red { border-top-color: var(--border2); }
 .kpi-l { font-size: 11px; color: var(--text2); margin-bottom: 5px; }
 .kpi-v { font-size: 22px; font-weight: 500; line-height: 1.1; color: var(--text); }
 .kpi-s { font-size: 10px; color: var(--text3); margin-top: 3px; }
-.kpi-v.blue   { color: var(--blue); }
-.kpi-v.green  { color: var(--green); }
-.kpi-v.amber  { color: var(--amber); }
-.kpi-v.red    { color: #b91c1c; }
+.kpi-v.blue, .kpi-v.green, .kpi-v.amber, .kpi-v.red { color: var(--text); }
 
 /* ── CARDS ────────────────────────────────────────────────────── */
 .card {
@@ -370,10 +366,10 @@ tbody tr:hover td { background: var(--bg); }
   font-size: 11px;
   font-weight: 500;
 }
-.b-novo  { background: #f0fdf4; color: #15803d; }
-.b-remix { background: #eff6ff; color: #1d4ed8; }
-.b-piso  { background: #fffbeb; color: #b45309; }
-.b-rechapado { background: #f5f3ff; color: #6d28d9; }
+/* Etiquetas decorativas (tipo de pneu, destino) — neutras de propósito,
+   distinguem-se pelo texto, não pela cor. Só estados/alertas mantêm cor. */
+.b-novo, .b-remix, .b-piso, .b-rechapado { background: var(--bg2); color: var(--text2); }
+.b-ok    { background: var(--green-bg); color: var(--green); }
 .b-alert { background: #fef2f2; color: #991b1b; }
 .b-warn  { background: #fffbeb; color: #b45309; }
 

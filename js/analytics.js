@@ -29,11 +29,6 @@ function amostraComparativa(linhasOrdenadas, valorKey, media) {
   return amostra;
 }
 
-function corTipo(tipo) {
-  return tipo === 'Novo' ? '#0ca30c' : tipo === 'Remix' ? '#2a78d6'
-    : tipo === 'Rechapado' ? '#6d28d9' : '#eda100';
-}
-
 async function loadAnalytics() {
   loading(true);
   const { data, error } = await sb.from('pneus').select('*');
@@ -82,9 +77,8 @@ function renderRoiPorTipo(data) {
   }
 
   if (keys.length > 0) {
-    const vals   = keys.map(t => Math.round(agg[t].kmsPorEuroArr.reduce((s, v) => s + v, 0) / agg[t].kmsPorEuroArr.length));
-    const colors = keys.map(corTipo);
-    mkChart('c-roi-tipo', 'bar', keys, vals, colors);
+    const vals = keys.map(t => Math.round(agg[t].kmsPorEuroArr.reduce((s, v) => s + v, 0) / agg[t].kmsPorEuroArr.length));
+    mkChart('c-roi-tipo', 'bar', keys, vals, CHART_NEUTRAL);
   }
 }
 
@@ -137,7 +131,7 @@ function renderComparacaoVeiculos(data) {
   if (tbody) {
     tbody.innerHTML = linhas.map((l, i) => {
       const acima    = l.eurKm > media;
-      const badgeCls = acima ? 'b-alert' : 'b-novo';
+      const badgeCls = acima ? 'b-alert' : 'b-ok';
       const badgeTxt = acima ? 'Acima da média' : 'Abaixo da média';
       return `<tr>
         <td>${i + 1}</td>

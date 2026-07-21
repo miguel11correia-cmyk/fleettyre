@@ -50,7 +50,7 @@ async function loadDashboardReboques() {
   // ── Gráfico tipo (só pneus activos) ──
   const tipos   = countBy(activos, 'tipo');
   const tLabels = Object.keys(tipos);
-  const tColors = tLabels.map(l => l === 'Novo' ? '#0ca30c' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#6d28d9' : '#eda100');
+  const tColors = tLabels.map(l => l === 'Novo' ? '#008300' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#4a3aa7' : '#eda100');
   document.getElementById('rleg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('rc-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
 
@@ -103,7 +103,7 @@ function renderDuracaoPorEixo(data) {
 
   if (keys.length > 0) {
     const vals = keys.map(k => Math.round(agg[k].reduce((s, v) => s + v, 0) / agg[k].length));
-    mkChart('rc-duracao-eixo', 'bar', keys, vals, COLORS.slice(0, keys.length));
+    mkChart('rc-duracao-eixo', 'bar', keys, vals, CHART_NEUTRAL);
   }
 }
 
@@ -120,10 +120,10 @@ function renderGraficoMensalReboques(data) {
   if (meses.length === 0) return;
 
   mkChart('rc-mensal', 'line', meses, meses.map(m => porMes[m]),
-    ['#2a78d6'], {
+    [CHART_NEUTRAL], {
       elements: {
-        line: { borderColor: '#2a78d6', borderWidth: 2, tension: 0.3, fill: true, backgroundColor: 'rgba(42,120,214,0.08)' },
-        point: { backgroundColor: '#2a78d6', radius: 3 }
+        line: { borderColor: CHART_NEUTRAL, borderWidth: 2, tension: 0.3, fill: true, backgroundColor: 'rgba(100,116,139,0.08)' },
+        point: { backgroundColor: CHART_NEUTRAL, radius: 3 }
       }
     }
   );

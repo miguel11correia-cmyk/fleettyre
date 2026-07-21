@@ -78,7 +78,7 @@ async function loadFornecedores() {
     mkChart('c-forn-custo', 'bar',
       keysComCusto,
       keysComCusto.map(k => Math.round(agg[k].custo / agg[k].comCusto)),
-      COLORS.slice(0, keysComCusto.length)
+      CHART_NEUTRAL
     );
   }
 }
