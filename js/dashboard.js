@@ -45,8 +45,8 @@ async function loadDashboard() {
   badge.textContent = alertas;
   badge.classList.toggle('hidden', alertas === 0);
 
-  // ── Gráfico tipo ──
-  const tipos   = countBy(data, 'tipo');
+  // ── Gráfico tipo (só pneus activos) ──
+  const tipos   = countBy(registosAtivos, 'tipo');
   const tLabels = Object.keys(tipos);
   const tColors = tLabels.map(l =>
     l === 'Novo' ? '#0ca30c' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#6d28d9' : '#eda100'
@@ -65,17 +65,6 @@ async function loadDashboard() {
   const mKeys   = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
   document.getElementById('leg-marc').innerHTML = makeLegend(mKeys, COLORS);
   mkChart('c-marc', 'doughnut', mKeys, mKeys.map(k => marcs[k]), COLORS.slice(0, mKeys.length));
-
-  // ── Top veículos ──
-  const byMat   = countBy(data, 'matricula');
-  const topMats = Object.keys(byMat).sort((a, b) => byMat[b] - byMat[a]).slice(0, 10);
-  mkChart('c-top', 'bar', topMats, topMats.map(m => byMat[m]), COLORS, {
-    indexAxis: 'y',
-    scales: {
-      x: { grid: { color: '#e5e4df' }, ticks: { color: '#8a8884', font: { size: 10 } } },
-      y: { grid: { display: false },   ticks: { color: '#8a8884', font: { size: 10 } } },
-    },
-  });
 
   // ── Gráfico evolução mensal (linha) ──
   const porMes = {};
