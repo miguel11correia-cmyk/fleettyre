@@ -366,10 +366,13 @@ tbody tr:hover td { background: var(--bg); }
   font-size: 11px;
   font-weight: 500;
 }
-/* Etiquetas decorativas (tipo de pneu, destino) — neutras de propósito,
-   distinguem-se pelo texto, não pela cor. Só estados/alertas mantêm cor. */
-.b-novo, .b-remix, .b-piso, .b-rechapado { background: var(--bg2); color: var(--text2); }
-.b-ok    { background: var(--green-bg); color: var(--green); }
+/* Etiquetas de tipo/destino — cor distintiva, reaproveitando os acentos
+   já definidos no :root para não fugir à identidade visual da app. */
+.b-novo      { background: var(--green-bg);  color: var(--green); }
+.b-remix     { background: var(--blue-bg);   color: var(--blue); }
+.b-piso      { background: var(--amber-bg);  color: var(--amber); }
+.b-rechapado { background: var(--violet-bg); color: var(--violet); }
+.b-ok        { background: var(--green-bg);  color: var(--green); }
 .b-alert { background: #fef2f2; color: #991b1b; }
 .b-warn  { background: #fffbeb; color: #b45309; }
 
