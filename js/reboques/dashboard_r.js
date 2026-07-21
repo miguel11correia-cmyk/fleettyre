@@ -47,8 +47,8 @@ async function loadDashboardReboques() {
     badge.classList.toggle('hidden', alertas.length === 0);
   }
 
-  // ── Gráfico tipo ──
-  const tipos   = countBy(data, 'tipo');
+  // ── Gráfico tipo (só pneus activos) ──
+  const tipos   = countBy(activos, 'tipo');
   const tLabels = Object.keys(tipos);
   const tColors = tLabels.map(l => l === 'Novo' ? '#0ca30c' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#6d28d9' : '#eda100');
   document.getElementById('rleg-tipo').innerHTML = makeLegend(tLabels, tColors);
@@ -59,17 +59,6 @@ async function loadDashboardReboques() {
   const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
   document.getElementById('rleg-forn').innerHTML = makeLegend(fKeys, COLORS);
   mkChart('rc-forn', 'doughnut', fKeys, fKeys.map(k => forns[k]), COLORS.slice(0, fKeys.length));
-
-  // ── Gráfico top reboques ──
-  const byMat   = countBy(data, 'matricula');
-  const topMats = Object.keys(byMat).sort((a, b) => byMat[b] - byMat[a]).slice(0, 10);
-  mkChart('rc-top', 'bar', topMats, topMats.map(m => byMat[m]), COLORS, {
-    indexAxis: 'y',
-    scales: {
-      x: { grid: { color: '#e5e4df' }, ticks: { color: '#8a8884', font: { size: 10 } } },
-      y: { grid: { display: false },   ticks: { color: '#8a8884', font: { size: 10 } } },
-    },
-  });
 
   // ── Gráfico evolução mensal (linha) ──
   renderGraficoMensalReboques(data);
