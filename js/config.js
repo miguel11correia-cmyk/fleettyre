@@ -18,9 +18,10 @@ const COLORS = [
   '#e34948',  // vermelho
 ];
 
-// Cor neutra única para gráficos de barras/linha (não circulares) — sóbria
-// de propósito, sem distinguir categorias por cor.
-const CHART_NEUTRAL = '#64748b';
+// Cor única para gráficos de barras/linha (não circulares) — sóbria de
+// propósito (não distingue categorias), mas com um leve tom próprio em vez
+// de cinzento puro, a condizer com o azul já usado na identidade da app.
+const CHART_NEUTRAL = '#4f7396';
 
 // ── ESTADO GLOBAL ─────────────────────────────────────────────────
 let currentUser       = null;

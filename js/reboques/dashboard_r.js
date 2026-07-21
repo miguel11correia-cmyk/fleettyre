@@ -122,7 +122,7 @@ function renderGraficoMensalReboques(data) {
   mkChart('rc-mensal', 'line', meses, meses.map(m => porMes[m]),
     [CHART_NEUTRAL], {
       elements: {
-        line: { borderColor: CHART_NEUTRAL, borderWidth: 2, tension: 0.3, fill: true, backgroundColor: 'rgba(100,116,139,0.08)' },
+        line: { borderColor: CHART_NEUTRAL, borderWidth: 2, tension: 0.3, fill: true, backgroundColor: 'rgba(79,115,150,0.08)' },
         point: { backgroundColor: CHART_NEUTRAL, radius: 3 }
       }
     }
