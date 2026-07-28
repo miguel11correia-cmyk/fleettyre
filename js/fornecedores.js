@@ -2,6 +2,7 @@
 
 let listaFornecedores = [];
 let listaMarcas = [];
+let fornGestaoExpandida = false;
 
 // Carregar fornecedores e marcas para os selectores
 async function carregarListasFornMarca() {
@@ -104,7 +105,11 @@ async function renderGestaoFornecedores() {
       </div>
       <button class="btn btn-p" onclick="adicionarFornecedor()" style="flex-shrink:0">+ Adicionar</button>
     </div>
-    <div class="table-wrap">
+    <div onclick="toggleGestaoFornecedores()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:6px 0;border-top:0.5px solid var(--border)">
+      <span style="font-size:11px;color:var(--text2);font-weight:500">Lista de fornecedores (${(data || []).length})</span>
+      <span style="font-size:11px;color:var(--text3)">${fornGestaoExpandida ? '▾ Recolher' : '▸ Expandir'}</span>
+    </div>
+    <div class="table-wrap${fornGestaoExpandida ? '' : ' hidden'}" style="margin-top:8px">
       <table>
         <thead><tr><th>Código</th><th>Nome</th><th>Acção</th></tr></thead>
         <tbody>
@@ -117,6 +122,11 @@ async function renderGestaoFornecedores() {
       </table>
     </div>
     <div id="forn-gestao-feedback" class="feedback hidden"></div>`;
+}
+
+function toggleGestaoFornecedores() {
+  fornGestaoExpandida = !fornGestaoExpandida;
+  renderGestaoFornecedores();
 }
 
 async function adicionarFornecedor() {
