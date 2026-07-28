@@ -1,5 +1,7 @@
 // ── MARCAS ────────────────────────────────────────────────────────
 
+let marcGestaoExpandida = false;
+
 async function loadMarcas() {
   loading(true);
   const { data, error } = await sb.from('pneus').select('*');
@@ -80,7 +82,11 @@ async function renderGestaoMarcas() {
       </div>
       <button class="btn btn-p" onclick="adicionarMarca()" style="flex-shrink:0">+ Adicionar</button>
     </div>
-    <div class="table-wrap">
+    <div onclick="toggleGestaoMarcas()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:6px 0;border-top:0.5px solid var(--border)">
+      <span style="font-size:11px;color:var(--text2);font-weight:500">Lista de marcas (${(data || []).length})</span>
+      <span style="font-size:11px;color:var(--text3)">${marcGestaoExpandida ? '▾ Recolher' : '▸ Expandir'}</span>
+    </div>
+    <div class="table-wrap${marcGestaoExpandida ? '' : ' hidden'}" style="margin-top:8px">
       <table>
         <thead><tr><th>Código</th><th>Nome</th><th>Acção</th></tr></thead>
         <tbody>
@@ -93,6 +99,11 @@ async function renderGestaoMarcas() {
       </table>
     </div>
     <div id="marc-gestao-feedback" class="feedback hidden"></div>`;
+}
+
+function toggleGestaoMarcas() {
+  marcGestaoExpandida = !marcGestaoExpandida;
+  renderGestaoMarcas();
 }
 
 async function adicionarMarca() {
