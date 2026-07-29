@@ -70,7 +70,7 @@ async function loadStock() {
     let linhasHTML = '';
     linhasDisp.forEach(l => {
       const pct = Math.round((l.quantidade_disp / l.quantidade_ini) * 100);
-      const cor = pct <= 25 ? '#c93030' : pct <= 50 ? '#c47b0a' : '#1baf7a';
+      const cor = pct <= 25 ? '#c93030' : pct <= 50 ? '#c47b0a' : '#15803d';
       linhasHTML += '<tr>'
         + '<td>' + (l.marca || '—') + '</td>'
         + '<td>' + (l.medida || '—') + '</td>'
