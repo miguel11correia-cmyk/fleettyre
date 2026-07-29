@@ -50,7 +50,7 @@ async function loadDashboardReboques() {
   // ── Gráfico tipo (só pneus activos) ──
   const tipos   = countBy(activos, 'tipo');
   const tLabels = Object.keys(tipos);
-  const tColors = tLabels.map(l => l === 'Novo' ? '#008300' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#4a3aa7' : '#eda100');
+  const tColors = tLabels.map(l => l === 'Novo' ? '#5f8f62' : l === 'Remix' ? '#4f7396' : l === 'Rechapado' ? '#8a5a75' : '#c2a13f');
   document.getElementById('rleg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('rc-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
 

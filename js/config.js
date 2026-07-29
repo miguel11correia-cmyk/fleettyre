@@ -5,17 +5,19 @@ const SUPABASE_KEY = window.__SUPABASE_KEY__;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── PALETA DE CORES ───────────────────────────────────────────────
-// Só os gráficos circulares (donut) usam esta paleta categórica — ordem fixa,
-// validada para distinção em daltonismo. Não trocar a ordem dos tons.
+// Só os gráficos circulares (donut) usam esta paleta categórica — ordem fixa
+// (não trocar). Tons desaturados/terrosos, a condizer com o vermelho da marca
+// e os cinzentos do resto da app — sem magenta/aqua/verde-néon "genéricos".
+// O vermelho fica de fora de propósito: é reservado para alertas/marca.
 const COLORS = [
-  '#2a78d6',  // azul
-  '#008300',  // verde
-  '#e87ba4',  // magenta
-  '#eda100',  // amarelo
-  '#1baf7a',  // aqua
-  '#eb6834',  // laranja
-  '#4a3aa7',  // violeta
-  '#e34948',  // vermelho
+  '#4f7396',  // azul-aço (igual ao CHART_NEUTRAL)
+  '#5f8f62',  // verde salva
+  '#c2a13f',  // dourado
+  '#a35c3f',  // terracota
+  '#4a8a86',  // verde-azulado
+  '#8a5a75',  // ameixa
+  '#6b6f7a',  // grafite
+  '#5f5a8a',  // índigo
 ];
 
 // Cor única para gráficos de barras/linha (não circulares) — sóbria de

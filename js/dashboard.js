@@ -49,7 +49,7 @@ async function loadDashboard() {
   const tipos   = countBy(registosAtivos, 'tipo');
   const tLabels = Object.keys(tipos);
   const tColors = tLabels.map(l =>
-    l === 'Novo' ? '#008300' : l === 'Remix' ? '#2a78d6' : l === 'Rechapado' ? '#4a3aa7' : '#eda100'
+    l === 'Novo' ? '#5f8f62' : l === 'Remix' ? '#4f7396' : l === 'Rechapado' ? '#8a5a75' : '#c2a13f'
   );
   document.getElementById('leg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('c-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
