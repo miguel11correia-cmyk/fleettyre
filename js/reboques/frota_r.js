@@ -125,7 +125,7 @@ async function guardarDesmontazemReboque() {
   const mo   = document.getElementById('rd-mo').value !== '' ? parseFloat(document.getElementById('rd-mo').value) : null;
 
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
-    showFeedback('rd-feedback', 'Mês inválido. Usa AAAA-MM.', true); return;
+    showFeedback('rd-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return;
   }
 
   const updates = {
@@ -193,7 +193,7 @@ async function guardarEdicaoReboque() {
   const dest   = document.getElementById('re-dest').value  || null;
 
   if (!mat) { showFeedback('re-feedback', 'Matrícula é obrigatória.', true); return; }
-  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('re-feedback', 'Mês inválido. Usa AAAA-MM.', true); return; }
+  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('re-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return; }
 
   const updates = {
     matricula: mat, mes_mont: mes, posicao: pos || null, eixo,
@@ -213,7 +213,7 @@ async function guardarEdicaoReboque() {
 }
 
 async function apagarRegistoReboque(id, matricula) {
-  if (!confirm(`Tens a certeza que queres apagar este registo de ${matricula}? Esta acção não pode ser desfeita.`)) return;
+  if (!confirm(`Tem a certeza que quer apagar este registo de ${matricula}? Esta acção não pode ser desfeita.`)) return;
   loading(true);
   const { error } = await sb.from('reboques').delete().eq('id', id);
   loading(false);

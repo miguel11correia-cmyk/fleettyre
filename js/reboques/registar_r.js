@@ -34,7 +34,7 @@ async function _guardarRegistoReboqueUnico() {
   const custoMO= parseFloat(document.getElementById('rr-mo').value)    || null;
 
   if (!mat) { showFeedback('rr-feedback', 'Matrícula do reboque é obrigatória.', true); return false; }
-  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('rr-feedback', 'Mês inválido. Usa AAAA-MM.', true); return false; }
+  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('rr-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return false; }
 
   const registo = {
     empresa_id: currentEmpresaId,

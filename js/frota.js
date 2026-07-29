@@ -123,7 +123,7 @@ async function guardarDesmontagem() {
 
   // Validações
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
-    showFeedback('d-feedback', 'Mês inválido. Usa AAAA-MM.', true); return;
+    showFeedback('d-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return;
   }
   const kms = parseInt(kmsStr);
   if (!kms || kms <= 0) {
@@ -223,7 +223,7 @@ async function guardarEdicao() {
 
   // Validações básicas
   if (!mat) { showFeedback('e-feedback', 'Matrícula é obrigatória.', true); return; }
-  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('e-feedback', 'Mês de montagem inválido. Usa AAAA-MM.', true); return; }
+  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('e-feedback', 'Mês de montagem inválido. Use o formato AAAA-MM.', true); return; }
   if (!kms || kms <= 0) { showFeedback('e-feedback', 'KMs de montagem são obrigatórios.', true); return; }
   if (kmsD && kmsD <= kms) { showFeedback('e-feedback', `KMs de desmontagem (${kmsD}) têm de ser maiores que os de montagem (${kms}).`, true); return; }
   if (esc != null && (esc < 0 || esc > 25)) { showFeedback('e-feedback', 'Escultura tem de ser entre 0 e 25mm.', true); return; }
@@ -258,7 +258,7 @@ async function guardarEdicao() {
 
 
 async function apagarRegisto(id, matricula) {
-  if (!confirm(`Tens a certeza que queres apagar este registo de ${matricula}? Esta acção não pode ser desfeita.`)) return;
+  if (!confirm(`Tem a certeza que quer apagar este registo de ${matricula}? Esta acção não pode ser desfeita.`)) return;
   loading(true);
   const { error } = await sb.from('pneus').delete().eq('id', id);
   loading(false);

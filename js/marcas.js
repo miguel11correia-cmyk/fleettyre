@@ -109,7 +109,7 @@ function toggleGestaoMarcas() {
 async function adicionarMarca() {
   const cod  = document.getElementById('nova-marc-cod').value.trim();
   const nome = document.getElementById('nova-marc-nome').value.trim().toUpperCase();
-  if (!cod || !nome) { showFeedback('marc-gestao-feedback', 'Preenche código e nome.', true); return; }
+  if (!cod || !nome) { showFeedback('marc-gestao-feedback', 'Preencha o código e o nome.', true); return; }
 
   loading(true);
   const { error } = await sb.from('marcas').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome }]);
