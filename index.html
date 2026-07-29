@@ -7,6 +7,7 @@
 <meta name="description" content="FleetTyre — Gestão profissional de pneus para frotas de veículos pesados. Controlo de custos, alertas preditivos e análise de desgaste em tempo real.">
 <meta name="keywords" content="gestão pneus frota, pneus veículos pesados, controlo pneus transportes, fleet tyre management, gestão frota portugal">
 <meta name="author" content="FleetTyre">
+<meta name="application-name" content="FleetTyre">
 <meta name="robots" content="index, follow">
 
 <!-- Open Graph -->
@@ -28,24 +29,34 @@
 <title>FleetTyre</title>
 <link rel="canonical" href="https://fleet-tyre.com/">
 
-<!-- Dados estruturados — ajuda o Google a identificar isto como um produto real, com autor -->
+<!-- Dados estruturados — WebSite dá ao Google o "nome do site" a mostrar na pesquisa
+     (em vez de repetir o domínio); SoftwareApplication identifica o produto e o autor -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "FleetTyre",
-  "alternateName": "Fleet Tyre",
-  "applicationCategory": "BusinessApplication",
-  "operatingSystem": "Web",
-  "description": "Aplicação de gestão de pneus para frotas de veículos pesados e reboques: controlo de custos, alertas de desgaste, stock e análises por veículo.",
-  "url": "https://fleet-tyre.com/",
-  "image": "https://fleet-tyre.com/icon-512.png",
-  "inLanguage": "pt-PT",
-  "author": {
-    "@type": "Person",
-    "name": "Miguel Correia",
-    "email": "miguel.dscorreia@outlook.pt"
-  }
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "FleetTyre",
+      "url": "https://fleet-tyre.com/"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "FleetTyre",
+      "alternateName": "Fleet Tyre",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "Aplicação de gestão de pneus para frotas de veículos pesados e reboques: controlo de custos, alertas de desgaste, stock e análises por veículo.",
+      "url": "https://fleet-tyre.com/",
+      "image": "https://fleet-tyre.com/icon-512.png",
+      "inLanguage": "pt-PT",
+      "author": {
+        "@type": "Person",
+        "name": "Miguel Correia",
+        "email": "miguel.dscorreia@outlook.pt"
+      }
+    }
+  ]
 }
 </script>
 
