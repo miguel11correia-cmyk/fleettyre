@@ -92,7 +92,7 @@ body {
   background-size: cover;
   background-position: center;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   padding: 24px;
   overflow: hidden;
@@ -210,7 +210,8 @@ body {
   color: #333;
   font-weight: 600;
 }
-.ni-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.ni-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ni-icon svg { width: 16px; height: 16px; }
 
 .badge-n {
   margin-left: auto;
@@ -249,6 +250,10 @@ body {
   margin-bottom: 4px;
 }
 .secao-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   padding: 7px 4px;
   border: 0.5px solid var(--border2);
   border-radius: var(--radius);
@@ -261,6 +266,7 @@ body {
   transition: background .1s, color .1s;
   text-align: center;
 }
+.secao-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 .secao-btn:hover { background: var(--bg2); color: var(--text); }
 .secao-btn.secao-active {
   background: #3f3f46;

@@ -88,10 +88,12 @@
       <!-- SELECTOR DE SECÇÃO -->
       <div class="secao-btns">
         <button id="btn-veiculos" class="secao-btn secao-active" onclick="toggleSecao('veiculos')">
-          🚛 Veículos
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="6" width="9" height="7"/><path d="M10.5 8.5h3.7l2.3 2.3v2.2h-6z"/><circle cx="5" cy="14.2" r="1.3"/><circle cx="13.7" cy="14.2" r="1.3"/></svg>
+          Veículos
         </button>
         <button id="btn-reboques" class="secao-btn" onclick="toggleSecao('reboques')">
-          🔗 Reboques
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="7" height="6" rx="3"/><rect x="11" y="7" width="7" height="6" rx="3"/></svg>
+          Reboques
         </button>
       </div>
 
@@ -99,32 +101,32 @@
       <div id="menu-veiculos">
         <div class="nav-section">Geral</div>
         <div class="ni active" onclick="nav('dashboard',this)" data-page="dashboard">
-          <span class="ni-icon">📊</span>Dashboard
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="3.4" height="7"/><rect x="8.3" y="6" width="3.4" height="11"/><rect x="13.6" y="2.5" width="3.4" height="14.5"/></svg></span>Dashboard
         </div>
         <div class="ni" onclick="nav('registar',this)" data-page="registar">
-          <span class="ni-icon">➕</span>Registar pneu
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg></span>Registar pneu
         </div>
         <div class="nav-section">Frota</div>
         <div class="ni" onclick="nav('frota',this)" data-page="frota">
-          <span class="ni-icon">🚛</span>Por matrícula
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="6" width="9" height="7"/><path d="M10.5 8.5h3.7l2.3 2.3v2.2h-6z"/><circle cx="5" cy="14.2" r="1.3"/><circle cx="13.7" cy="14.2" r="1.3"/></svg></span>Por matrícula
         </div>
         <div class="ni" onclick="nav('alertas',this)" data-page="alertas">
-          <span class="ni-icon">🔔</span>Alertas
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8.5a5 5 0 0 1 10 0c0 3 1 4 1.5 4.5h-13C4 12.5 5 11.5 5 8.5Z"/><path d="M8 15.5a2 2 0 0 0 4 0"/></svg></span>Alertas
           <span class="badge-n hidden" id="badge-alertas">0</span>
         </div>
         <div class="nav-section">Análise</div>
         <div class="ni" onclick="nav('fornecedores',this)" data-page="fornecedores">
-          <span class="ni-icon">🏪</span>Fornecedores
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg></span>Fornecedores
         </div>
         <div class="ni" onclick="nav('marcas',this)" data-page="marcas">
-          <span class="ni-icon">🏷️</span>Marcas
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5h5.5V8L8 16.5l-5.5-5.5L11 2.5Z"/><circle cx="13.3" cy="5.7" r="1"/></svg></span>Marcas
         </div>
         <div class="ni" onclick="nav('analytics',this)" data-page="analytics">
-          <span class="ni-icon">📈</span>Analytics
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Analytics
         </div>
         <div class="nav-section">Armazém</div>
         <div class="ni" onclick="nav('stock',this)" data-page="stock">
-          <span class="ni-icon">📦</span>Stock
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 10 2.5l7.5 3.7-7.5 3.7-7.5-3.7Z"/><path d="M2.5 6.2v7.5L10 17.5l7.5-3.8V6.2"/><path d="M10 9.9v7.6"/></svg></span>Stock
         </div>
       </div>
 
@@ -132,32 +134,32 @@
       <div id="menu-reboques" class="hidden">
         <div class="nav-section">Geral</div>
         <div class="ni" onclick="navR('dashboard-r',this)" data-page="dashboard-r">
-          <span class="ni-icon">📊</span>Dashboard
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="3.4" height="7"/><rect x="8.3" y="6" width="3.4" height="11"/><rect x="13.6" y="2.5" width="3.4" height="14.5"/></svg></span>Dashboard
         </div>
         <div class="ni" onclick="navR('registar-r',this)" data-page="registar-r">
-          <span class="ni-icon">➕</span>Registar pneu
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg></span>Registar pneu
         </div>
         <div class="nav-section">Frota</div>
         <div class="ni" onclick="navR('frota-r',this)" data-page="frota-r">
-          <span class="ni-icon">🔗</span>Por reboque
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="7" height="6" rx="3"/><rect x="11" y="7" width="7" height="6" rx="3"/></svg></span>Por reboque
         </div>
         <div class="ni" onclick="navR('alertas-r',this)" data-page="alertas-r">
-          <span class="ni-icon">🔔</span>Alertas
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8.5a5 5 0 0 1 10 0c0 3 1 4 1.5 4.5h-13C4 12.5 5 11.5 5 8.5Z"/><path d="M8 15.5a2 2 0 0 0 4 0"/></svg></span>Alertas
           <span class="badge-n hidden" id="badge-alertas-r">0</span>
         </div>
         <div class="nav-section">Análise</div>
         <div class="ni" onclick="navR('fornecedores-r',this)" data-page="fornecedores-r">
-          <span class="ni-icon">🏪</span>Fornecedores
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg></span>Fornecedores
         </div>
         <div class="ni" onclick="navR('marcas-r',this)" data-page="marcas-r">
-          <span class="ni-icon">🏷️</span>Marcas
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5h5.5V8L8 16.5l-5.5-5.5L11 2.5Z"/><circle cx="13.3" cy="5.7" r="1"/></svg></span>Marcas
         </div>
         <div class="ni" onclick="navR('analytics-r',this)" data-page="analytics-r">
-          <span class="ni-icon">📈</span>Analytics
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Analytics
         </div>
         <div class="nav-section">Armazém</div>
         <div class="ni" onclick="navR('stock-r',this)" data-page="stock-r">
-          <span class="ni-icon">📦</span>Stock
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 10 2.5l7.5 3.7-7.5 3.7-7.5-3.7Z"/><path d="M2.5 6.2v7.5L10 17.5l7.5-3.8V6.2"/><path d="M10 9.9v7.6"/></svg></span>Stock
         </div>
       </div>
     </div>
