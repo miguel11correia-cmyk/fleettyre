@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /js/
+Sitemap: https://fleet-tyre.com/sitemap.xml
