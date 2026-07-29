@@ -57,7 +57,7 @@ async function loadStock() {
   // Faturas
   const container = document.getElementById('stock-faturas-container');
   if (faturasAtivas.length === 0) {
-    container.innerHTML = '<div class="card"><p class="empty-msg">Sem faturas com stock disponível. Clica em "+ Nova fatura" para registar.</p></div>';
+    container.innerHTML = '<div class="card"><p class="empty-msg">Sem faturas com stock disponível. Clique em "+ Nova fatura" para registar.</p></div>';
     return;
   }
 
@@ -185,7 +185,7 @@ function renderLinhasFatura() {
   const container = document.getElementById('f-linhas');
   if (!container) return;
   if (linhasFatura.length === 0) {
-    container.innerHTML = '<p style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Clica "+ Linha" para adicionar pneus.</p>';
+    container.innerHTML = '<p style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Clique em "+ Linha" para adicionar pneus.</p>';
     return;
   }
   let html = '';
@@ -216,7 +216,7 @@ async function guardarFatura() {
 
   if (!numFat) { showFeedback('f-feedback', 'Nº de fatura é obrigatório.', true); return; }
   if (!forn)   { showFeedback('f-feedback', 'Fornecedor é obrigatório.', true); return; }
-  if (linhasFatura.length === 0) { showFeedback('f-feedback', 'Adiciona pelo menos um pneu.', true); return; }
+  if (linhasFatura.length === 0) { showFeedback('f-feedback', 'Adicione pelo menos um pneu.', true); return; }
   for (let i = 0; i < linhasFatura.length; i++) {
     if (!parseInt(linhasFatura[i].quantidade) || parseInt(linhasFatura[i].quantidade) <= 0) {
       showFeedback('f-feedback', 'Linha ' + (i+1) + ': quantidade inválida.', true); return;
@@ -251,7 +251,7 @@ async function guardarFatura() {
 }
 
 async function apagarFatura(id) {
-  if (!confirm('Tens a certeza que queres apagar esta fatura e todos os pneus associados?')) return;
+  if (!confirm('Tem a certeza que quer apagar esta fatura e todos os pneus associados?')) return;
   loading(true);
   const { error } = await sb.from('stock_faturas').delete().eq('id', id);
   loading(false);

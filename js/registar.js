@@ -37,7 +37,7 @@ async function _guardarRegistoUnico() {
 
   // Validações
   if (!mat) { showFeedback('r-feedback', 'Matrícula do camião é obrigatória.', true); return; }
-  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('r-feedback', 'Mês inválido. Usa o formato AAAA-MM.', true); return; }
+  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('r-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return; }
   const kms = parseInt(kmsStr);
   if (!kms || kms <= 0) { showFeedback('r-feedback', 'KMs do conta-quilómetros é obrigatório.', true); return; }
 

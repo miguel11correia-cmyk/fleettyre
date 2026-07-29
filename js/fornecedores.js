@@ -132,7 +132,7 @@ function toggleGestaoFornecedores() {
 async function adicionarFornecedor() {
   const cod  = document.getElementById('novo-forn-cod').value.trim();
   const nome = document.getElementById('novo-forn-nome').value.trim().toUpperCase();
-  if (!cod || !nome) { showFeedback('forn-gestao-feedback', 'Preenche código e nome.', true); return; }
+  if (!cod || !nome) { showFeedback('forn-gestao-feedback', 'Preencha o código e o nome.', true); return; }
 
   loading(true);
   const { error } = await sb.from('fornecedores').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome }]);

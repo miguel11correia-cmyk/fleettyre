@@ -7,7 +7,7 @@ async function login() {
   const email = document.getElementById('l-email').value.trim();
   const pass  = document.getElementById('l-pass').value;
   if (!email || !pass) {
-    document.getElementById('l-err').textContent = 'Preenche email e password.';
+    document.getElementById('l-err').textContent = 'Preencha o email e a password.';
     return;
   }
   loading(true);
@@ -45,7 +45,7 @@ async function prosseguirAposAutenticacao() {
   empresasDisponiveis = await carregarEmpresasDisponiveis();
 
   if (empresasDisponiveis.length === 0) {
-    document.getElementById('l-err').textContent = 'A tua conta não está associada a nenhuma empresa. Contacta o administrador.';
+    document.getElementById('l-err').textContent = 'A conta não está associada a nenhuma empresa. Contacte o administrador.';
     return;
   }
 
