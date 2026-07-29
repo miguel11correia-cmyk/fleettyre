@@ -52,18 +52,35 @@ body {
 .login-screen {
   min-height: 100vh;
   background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
 }
+.login-logo-top { text-align: center; }
+
+/* Uma só caixa (sombra + cantos arredondados), dividida ao meio —
+   formulário à esquerda, imagem à direita. O logótipo fica por cima. */
 .login-split {
   display: flex;
-  min-height: 100vh;
+  width: 100%;
+  max-width: 960px;
+  min-height: 560px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+  overflow: hidden;
 }
 .login-form-pane {
-  flex: 0 0 440px;
+  flex: 0 0 380px;
   max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 32px;
 }
 .login-hero-pane {
   position: relative;
@@ -74,7 +91,7 @@ body {
   background-position: center;
   display: flex;
   align-items: flex-end;
-  padding: 40px;
+  padding: 32px;
   overflow: hidden;
 }
 .login-hero-pane::after {
@@ -87,36 +104,16 @@ body {
   position: relative;
   z-index: 1;
   color: #fff;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 500;
-  max-width: 460px;
+  max-width: 420px;
   line-height: 1.35;
 }
 @media (max-width: 860px) {
   .login-hero-pane { display: none; }
-  .login-form-pane { flex: 1; }
+  .login-split { min-height: 0; }
 }
-.login-box {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: 16px;
-  padding: 2rem;
-  width: 360px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-}
-.login-logo {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  text-align: center;
-  color: var(--text);
-}
-.login-sub {
-  font-size: 12px;
-  color: var(--text3);
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
+.login-box { width: 100%; max-width: 300px; }
 .err-msg { color: var(--red); font-size: 12px; margin-top: 8px; text-align: center; }
 
 /* ── APP LAYOUT ───────────────────────────────────────────────── */
