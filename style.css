@@ -153,6 +153,18 @@ body {
   line-height: 1.5;
 }
 
+.login-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text3);
+  padding: 8px 12px 4px;
+}
+.login-footer a { color: var(--text3); text-decoration: underline; }
+.login-footer a:hover { color: var(--text2); }
+
 /* ── APP LAYOUT ───────────────────────────────────────────────── */
 .app { display: flex; height: 100vh; overflow: hidden; }
 
