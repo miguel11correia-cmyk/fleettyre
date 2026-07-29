@@ -55,19 +55,21 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 24px;
+  justify-content: flex-start;
+  gap: 18px;
+  padding: 48px 24px;
 }
 .login-logo-top { text-align: center; }
+.login-logo-top img { height: 56px; }
 
-/* Uma só caixa (sombra + cantos arredondados), dividida ao meio —
-   formulário à esquerda, imagem à direita. O logótipo fica por cima. */
+/* Uma só caixa (sombra + cantos arredondados), compacta, dividida com
+   um corte diagonal — formulário à esquerda (mais de metade), imagem
+   à direita. O logótipo fica por cima. */
 .login-split {
   display: flex;
   width: 100%;
-  max-width: 960px;
-  min-height: 560px;
+  max-width: 760px;
+  min-height: 420px;
   background: var(--surface);
   border: 0.5px solid var(--border);
   border-radius: 16px;
@@ -75,24 +77,25 @@ body {
   overflow: hidden;
 }
 .login-form-pane {
-  flex: 0 0 380px;
+  flex: 0 0 56%;
   max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 28px;
 }
 .login-hero-pane {
   position: relative;
-  flex: 1;
+  flex: 0 0 44%;
   background-color: #2a2a28;
   background-image: url('login-hero.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
   align-items: flex-end;
-  padding: 32px;
+  padding: 24px;
   overflow: hidden;
+  clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
 }
 .login-hero-pane::after {
   content: '';
@@ -104,17 +107,56 @@ body {
   position: relative;
   z-index: 1;
   color: #fff;
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 500;
-  max-width: 420px;
+  max-width: 240px;
   line-height: 1.35;
 }
-@media (max-width: 860px) {
+@media (max-width: 700px) {
   .login-hero-pane { display: none; }
   .login-split { min-height: 0; }
+  .login-form-pane { flex: 1; }
 }
-.login-box { width: 100%; max-width: 300px; }
+.login-box { width: 100%; max-width: 280px; }
 .err-msg { color: var(--red); font-size: 12px; margin-top: 8px; text-align: center; }
+
+/* ── DESTAQUES DO LOGIN ───────────────────────────────────────── */
+.login-features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 760px;
+  padding: 8px 12px 4px;
+}
+.login-feature {
+  flex: 1 1 150px;
+  max-width: 170px;
+  text-align: center;
+}
+.login-feature-icon {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  background: var(--bg2);
+  border-radius: 50%;
+}
+.login-feature-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.login-feature-desc {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.4;
+}
 
 /* ── APP LAYOUT ───────────────────────────────────────────────── */
 .app { display: flex; height: 100vh; overflow: hidden; }
