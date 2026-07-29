@@ -18,23 +18,30 @@
 
 <!-- LOGIN -->
 <div id="login-screen" class="login-screen">
-  <div class="login-box">
-    <div style="text-align:center;margin-bottom:8px">
-      <img src="logo_login.png" alt="FleetTyre" style="height:80px;object-fit:contain">
-    </div>
-    <p class="login-sub">Gestão de pneus para frotas pesadas</p>
-    <div id="login-step-cred">
-      <div class="frow"><label>Email</label><input type="email" id="l-email" placeholder="email@empresa.pt"></div>
-      <div class="frow"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
-      <button class="btn btn-p w100" onclick="login()">Entrar</button>
-    </div>
-    <div id="login-step-empresa" class="hidden">
-      <div class="frow"><label>Empresa</label>
-        <select id="l-empresa"></select>
+  <div class="login-split">
+    <div class="login-form-pane">
+      <div class="login-box">
+        <div style="text-align:center;margin-bottom:8px">
+          <img src="logo_login.png" alt="FleetTyre" style="height:80px;object-fit:contain">
+        </div>
+        <p class="login-sub">Gestão de pneus para frotas pesadas</p>
+        <div id="login-step-cred">
+          <div class="frow"><label>Email</label><input type="email" id="l-email" placeholder="email@empresa.pt"></div>
+          <div class="frow"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
+          <button class="btn btn-brand w100" onclick="login()">Entrar</button>
+        </div>
+        <div id="login-step-empresa" class="hidden">
+          <div class="frow"><label>Empresa</label>
+            <select id="l-empresa"></select>
+          </div>
+          <button class="btn btn-brand w100" onclick="confirmarEmpresaLogin()">Continuar</button>
+        </div>
+        <p id="l-err" class="err-msg"></p>
       </div>
-      <button class="btn btn-p w100" onclick="confirmarEmpresaLogin()">Continuar</button>
     </div>
-    <p id="l-err" class="err-msg"></p>
+    <div class="login-hero-pane">
+      <div class="login-hero-caption">Gestão de pneus para frotas pesadas</div>
+    </div>
   </div>
 </div>
 

@@ -51,10 +51,50 @@ body {
 /* ── LOGIN ────────────────────────────────────────────────────── */
 .login-screen {
   min-height: 100vh;
+  background: var(--bg);
+}
+.login-split {
+  display: flex;
+  min-height: 100vh;
+}
+.login-form-pane {
+  flex: 0 0 440px;
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  padding: 24px;
+}
+.login-hero-pane {
+  position: relative;
+  flex: 1;
+  background-color: #2a2a28;
+  background-image: url('login-hero.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  padding: 40px;
+  overflow: hidden;
+}
+.login-hero-pane::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0) 55%);
+}
+.login-hero-caption {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 500;
+  max-width: 460px;
+  line-height: 1.35;
+}
+@media (max-width: 860px) {
+  .login-hero-pane { display: none; }
+  .login-form-pane { flex: 1; }
 }
 .login-box {
   background: var(--surface);
@@ -313,6 +353,9 @@ input::placeholder { color: var(--text3); }
   border-color: var(--border2);
 }
 .btn-p:hover { background: #e6e2db; border-color: #c5c2bc; }
+/* Destaque próprio do ecrã de login — única excepção deliberada à paleta neutra */
+.btn-brand { background: var(--brand-red); color: #fff; border-color: var(--brand-red-dk); }
+.btn-brand:hover { background: var(--brand-red-dk); }
 .btn-s {
   background: var(--green-bg);
   color: var(--green);
