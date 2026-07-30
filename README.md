@@ -7,10 +7,13 @@ App web gratuita para gerir montagens e desmontagens de pneus em camiões pesado
 ## Ficheiros
 
 ```
-index.html        — estrutura da app
-style.css         — estilos
-app.js            — toda a lógica (auth, dados, gráficos)
-supabase_setup.sql — script para criar a base de dados
+index.html                       — estrutura da app
+style.css                        — estilos
+server.js                        — servidor Node (injecta as chaves Supabase via variáveis de ambiente)
+js/                               — lógica da app (auth, dados, gráficos), um ficheiro por secção
+js/reboques/                     — equivalentes para a secção de reboques
+migrations/000_initial_setup.sql — script para criar a base de dados de raiz
+migrations/00X_*.sql              — alterações incrementais, por ordem, para bases de dados já existentes
 ```
 
 ---
@@ -34,9 +37,10 @@ supabase_setup.sql — script para criar a base de dados
 
 1. No painel Supabase vai a **SQL Editor**
 2. Clica "New query"
-3. Abre o ficheiro `supabase_setup.sql` deste projecto
+3. Abre o ficheiro `migrations/000_initial_setup.sql` deste projecto
 4. Copia todo o conteúdo e cola no SQL Editor
 5. Clica "Run" — deves ver "Success"
+6. Se a base de dados já existir (não é uma instalação de raiz), corre também os ficheiros em `migrations/`, por ordem numérica, em vez do passo 3
 
 ### PASSO 3 — Criar o teu utilizador
 
@@ -47,31 +51,24 @@ supabase_setup.sql — script para criar a base de dados
 
 ### PASSO 4 — Ligar o código ao Supabase
 
-1. Abre o ficheiro **app.js**
-2. No topo encontras estas duas linhas:
-   ```javascript
-   const SUPABASE_URL = 'https://XXXXXXXXXXXXX.supabase.co';
-   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.XXXXX';
-   ```
-3. Substitui pelos valores que copiaste no Passo 1
-4. Guarda o ficheiro
+O `server.js` injecta as chaves Supabase a partir de variáveis de ambiente — não se editam directamente
+no código. Isso evita que fiquem visíveis no repositório.
 
-### PASSO 5 — Publicar no GitHub Pages
+1. Nas definições do serviço onde vais alojar a app (ex: Railway → **Variables**), cria:
+   - `SUPABASE_URL` = o Project URL copiado no Passo 1
+   - `SUPABASE_KEY` = a chave `anon public` copiada no Passo 1
+2. Para testar localmente, cria um ficheiro `.env` na raiz com as mesmas duas variáveis (o `.gitignore`
+   já garante que este ficheiro nunca é enviado para o repositório)
 
-1. Vai a **https://github.com** e cria conta gratuita
-2. Clica "+" → "New repository"
-   - Nome: `fleettyre`
-   - Visibilidade: **Public** (obrigatório para GitHub Pages gratuito)
-   - Clica "Create repository"
-3. Na página do repositório clica "uploading an existing file"
-4. Arrasta os 4 ficheiros: `index.html`, `style.css`, `app.js`, `supabase_setup.sql`
-5. Clica "Commit changes"
-6. Vai a **Settings → Pages**
-   - Source: "Deploy from a branch"
-   - Branch: `main` / `(root)`
-   - Clica "Save"
-7. Aguarda 1-2 minutos e o teu URL aparece:
-   `https://SEU_UTILIZADOR.github.io/fleettyre`
+### PASSO 5 — Publicar (Railway)
+
+1. Cria conta em **https://railway.app** (dá para entrar com GitHub)
+2. "New Project" → "Deploy from GitHub repo" → escolhe este repositório
+3. Em **Variables**, adiciona `SUPABASE_URL` e `SUPABASE_KEY` (Passo 4)
+4. A Railway detecta o `package.json` e corre `npm start` automaticamente
+5. Cada `git push`/merge para `main` faz redeploy automático
+6. O URL público fica disponível em **Settings → Networking → Generate Domain** (ou o domínio próprio,
+   se tiveres um configurado)
 
 ---
 

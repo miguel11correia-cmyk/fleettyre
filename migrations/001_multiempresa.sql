@@ -1,6 +1,6 @@
 -- ══════════════════════════════════════════════════════════════════
 -- FleetTyre — Migração para multi-empresa (multi-tenancy)
--- Corre isto no SQL Editor do Supabase DEPOIS do supabase_setup.sql
+-- Corre isto no SQL Editor do Supabase DEPOIS do 000_initial_setup.sql
 -- ══════════════════════════════════════════════════════════════════
 
 -- 1. TABELA DE EMPRESAS
