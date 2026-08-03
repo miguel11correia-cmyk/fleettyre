@@ -26,7 +26,7 @@ function renderMarcaComLogo(nome) {
   if (!nome) return '—';
   const src = logoMarcaVeiculo(nome);
   if (!src) return nome;
-  return `<img src="${src}" alt="" style="width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
+  return `<img src="${src}" alt="" style="height:16px;width:auto;max-width:28px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
 }
 
 // Actualiza o mini-logo e mostra/esconde o campo "Outra" consoante a
