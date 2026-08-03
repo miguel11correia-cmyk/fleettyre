@@ -23,10 +23,10 @@ async function guardarRegistoReboque() {
 async function _guardarRegistoReboqueUnico() {
   const mat    = document.getElementById('rr-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('rr-mes').value.trim();
-  const pos    = document.getElementById('rr-pos').value.trim().toUpperCase();
   const eixo   = parseInt(document.getElementById('rr-eixo').value) || null;
   const marca  = document.getElementById('rr-marca').value.trim().toUpperCase();
   const medida = document.getElementById('rr-medida').value.trim();
+  const subtipo= document.getElementById('rr-subtipo').value;
   const tipo   = document.getElementById('rr-tipo').value;
   const forn   = document.getElementById('rr-forn').value.trim().toUpperCase();
   const matPneu= document.getElementById('rr-matpneu').value.trim().toUpperCase();
@@ -40,10 +40,10 @@ async function _guardarRegistoReboqueUnico() {
     empresa_id: currentEmpresaId,
     matricula:  mat,
     mes_mont:   mes,
-    posicao:    pos    || null,
     eixo:       eixo,
     marca:      marca  || null,
     medida:     medida || null,
+    subtipo:    subtipo || null,
     tipo:       tipo   || null,
     fornecedor: forn   || null,
     mat_pneu:   matPneu|| null,
@@ -78,7 +78,7 @@ async function _guardarRegistoReboqueUnico() {
 }
 
 function limparFormReboque() {
-  ['rr-mat','rr-mes','rr-pos','rr-marca','rr-medida','rr-forn','rr-matpneu','rr-custo','rr-mo']
+  ['rr-mat','rr-mes','rr-marca','rr-medida','rr-subtipo','rr-forn','rr-matpneu','rr-custo','rr-mo']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const eixo = document.getElementById('rr-eixo');
   if (eixo) eixo.value = '1';

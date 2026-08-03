@@ -1,6 +1,8 @@
 // ── MARCAS ────────────────────────────────────────────────────────
 
 let marcGestaoExpandida = false;
+let listaSubtipos       = [];
+let subtipoMarcaId      = null;
 
 async function loadMarcas() {
   loading(true);
@@ -93,7 +95,12 @@ async function renderGestaoMarcas() {
           ${(data || []).map(m => `<tr>
             <td><strong>${m.codigo}</strong></td>
             <td>${m.nome}</td>
-            <td><button class="btn btn-sm" onclick="apagarMarca(${m.id},'${m.nome}')" style="color:var(--red);border-color:#fecaca;font-size:11px;height:26px">🗑</button></td>
+            <td>
+              <div style="display:flex;gap:4px">
+                <button class="btn btn-sm" onclick="abrirSubtipos(${m.id},'${m.nome}')" style="font-size:11px;height:26px">🏷️ Subtipos</button>
+                <button class="btn btn-sm" onclick="apagarMarca(${m.id},'${m.nome}')" style="color:var(--red);border-color:#fecaca;font-size:11px;height:26px">🗑</button>
+              </div>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -129,4 +136,85 @@ async function apagarMarca(id, nome) {
   if (error) { alert('Erro: ' + error.message); return; }
   await carregarListasFornMarca();
   await renderGestaoMarcas();
+}
+
+// ── SUBTIPOS DE MARCA (ex: Michelin -> "XTRA LIFE") ────────────────
+
+async function carregarListaSubtipos() {
+  const { data } = await sb.from('subtipos_marca').select('*').order('nome');
+  listaSubtipos = data || [];
+  popularSelectorSubtipo('r-marca', 'r-subtipo');
+  popularSelectorSubtipo('rr-marca', 'rr-subtipo');
+}
+
+// Popula o select de subtipos consoante a marca actualmente seleccionada no select de marca indicado
+function popularSelectorSubtipo(selMarcaId, selSubtipoId) {
+  const selMarca   = document.getElementById(selMarcaId);
+  const selSubtipo = document.getElementById(selSubtipoId);
+  if (!selMarca || !selSubtipo) return;
+
+  const marca = listaMarcas.find(m => m.nome === selMarca.value);
+  const opcoes = marca
+    ? listaSubtipos.filter(s => s.marca_id === marca.id)
+    : [];
+
+  const val = selSubtipo.value;
+  selSubtipo.innerHTML = '<option value="">— nenhum —</option>' +
+    opcoes.map(s => `<option value="${s.nome}"${s.nome === val ? ' selected' : ''}>${s.nome}</option>`).join('');
+}
+
+async function abrirSubtipos(marcaId, marcaNome) {
+  subtipoMarcaId = marcaId;
+  document.getElementById('subtipos-marca-nome').textContent = marcaNome;
+  document.getElementById('novo-subtipo-nome').value = '';
+  document.getElementById('subtipos-feedback').classList.add('hidden');
+  await renderListaSubtipos();
+  document.getElementById('painel-subtipos').classList.add('open');
+}
+
+function fecharPainelSubtipos() {
+  document.getElementById('painel-subtipos').classList.remove('open');
+  subtipoMarcaId = null;
+}
+
+async function renderListaSubtipos() {
+  if (subtipoMarcaId == null) return;
+  loading(true);
+  const { data } = await sb.from('subtipos_marca').select('*').eq('marca_id', subtipoMarcaId).order('nome');
+  loading(false);
+
+  const tbody = document.getElementById('subtipos-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = (data && data.length > 0)
+    ? data.map(s => `<tr>
+        <td>${s.nome}</td>
+        <td><button class="btn btn-sm" onclick="apagarSubtipo(${s.id})" style="color:var(--red);border-color:#fecaca;font-size:11px;height:26px">🗑</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="2" class="empty-msg" style="text-align:center;padding:10px">Ainda sem subtipos.</td></tr>';
+}
+
+async function adicionarSubtipo() {
+  if (subtipoMarcaId == null) return;
+  const nome = document.getElementById('novo-subtipo-nome').value.trim().toUpperCase();
+  if (!nome) { showFeedback('subtipos-feedback', 'Indique o nome do subtipo.', true); return; }
+
+  loading(true);
+  const { error } = await sb.from('subtipos_marca').insert([{ empresa_id: currentEmpresaId, marca_id: subtipoMarcaId, nome }]);
+  loading(false);
+
+  if (error) { showFeedback('subtipos-feedback', 'Erro: ' + error.message, true); return; }
+  showFeedback('subtipos-feedback', 'Subtipo adicionado.');
+  document.getElementById('novo-subtipo-nome').value = '';
+  await renderListaSubtipos();
+  await carregarListaSubtipos();
+}
+
+async function apagarSubtipo(id) {
+  if (!confirm('Apagar este subtipo?')) return;
+  loading(true);
+  const { error } = await sb.from('subtipos_marca').delete().eq('id', id);
+  loading(false);
+  if (error) { alert('Erro: ' + error.message); return; }
+  await renderListaSubtipos();
+  await carregarListaSubtipos();
 }

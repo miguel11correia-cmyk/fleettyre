@@ -78,6 +78,7 @@ async function loadFrota() {
       <td>${r.marca    || '—'}</td>
       <td>${r.fornecedor || '—'}</td>
       <td>${r.medida   || '—'}</td>
+      <td>${r.subtipo  || '—'}</td>
       <td>${tipoBadge(r.tipo)}</td>
       <td style="text-align:right">${fmt(r.kms_mont)}</td>
       <td>${r.mes_desmont || '—'}</td>
@@ -212,6 +213,7 @@ async function abrirEdicao(id) {
   document.getElementById('e-pos').value     = data.posicao      || '';
   document.getElementById('e-marca').value   = data.marca        || '';
   document.getElementById('e-medida').value  = data.medida       || '';
+  document.getElementById('e-subtipo').value = data.subtipo      || '';
   document.getElementById('e-tipo').value    = data.tipo         || 'Novo';
   document.getElementById('e-forn').value    = data.fornecedor   || '';
   document.getElementById('e-custo').value   = data.custo_pneu   != null ? data.custo_pneu : '';
@@ -239,6 +241,7 @@ async function guardarEdicao() {
   const pos    = document.getElementById('e-pos').value;
   const marca  = document.getElementById('e-marca').value.trim().toUpperCase();
   const medida = document.getElementById('e-medida').value.trim();
+  const subtipo= document.getElementById('e-subtipo').value.trim();
   const tipo   = document.getElementById('e-tipo').value;
   const forn   = document.getElementById('e-forn').value.trim().toUpperCase();
   const custoP = document.getElementById('e-custo').value !== '' ? parseFloat(document.getElementById('e-custo').value) : null;
@@ -262,6 +265,7 @@ async function guardarEdicao() {
     posicao:         pos    || null,
     marca:           marca  || null,
     medida:          medida || null,
+    subtipo:         subtipo|| null,
     tipo:            tipo   || null,
     fornecedor:      forn   || null,
     custo_pneu:      custoP,

@@ -37,7 +37,7 @@ async function loadAlertasReboques() {
         const pct = Math.min(100, Math.round((r.mesesActivo / r.lim.critico) * 100));
         return `<div class="alerta-row">
           <div class="alerta-info">
-            <span class="alerta-mat">${r.matricula} — ${r.posicao || '—'} (Eixo ${r.eixo || '?'})</span>
+            <span class="alerta-mat">${r.matricula} — Eixo ${r.eixo || '?'}</span>
             <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont} · Limite: ${r.lim.critico} meses</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -59,7 +59,7 @@ async function loadAlertasReboques() {
         const pct = Math.min(100, Math.round((r.mesesActivo / r.lim.critico) * 100));
         return `<div class="alerta-row">
           <div class="alerta-info">
-            <span class="alerta-mat">${r.matricula} — ${r.posicao || '—'} (Eixo ${r.eixo || '?'})</span>
+            <span class="alerta-mat">${r.matricula} — Eixo ${r.eixo || '?'}</span>
             <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · Mont.: ${r.mes_mont} · Limite aviso: ${r.lim.aviso} meses</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -79,7 +79,6 @@ async function loadAlertasReboques() {
                   r.mesesActivo >= r.lim.aviso   ? 'badge b-warn'  : '';
       return `<tr>
         <td>${r.matricula}</td>
-        <td>${r.posicao || '—'}</td>
         <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
         <td>${r.marca || '—'}</td>
         <td>${tipoBadge(r.tipo)}</td>
@@ -104,7 +103,6 @@ async function loadAlertasReboques() {
                       meses >= lim.aviso   ? 'badge b-warn'  : 'badge b-ok';
         return `<tr>
           <td>${r.matricula}</td>
-          <td>${r.posicao || '—'}</td>
           <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
           <td>${r.marca || '—'}</td>
           <td>${tipoBadge(r.tipo)}</td>

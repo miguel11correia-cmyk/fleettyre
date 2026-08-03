@@ -75,11 +75,11 @@ async function loadFrotaReboques() {
          </div>`;
     return `<tr>
       <td>${r.mes_mont || '—'}</td>
-      <td>${r.posicao  || '—'}</td>
       <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
       <td>${r.marca    || '—'}</td>
       <td>${r.fornecedor || '—'}</td>
       <td>${r.medida   || '—'}</td>
+      <td>${r.subtipo  || '—'}</td>
       <td>${tipoBadge(r.tipo)}</td>
       <td>${mesesStr}</td>
       <td>${r.mes_desmont || '—'}</td>
@@ -127,7 +127,7 @@ async function abrirPainelReboque(id) {
   const lim = LIMITES_EIXO[data.eixo] || LIMITES_EIXO[null];
 
   document.getElementById('rpainel-info').innerHTML =
-    `<strong>${data.matricula}</strong> · ${data.posicao || '—'} · Eixo ${data.eixo || '—'}<br>
+    `<strong>${data.matricula}</strong> · Eixo ${data.eixo || '—'}<br>
      <span style="color:var(--text2)">${data.marca || '—'} ${data.medida || ''} · Montado: ${data.mes_mont} · <strong>${mesesActivo} meses activo</strong></span><br>
      <span style="color:${mesesActivo >= lim.critico ? 'var(--red)' : mesesActivo >= lim.aviso ? 'var(--amber)' : 'var(--green)'}">
        Limite eixo ${data.eixo || '?'}: aviso ${lim.aviso}m · crítico ${lim.critico}m
@@ -182,10 +182,10 @@ async function abrirEdicaoReboque(id) {
 
   document.getElementById('re-mat').value    = data.matricula    || '';
   document.getElementById('re-mes').value    = data.mes_mont     || '';
-  document.getElementById('re-pos').value    = data.posicao      || '';
   document.getElementById('re-eixo').value   = data.eixo         || '1';
   document.getElementById('re-marca').value  = data.marca        || '';
   document.getElementById('re-medida').value = data.medida       || '';
+  document.getElementById('re-subtipo').value = data.subtipo     || '';
   document.getElementById('re-tipo').value   = data.tipo         || 'Novo';
   document.getElementById('re-forn').value   = data.fornecedor   || '';
   document.getElementById('re-custo').value  = data.custo_pneu   > 0 ? data.custo_pneu : '';
@@ -207,10 +207,10 @@ async function guardarEdicaoReboque() {
   if (editRId == null) return;
   const mat    = document.getElementById('re-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('re-mes').value.trim();
-  const pos    = document.getElementById('re-pos').value.trim().toUpperCase();
   const eixo   = parseInt(document.getElementById('re-eixo').value) || null;
   const marca  = document.getElementById('re-marca').value.trim().toUpperCase();
   const medida = document.getElementById('re-medida').value.trim();
+  const subtipo= document.getElementById('re-subtipo').value.trim();
   const tipo   = document.getElementById('re-tipo').value;
   const forn   = document.getElementById('re-forn').value.trim().toUpperCase();
   const custoP = document.getElementById('re-custo').value !== '' ? parseFloat(document.getElementById('re-custo').value) : null;
@@ -223,8 +223,8 @@ async function guardarEdicaoReboque() {
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('re-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return; }
 
   const updates = {
-    matricula: mat, mes_mont: mes, posicao: pos || null, eixo,
-    marca: marca || null, medida: medida || null, tipo: tipo || null,
+    matricula: mat, mes_mont: mes, eixo,
+    marca: marca || null, medida: medida || null, subtipo: subtipo || null, tipo: tipo || null,
     fornecedor: forn || null, custo_pneu: custoP, custo_mo: custoMO,
     custo_total: ((custoP || 0) + (custoMO || 0)) || null,
     mes_desmont: mesD, escultura_final: esc, destino: dest,

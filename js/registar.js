@@ -29,6 +29,7 @@ async function _guardarRegistoUnico() {
   const pos    = document.getElementById('r-pos').value;
   const marca  = document.getElementById('r-marca').value.trim().toUpperCase();
   const medida = document.getElementById('r-medida').value.trim();
+  const subtipo= document.getElementById('r-subtipo').value;
   const tipo   = document.getElementById('r-tipo').value;
   const forn   = document.getElementById('r-forn').value.trim().toUpperCase();
   const matPneu= document.getElementById('r-matpneu').value.trim().toUpperCase();
@@ -49,6 +50,7 @@ async function _guardarRegistoUnico() {
     posicao:     pos || null,
     marca:       marca || null,
     medida:      medida || null,
+    subtipo:     subtipo || null,
     tipo:        tipo || null,
     fornecedor:  forn || null,
     mat_pneu:    matPneu || null,
@@ -87,7 +89,7 @@ async function _guardarRegistoUnico() {
 }
 
 function limparForm() {
-  ['r-mat','r-mes','r-kms','r-pos','r-marca','r-medida','r-forn','r-matpneu','r-custo','r-mo']
+  ['r-mat','r-mes','r-kms','r-pos','r-marca','r-medida','r-subtipo','r-forn','r-matpneu','r-custo','r-mo']
     .forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('r-tipo').value = 'Novo';
   stockLinhaSelId      = null;
