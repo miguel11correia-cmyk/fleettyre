@@ -23,12 +23,14 @@ async function loadFrotaReboques() {
   const hoje = mesAtual();
 
   loading(true);
-  const { data, error } = await sb
-    .from('reboques')
-    .select('*')
-    .eq('matricula', mat)
-    .order('mes_mont', { ascending: true });
+  const [{ data, error }, { data: reboque }] = await Promise.all([
+    sb.from('reboques').select('*').eq('matricula', mat).order('mes_mont', { ascending: true }),
+    sb.from('reboques_frota').select('*').eq('matricula', mat).maybeSingle()
+  ]);
   loading(false);
+
+  renderInfoReboque(reboque, mat);
+
   if (error || !data) return;
 
   const activos    = data.filter(r => !r.mes_desmont);
@@ -87,6 +89,29 @@ async function loadFrotaReboques() {
       <td>${acBtn}</td>
     </tr>`;
   }).join('');
+}
+
+function renderInfoReboque(v, mat) {
+  const el = document.getElementById('frota-info-reboque');
+  if (!el) return;
+
+  if (!v) {
+    el.innerHTML = `<div class="ct">🔗 ${mat}</div>
+      <p style="font-size:12px;color:var(--text3)">Sem ficha de reboque registada em "Frota".</p>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="ct">🔗 ${v.matricula}</div>
+    <div class="g3" style="margin-bottom:0">
+      <div><span style="font-size:11px;color:var(--text3)">Marca</span><br>${v.marca || '—'}</div>
+      <div><span style="font-size:11px;color:var(--text3)">Modelo</span><br>${v.modelo || '—'}</div>
+      <div><span style="font-size:11px;color:var(--text3)">Ano</span><br>${v.ano || '—'}</div>
+    </div>
+    <div class="g2" style="margin-bottom:0">
+      <div><span style="font-size:11px;color:var(--text3)">Tipo</span><br>${v.tipo || '—'}</div>
+      <div><span style="font-size:11px;color:var(--text3)">Nº Eixos</span><br>${v.num_eixos || '—'}</div>
+    </div>`;
 }
 
 // ── PAINEL DESMONTAGEM ────────────────────────────────────────────

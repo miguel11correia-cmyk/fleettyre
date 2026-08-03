@@ -171,6 +171,9 @@
         <div class="ni active" onclick="nav('dashboard',this)" data-page="dashboard">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="3.4" height="7"/><rect x="8.3" y="6" width="3.4" height="11"/><rect x="13.6" y="2.5" width="3.4" height="14.5"/></svg></span>Dashboard
         </div>
+        <div class="ni" onclick="nav('frota-cadastro',this)" data-page="frota-cadastro">
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg></span>Frota
+        </div>
         <div class="ni" onclick="nav('registar',this)" data-page="registar">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg></span>Registar pneu
         </div>
@@ -203,6 +206,9 @@
         <div class="nav-section">Geral</div>
         <div class="ni" onclick="navR('dashboard-r',this)" data-page="dashboard-r">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="3.4" height="7"/><rect x="8.3" y="6" width="3.4" height="11"/><rect x="13.6" y="2.5" width="3.4" height="14.5"/></svg></span>Dashboard
+        </div>
+        <div class="ni" onclick="navR('frota-cadastro-r',this)" data-page="frota-cadastro-r">
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg></span>Frota
         </div>
         <div class="ni" onclick="navR('registar-r',this)" data-page="registar-r">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg></span>Registar pneu
@@ -308,7 +314,9 @@
       <div class="card">
         <div class="ct">Veículo</div>
         <div class="g2">
-          <div class="frow"><label>Matrícula do camião *</label><input type="text" id="r-mat" placeholder="ex: 51-PQ-43" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Matrícula do camião *</label>
+            <select id="r-mat"><option value="">— seleccionar —</option></select>
+          </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="r-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>
         <div class="g2">
@@ -362,6 +370,79 @@
       <div id="r-feedback" class="feedback hidden"></div>
     </div>
 
+    <!-- FROTA — GESTÃO DE VEÍCULOS -->
+    <div class="page hidden" id="page-frota-cadastro" style="position:relative">
+      <div class="page-header">
+        <h2>Frota</h2>
+        <button class="btn btn-sm" onclick="loadFrotaCadastro()">↻ Actualizar</button>
+      </div>
+      <div class="card">
+        <div class="ct">Adicionar veículo</div>
+        <div class="g3">
+          <div class="frow"><label>Matrícula *</label><input type="text" id="v-mat" placeholder="ex: 51-PQ-43" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Marca</label><input type="text" id="v-marca" placeholder="ex: Volvo"></div>
+          <div class="frow"><label>Modelo</label><input type="text" id="v-modelo" placeholder="ex: FH"></div>
+        </div>
+        <div class="g3">
+          <div class="frow"><label>Ano</label><input type="number" id="v-ano" placeholder="ex: 2022" min="1980" max="2100"></div>
+          <div class="frow"><label>Tipo</label>
+            <select id="v-tipo">
+              <option value="">— seleccionar —</option>
+              <option value="Tractor">Tractor</option>
+              <option value="Rígido">Rígido</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="frow"><label>Nº Eixos</label><input type="number" id="v-eixos" min="1" max="10"></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Reboque habitual</label><input type="text" id="v-reboque" placeholder="ex: RC-12-34" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Observações</label><input type="text" id="v-obs" placeholder="opcional"></div>
+        </div>
+        <button class="btn btn-p" onclick="adicionarVeiculo()">+ Adicionar veículo</button>
+        <div id="v-feedback" class="feedback hidden"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Lista de veículos</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Matrícula</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Tipo</th>
+              <th style="text-align:center">Eixos</th><th>Reboque habitual</th><th>Acções</th>
+            </tr></thead>
+            <tbody id="frota-cadastro-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAINEL EDITAR VEÍCULO -->
+      <div class="panel" id="painel-editar-veiculo">
+        <div class="panel-head">
+          <span>Editar veículo</span>
+          <button class="btn-close" onclick="fecharEdicaoVeiculo()">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="frow"><label>Matrícula *</label><input type="text" id="ev-mat" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Marca</label><input type="text" id="ev-marca"></div>
+          <div class="frow"><label>Modelo</label><input type="text" id="ev-modelo"></div>
+          <div class="frow"><label>Ano</label><input type="number" id="ev-ano" min="1980" max="2100"></div>
+          <div class="frow"><label>Tipo</label>
+            <select id="ev-tipo">
+              <option value="">— seleccionar —</option>
+              <option value="Tractor">Tractor</option>
+              <option value="Rígido">Rígido</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="frow"><label>Nº Eixos</label><input type="number" id="ev-eixos" min="1" max="10"></div>
+          <div class="frow"><label>Reboque habitual</label><input type="text" id="ev-reboque" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Observações</label><input type="text" id="ev-obs"></div>
+          <button class="btn btn-p w100" onclick="guardarEdicaoVeiculo()" style="margin-top:12px">💾 Guardar alterações</button>
+          <div id="ev-feedback" class="feedback hidden"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- POR MATRÍCULA -->
     <div class="page hidden" id="page-frota" style="position:relative">
       <div id="frota-inner">
@@ -373,6 +454,7 @@
           <label>🚛 Matrícula</label>
           <select id="sel-mat" onchange="loadFrota()"></select>
         </div>
+        <div class="card" id="frota-info-veiculo"></div>
         <div class="krow">
           <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="fk1">—</div><div class="kpi-s">histórico</div></div>
           <div class="kpi green"><div class="kpi-l">Activos</div><div class="kpi-v green" id="fk2">—</div><div class="kpi-s">sem desmontagem</div></div>
@@ -700,7 +782,9 @@
       <div class="card">
         <div class="ct">Identificação</div>
         <div class="g2">
-          <div class="frow"><label>Matrícula do reboque *</label><input type="text" id="rr-mat" placeholder="ex: RC-12-34" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Matrícula do reboque *</label>
+            <select id="rr-mat"><option value="">— seleccionar —</option></select>
+          </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="rr-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>
         <div class="g3">
@@ -747,6 +831,79 @@
       <div id="rr-feedback" class="feedback hidden"></div>
     </div>
 
+    <!-- REBOQUES — FROTA — GESTÃO -->
+    <div class="page hidden" id="page-frota-cadastro-r" style="position:relative">
+      <div class="page-header">
+        <h2>Frota — Reboques</h2>
+        <button class="btn btn-sm" onclick="loadFrotaCadastroReboques()">↻ Actualizar</button>
+      </div>
+      <div class="card">
+        <div class="ct">Adicionar reboque</div>
+        <div class="g3">
+          <div class="frow"><label>Matrícula *</label><input type="text" id="vr-mat" placeholder="ex: RC-12-34" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Marca</label><input type="text" id="vr-marca" placeholder="ex: Schmitz"></div>
+          <div class="frow"><label>Modelo</label><input type="text" id="vr-modelo" placeholder="ex: S.KO"></div>
+        </div>
+        <div class="g3">
+          <div class="frow"><label>Ano</label><input type="number" id="vr-ano" placeholder="ex: 2020" min="1980" max="2100"></div>
+          <div class="frow"><label>Tipo de reboque</label>
+            <select id="vr-tipo">
+              <option value="">— seleccionar —</option>
+              <option value="Semirreboque">Semirreboque</option>
+              <option value="Reboque">Reboque</option>
+              <option value="Cisterna">Cisterna</option>
+              <option value="Frigorífico">Frigorífico</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="frow"><label>Nº Eixos</label><input type="number" id="vr-eixos" min="1" max="10"></div>
+        </div>
+        <div class="frow"><label>Observações</label><input type="text" id="vr-obs" placeholder="opcional"></div>
+        <button class="btn btn-p" onclick="adicionarReboqueFrota()">+ Adicionar reboque</button>
+        <div id="vr-feedback" class="feedback hidden"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Lista de reboques</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Matrícula</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Tipo</th>
+              <th style="text-align:center">Eixos</th><th>Acções</th>
+            </tr></thead>
+            <tbody id="frota-cadastro-r-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAINEL EDITAR REBOQUE -->
+      <div class="panel" id="painel-editar-veiculo-r">
+        <div class="panel-head">
+          <span>Editar reboque</span>
+          <button class="btn-close" onclick="fecharEdicaoReboqueFrota()">✕</button>
+        </div>
+        <div class="panel-body">
+          <div class="frow"><label>Matrícula *</label><input type="text" id="evr-mat" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Marca</label><input type="text" id="evr-marca"></div>
+          <div class="frow"><label>Modelo</label><input type="text" id="evr-modelo"></div>
+          <div class="frow"><label>Ano</label><input type="number" id="evr-ano" min="1980" max="2100"></div>
+          <div class="frow"><label>Tipo de reboque</label>
+            <select id="evr-tipo">
+              <option value="">— seleccionar —</option>
+              <option value="Semirreboque">Semirreboque</option>
+              <option value="Reboque">Reboque</option>
+              <option value="Cisterna">Cisterna</option>
+              <option value="Frigorífico">Frigorífico</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="frow"><label>Nº Eixos</label><input type="number" id="evr-eixos" min="1" max="10"></div>
+          <div class="frow"><label>Observações</label><input type="text" id="evr-obs"></div>
+          <button class="btn btn-p w100" onclick="guardarEdicaoReboqueFrota()" style="margin-top:12px">💾 Guardar alterações</button>
+          <div id="evr-feedback" class="feedback hidden"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- REBOQUES — POR REBOQUE -->
     <div class="page hidden" id="page-frota-r" style="position:relative">
       <div id="rfrota-inner">
@@ -758,6 +915,7 @@
           <label>🔗 Reboque</label>
           <select id="sel-mat-r" onchange="loadFrotaReboques()"></select>
         </div>
+        <div class="card" id="frota-info-reboque"></div>
         <div class="krow">
           <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="rfk1">—</div><div class="kpi-s">histórico</div></div>
           <div class="kpi green"><div class="kpi-l">Activos</div><div class="kpi-v green" id="rfk2">—</div><div class="kpi-s">sem desmontagem</div></div>
@@ -949,6 +1107,7 @@
 <script src="js/dashboard.js"></script>
 <script src="js/registar.js"></script>
 <script src="js/frota.js"></script>
+<script src="js/frota_cadastro.js"></script>
 <script src="js/alertas.js"></script>
 <script src="js/fornecedores.js"></script>
 <script src="js/marcas.js"></script>
@@ -958,6 +1117,7 @@
 <script src="js/reboques/dashboard_r.js"></script>
 <script src="js/reboques/registar_r.js"></script>
 <script src="js/reboques/frota_r.js"></script>
+<script src="js/reboques/frota_cadastro_r.js"></script>
 <script src="js/reboques/alertas_r.js"></script>
 <script src="js/reboques/fornecedores_marcas_r.js"></script>
 <script src="js/reboques/analytics_r.js"></script>
