@@ -126,7 +126,7 @@ async function loadFrotaCadastro() {
   const tbody = document.getElementById('frota-cadastro-tbody');
   if (!tbody) return;
   tbody.innerHTML = data.map(v => `<tr>
-    <td><strong>${v.matricula}</strong></td>
+    <td><strong>${v.matricula}</strong>${!v.num_eixos ? ' <span title="Eixos por preencher" style="color:var(--red)">●</span>' : ''}</td>
     <td>${v.marca || '—'}</td>
     <td>${v.modelo || '—'}</td>
     <td>${v.ano || '—'}</td>
@@ -148,7 +148,7 @@ async function adicionarVeiculo() {
   const modelo   = document.getElementById('v-modelo').value.trim();
   const anoStr   = document.getElementById('v-ano').value;
   const tipo     = document.getElementById('v-tipo').value;
-  const eixosStr = document.getElementById('v-eixos').value;
+  const eixos    = document.getElementById('v-eixos').value;
   const reboque  = document.getElementById('v-reboque').value.trim().toUpperCase();
   const obs      = document.getElementById('v-obs').value.trim();
 
@@ -161,7 +161,7 @@ async function adicionarVeiculo() {
     modelo:      modelo || null,
     ano:         anoStr   !== '' ? parseInt(anoStr)   : null,
     tipo:        tipo    || null,
-    num_eixos:   eixosStr !== '' ? parseInt(eixosStr) : null,
+    num_eixos:   eixos  || null,
     reboque_hab: reboque || null,
     observacoes: obs     || null,
   };
@@ -216,7 +216,7 @@ async function guardarEdicaoVeiculo() {
   const modelo   = document.getElementById('ev-modelo').value.trim();
   const anoStr   = document.getElementById('ev-ano').value;
   const tipo     = document.getElementById('ev-tipo').value;
-  const eixosStr = document.getElementById('ev-eixos').value;
+  const eixos    = document.getElementById('ev-eixos').value;
   const reboque  = document.getElementById('ev-reboque').value.trim().toUpperCase();
   const obs      = document.getElementById('ev-obs').value.trim();
 
@@ -228,7 +228,7 @@ async function guardarEdicaoVeiculo() {
     modelo:      modelo || null,
     ano:         anoStr   !== '' ? parseInt(anoStr)   : null,
     tipo:        tipo    || null,
-    num_eixos:   eixosStr !== '' ? parseInt(eixosStr) : null,
+    num_eixos:   eixos  || null,
     reboque_hab: reboque || null,
     observacoes: obs     || null,
   };
@@ -252,4 +252,11 @@ async function apagarVeiculo(id, matricula) {
   if (error) { alert('Erro ao apagar: ' + error.message); return; }
   await carregarListaVeiculos();
   await loadFrotaCadastro();
+}
+
+function toggleListaVeiculos() {
+  const wrap   = document.getElementById('lista-veiculos-wrap');
+  const toggle = document.getElementById('lista-veiculos-toggle');
+  wrap.classList.toggle('hidden');
+  toggle.textContent = wrap.classList.contains('hidden') ? '▸ Expandir' : '▾ Recolher';
 }

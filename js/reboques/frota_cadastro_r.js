@@ -53,7 +53,7 @@ async function loadFrotaCadastroReboques() {
   const tbody = document.getElementById('frota-cadastro-r-tbody');
   if (!tbody) return;
   tbody.innerHTML = data.map(v => `<tr>
-    <td><strong>${v.matricula}</strong></td>
+    <td><strong>${v.matricula}</strong>${!v.num_eixos ? ' <span title="Eixos por preencher" style="color:var(--red)">●</span>' : ''}</td>
     <td>${v.marca || '—'}</td>
     <td>${v.modelo || '—'}</td>
     <td>${v.ano || '—'}</td>
@@ -172,4 +172,11 @@ async function apagarReboqueFrota(id, matricula) {
   if (error) { alert('Erro ao apagar: ' + error.message); return; }
   await carregarListaReboquesFrota();
   await loadFrotaCadastroReboques();
+}
+
+function toggleListaReboquesFrota() {
+  const wrap   = document.getElementById('lista-reboques-wrap');
+  const toggle = document.getElementById('lista-reboques-toggle');
+  wrap.classList.toggle('hidden');
+  toggle.textContent = wrap.classList.contains('hidden') ? '▸ Expandir' : '▾ Recolher';
 }

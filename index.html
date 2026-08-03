@@ -133,7 +133,7 @@
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 8.7c-.9-.7-2-1-3-1-2.4 0-4.3 1.9-4.3 4.3s1.9 4.3 4.3 4.3c1 0 2.1-.3 3-1"/><line x1="6.3" y1="10.6" x2="12.3" y2="10.6"/><line x1="6.3" y1="13.4" x2="11.7" y2="13.4"/></svg>
       </div>
       <div class="login-feature-title">Poupança real</div>
-      <div class="login-feature-desc">Analytics de custo por km identificam onde os gastos são mais elevados.</div>
+      <div class="login-feature-desc">Análise de custo por km identifica onde os gastos são mais elevados.</div>
     </div>
     <div class="login-feature">
       <div class="login-feature-icon">
@@ -205,7 +205,7 @@
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5h5.5V8L8 16.5l-5.5-5.5L11 2.5Z"/><circle cx="13.3" cy="5.7" r="1"/></svg></span>Marcas
         </div>
         <div class="ni" onclick="nav('analytics',this)" data-page="analytics">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Analytics
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Análise
         </div>
         <div class="nav-section">Armazém</div>
         <div class="ni" onclick="nav('stock',this)" data-page="stock">
@@ -241,7 +241,7 @@
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5h5.5V8L8 16.5l-5.5-5.5L11 2.5Z"/><circle cx="13.3" cy="5.7" r="1"/></svg></span>Marcas
         </div>
         <div class="ni" onclick="navR('analytics-r',this)" data-page="analytics-r">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Analytics
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Análise
         </div>
         <div class="nav-section">Armazém</div>
         <div class="ni" onclick="navR('stock-r',this)" data-page="stock-r">
@@ -421,12 +421,20 @@
           <div class="frow"><label>Tipo</label>
             <select id="v-tipo">
               <option value="">— seleccionar —</option>
-              <option value="Tractor">Tractor</option>
+              <option value="Trator">Trator</option>
               <option value="Rígido">Rígido</option>
               <option value="Outro">Outro</option>
             </select>
           </div>
-          <div class="frow"><label>Nº Eixos</label><input type="number" id="v-eixos" min="1" max="10"></div>
+          <div class="frow"><label>Nº Eixos</label>
+            <select id="v-eixos">
+              <option value="">— seleccionar —</option>
+              <option value="4x2">4x2</option>
+              <option value="6x2 Pusher">6x2 Pusher</option>
+              <option value="6x2 Tag">6x2 Tag</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
         </div>
         <div class="g2">
           <div class="frow"><label>Reboque habitual</label><input type="text" id="v-reboque" placeholder="ex: RC-12-34" oninput="this.value=this.value.toUpperCase()"></div>
@@ -436,8 +444,11 @@
         <div id="v-feedback" class="feedback hidden"></div>
       </div>
       <div class="card">
-        <div class="ct">Lista de veículos</div>
-        <div class="table-wrap">
+        <div onclick="toggleListaVeiculos()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+          <div class="ct" style="margin:0">Lista de veículos</div>
+          <span id="lista-veiculos-toggle" style="font-size:11px;color:var(--text3)">▸ Expandir</span>
+        </div>
+        <div class="table-wrap hidden" id="lista-veiculos-wrap" style="margin-top:8px">
           <table>
             <thead><tr>
               <th>Matrícula</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Tipo</th>
@@ -480,12 +491,20 @@
           <div class="frow"><label>Tipo</label>
             <select id="ev-tipo">
               <option value="">— seleccionar —</option>
-              <option value="Tractor">Tractor</option>
+              <option value="Trator">Trator</option>
               <option value="Rígido">Rígido</option>
               <option value="Outro">Outro</option>
             </select>
           </div>
-          <div class="frow"><label>Nº Eixos</label><input type="number" id="ev-eixos" min="1" max="10"></div>
+          <div class="frow"><label>Nº Eixos</label>
+            <select id="ev-eixos">
+              <option value="">— seleccionar —</option>
+              <option value="4x2">4x2</option>
+              <option value="6x2 Pusher">6x2 Pusher</option>
+              <option value="6x2 Tag">6x2 Tag</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
           <div class="frow"><label>Reboque habitual</label><input type="text" id="ev-reboque" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Observações</label><input type="text" id="ev-obs"></div>
           <button class="btn btn-p w100" onclick="guardarEdicaoVeiculo()" style="margin-top:12px">💾 Guardar alterações</button>
@@ -710,7 +729,7 @@
     <!-- ANALYTICS -->
     <div class="page hidden" id="page-analytics">
       <div class="page-header">
-        <h2>Analytics</h2>
+        <h2>Análise</h2>
         <button class="btn btn-sm" onclick="loadAnalytics()">↻ Actualizar</button>
       </div>
 
@@ -927,6 +946,9 @@
               <option value="Reboque">Reboque</option>
               <option value="Cisterna">Cisterna</option>
               <option value="Frigorífico">Frigorífico</option>
+              <option value="Porta-Contentores">Porta-Contentores</option>
+              <option value="Lona">Lona</option>
+              <option value="Basculante">Basculante</option>
               <option value="Outro">Outro</option>
             </select>
           </div>
@@ -937,8 +959,11 @@
         <div id="vr-feedback" class="feedback hidden"></div>
       </div>
       <div class="card">
-        <div class="ct">Lista de reboques</div>
-        <div class="table-wrap">
+        <div onclick="toggleListaReboquesFrota()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+          <div class="ct" style="margin:0">Lista de reboques</div>
+          <span id="lista-reboques-toggle" style="font-size:11px;color:var(--text3)">▸ Expandir</span>
+        </div>
+        <div class="table-wrap hidden" id="lista-reboques-wrap" style="margin-top:8px">
           <table>
             <thead><tr>
               <th>Matrícula</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Tipo</th>
@@ -967,6 +992,9 @@
               <option value="Reboque">Reboque</option>
               <option value="Cisterna">Cisterna</option>
               <option value="Frigorífico">Frigorífico</option>
+              <option value="Porta-Contentores">Porta-Contentores</option>
+              <option value="Lona">Lona</option>
+              <option value="Basculante">Basculante</option>
               <option value="Outro">Outro</option>
             </select>
           </div>
@@ -1102,7 +1130,7 @@
     <!-- REBOQUES — ANALYTICS -->
     <div class="page hidden" id="page-analytics-r">
       <div class="page-header">
-        <h2>Analytics — Reboques</h2>
+        <h2>Análise — Reboques</h2>
         <button class="btn btn-sm" onclick="loadAnalyticsReboques()">↻ Actualizar</button>
       </div>
 
