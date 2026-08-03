@@ -86,6 +86,7 @@ function mostrarApp() {
   carregarListasFornMarca();
   carregarListaVeiculos();
   carregarListaReboquesFrota();
+  carregarListaSubtipos();
   loadDashboard();
 }
 

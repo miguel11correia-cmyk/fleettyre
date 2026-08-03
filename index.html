@@ -344,9 +344,12 @@
       </div>
       <div class="card">
         <div class="ct">Pneu</div>
-        <div class="g3">
-          <div class="frow"><label>Marca</label><select id="r-marca"><option value="">— seleccionar —</option></select></div>
+        <div class="g2">
+          <div class="frow"><label>Marca</label><select id="r-marca" onchange="popularSelectorSubtipo('r-marca','r-subtipo')"><option value="">— seleccionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="r-medida" placeholder="ex: 315/80"></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Subtipo</label><select id="r-subtipo"><option value="">— nenhum —</option></select></div>
           <div class="frow"><label>Tipo</label>
             <select id="r-tipo">
               <option value="Novo">Novo</option>
@@ -480,7 +483,7 @@
           <div class="table-wrap">
             <table id="frota-table">
               <thead><tr>
-                <th>Mês Mont.</th><th>Posição</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Tipo</th>
+                <th>Mês Mont.</th><th>Posição</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th>
                 <th>KMs Mont.</th><th>Mês Desmont.</th><th>KMs Desmont.</th>
                 <th>KMs Efect.</th><th>Escultura</th><th>Destino</th>
                 <th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Acção</th>
@@ -535,6 +538,7 @@
         </div>
         <div class="frow"><label>Marca</label><input type="text" id="e-marca" oninput="this.value=this.value.toUpperCase()"></div>
         <div class="frow"><label>Medida</label><input type="text" id="e-medida"></div>
+        <div class="frow"><label>Subtipo</label><input type="text" id="e-subtipo" oninput="this.value=this.value.toUpperCase()"></div>
         <div class="frow"><label>Tipo</label>
           <select id="e-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select>
         </div>
@@ -618,7 +622,7 @@
     </div>
 
     <!-- MARCAS -->
-    <div class="page hidden" id="page-marcas">
+    <div class="page hidden" id="page-marcas" style="position:relative">
       <div class="page-header">
         <h2>Marcas</h2>
         <button class="btn btn-sm" onclick="loadMarcas()">↻ Actualizar</button>
@@ -626,6 +630,28 @@
       <div class="card">
         <div class="ct">Gestão de marcas</div>
         <div id="gestao-marcas"><p class="empty-msg">A carregar...</p></div>
+      </div>
+
+      <!-- PAINEL SUBTIPOS DA MARCA -->
+      <div class="panel" id="painel-subtipos">
+        <div class="panel-head">
+          <span>Subtipos — <span id="subtipos-marca-nome"></span></span>
+          <button class="btn-close" onclick="fecharPainelSubtipos()">✕</button>
+        </div>
+        <div class="panel-body">
+          <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Ex: XTRA LIFE, ENERGY, MULTIWAY — para detalhar o tipo de pneu no registo de montagem.</p>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <input type="text" id="novo-subtipo-nome" placeholder="ex: XTRA LIFE" oninput="this.value=this.value.toUpperCase()" style="flex:1">
+            <button class="btn btn-p" onclick="adicionarSubtipo()">+ Adicionar</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Subtipo</th><th>Acção</th></tr></thead>
+              <tbody id="subtipos-tbody"></tbody>
+            </table>
+          </div>
+          <div id="subtipos-feedback" class="feedback hidden"></div>
+        </div>
       </div>
       <div class="card">
         <div class="ct">Desempenho por marca</div>
@@ -799,8 +825,7 @@
           </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="rr-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>
-        <div class="g3">
-          <div class="frow"><label>Posição</label><input type="text" id="rr-pos" placeholder="ex: EIXO 1 ESQ" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="g2">
           <div class="frow"><label>Eixo</label>
             <select id="rr-eixo">
               <option value="1">Eixo 1 (dianteiro) — 12/14 meses</option>
@@ -813,9 +838,10 @@
       </div>
       <div class="card">
         <div class="ct">Pneu</div>
-        <div class="g2">
-          <div class="frow"><label>Marca</label><select id="rr-marca"><option value="">— seleccionar —</option></select></div>
+        <div class="g3">
+          <div class="frow"><label>Marca</label><select id="rr-marca" onchange="popularSelectorSubtipo('rr-marca','rr-subtipo')"><option value="">— seleccionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="rr-medida" placeholder="ex: 385/65"></div>
+          <div class="frow"><label>Subtipo</label><select id="rr-subtipo"><option value="">— nenhum —</option></select></div>
         </div>
         <div class="g2">
           <div class="frow"><label>Fornecedor</label><select id="rr-forn"><option value="">— seleccionar —</option></select></div>
@@ -939,7 +965,7 @@
         <div class="card">
           <div class="ct">Histórico — clique em "Desmontar" para registar saída</div>
           <div class="table-wrap"><table>
-            <thead><tr><th>Mês Mont.</th><th>Posição</th><th>Eixo</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Tipo</th><th>Meses activo</th><th>Mês Desmont.</th><th>Escultura</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Acção</th></tr></thead>
+            <thead><tr><th>Mês Mont.</th><th>Eixo</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th><th>Meses activo</th><th>Mês Desmont.</th><th>Escultura</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Acção</th></tr></thead>
             <tbody id="rfrota-tbody"></tbody>
           </table></div>
         </div>
@@ -965,10 +991,10 @@
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
-          <div class="frow"><label>Posição</label><input type="text" id="re-pos" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Eixo</label><select id="re-eixo"><option value="1">Eixo 1</option><option value="2">Eixo 2</option><option value="3">Eixo 3</option></select></div>
           <div class="frow"><label>Marca</label><input type="text" id="re-marca" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
+          <div class="frow"><label>Subtipo</label><input type="text" id="re-subtipo" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Tipo</label><select id="re-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
           <div class="frow"><label>Fornecedor</label><input type="text" id="re-forn" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
@@ -998,14 +1024,14 @@
       <div class="card">
         <div class="ct">📊 Todos os pneus activos</div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Matrícula</th><th>Posição</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Mês mont.</th><th>Meses activo</th><th>Limite</th></tr></thead>
+          <thead><tr><th>Matrícula</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Mês mont.</th><th>Meses activo</th><th>Limite</th></tr></thead>
           <tbody id="r-alertas-tbody"></tbody>
         </table></div>
       </div>
       <div class="card">
         <div class="ct">📁 Histórico de durações</div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Matrícula</th><th>Posição</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Duração</th><th>Escultura final</th></tr></thead>
+          <thead><tr><th>Matrícula</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Duração</th><th>Escultura final</th></tr></thead>
           <tbody id="r-hist-tbody"></tbody>
         </table></div>
       </div>
