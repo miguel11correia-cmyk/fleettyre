@@ -3,6 +3,79 @@
 let listaVeiculos = [];
 let editVeiculoId  = null;
 
+// Lista fixa de marcas de camião — igual para todos os clientes, não é
+// gerida por empresa (ao contrário das marcas de pneus).
+const MARCAS_VEICULO = [
+  { slug: 'volvo',    nome: 'Volvo' },
+  { slug: 'scania',   nome: 'Scania' },
+  { slug: 'man',      nome: 'MAN' },
+  { slug: 'daf',      nome: 'DAF' },
+  { slug: 'mercedes', nome: 'Mercedes-Benz' },
+  { slug: 'iveco',    nome: 'Iveco' },
+  { slug: 'renault',  nome: 'Renault Trucks' },
+  { slug: 'ford',     nome: 'Ford Trucks' },
+];
+
+function logoMarcaVeiculo(nome) {
+  const m = MARCAS_VEICULO.find(x => x.nome === nome);
+  return m ? `assets/marcas/${m.slug}.svg` : null;
+}
+
+// HTML da marca com mini-logo à frente, para o cartão de "Por matrícula"
+function renderMarcaComLogo(nome) {
+  if (!nome) return '—';
+  const src = logoMarcaVeiculo(nome);
+  if (!src) return nome;
+  return `<img src="${src}" alt="" style="width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
+}
+
+// Actualiza o mini-logo e mostra/esconde o campo "Outra" consoante a
+// opção seleccionada no select de marca indicado (ex: 'v-marca', 'ev-marca').
+function atualizarMarcaVeiculo(selectId) {
+  const sel      = document.getElementById(selectId);
+  const logo     = document.getElementById(selectId + '-logo');
+  const outraInp = document.getElementById(selectId + '-outra');
+  if (!sel) return;
+
+  const ehOutra = sel.value === 'Outra';
+  if (outraInp) outraInp.classList.toggle('hidden', !ehOutra);
+
+  const src = logoMarcaVeiculo(sel.value);
+  if (logo) {
+    if (src) { logo.src = src; logo.style.display = ''; }
+    else     { logo.style.display = 'none'; }
+  }
+}
+
+// Devolve o nome final da marca, resolvendo "Outra" para o texto livre
+function obterMarcaVeiculo(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return '';
+  if (sel.value === 'Outra') {
+    const outraInp = document.getElementById(selectId + '-outra');
+    return outraInp ? outraInp.value.trim() : '';
+  }
+  return sel.value;
+}
+
+// Prepara o select de marca (e o campo "Outra"/logo) para mostrar um valor
+// já guardado — usado ao abrir o painel de edição.
+function definirMarcaVeiculo(selectId, nomeActual) {
+  const sel      = document.getElementById(selectId);
+  const outraInp = document.getElementById(selectId + '-outra');
+  if (!sel) return;
+
+  const conhecida = MARCAS_VEICULO.some(m => m.nome === nomeActual);
+  if (nomeActual && !conhecida) {
+    sel.value = 'Outra';
+    if (outraInp) outraInp.value = nomeActual;
+  } else {
+    sel.value = nomeActual || '';
+    if (outraInp) outraInp.value = '';
+  }
+  atualizarMarcaVeiculo(selectId);
+}
+
 async function carregarListaVeiculos() {
   const { data } = await sb.from('veiculos').select('*').eq('ativo', true).order('matricula');
   listaVeiculos = data || [];
@@ -71,7 +144,7 @@ async function loadFrotaCadastro() {
 
 async function adicionarVeiculo() {
   const mat      = document.getElementById('v-mat').value.trim().toUpperCase();
-  const marca    = document.getElementById('v-marca').value.trim();
+  const marca    = obterMarcaVeiculo('v-marca');
   const modelo   = document.getElementById('v-modelo').value.trim();
   const anoStr   = document.getElementById('v-ano').value;
   const tipo     = document.getElementById('v-tipo').value;
@@ -106,9 +179,10 @@ async function adicionarVeiculo() {
 }
 
 function limparFormVeiculo() {
-  ['v-mat', 'v-marca', 'v-modelo', 'v-ano', 'v-eixos', 'v-reboque', 'v-obs']
+  ['v-mat', 'v-marca', 'v-marca-outra', 'v-modelo', 'v-ano', 'v-eixos', 'v-reboque', 'v-obs']
     .forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('v-tipo').value = '';
+  atualizarMarcaVeiculo('v-marca');
 }
 
 async function abrirEdicaoVeiculo(id) {
@@ -117,7 +191,7 @@ async function abrirEdicaoVeiculo(id) {
   editVeiculoId = id;
 
   document.getElementById('ev-mat').value     = v.matricula    || '';
-  document.getElementById('ev-marca').value   = v.marca        || '';
+  definirMarcaVeiculo('ev-marca', v.marca || '');
   document.getElementById('ev-modelo').value  = v.modelo       || '';
   document.getElementById('ev-ano').value     = v.ano          || '';
   document.getElementById('ev-tipo').value    = v.tipo         || '';
@@ -138,7 +212,7 @@ async function guardarEdicaoVeiculo() {
   if (editVeiculoId == null) return;
 
   const mat      = document.getElementById('ev-mat').value.trim().toUpperCase();
-  const marca    = document.getElementById('ev-marca').value.trim();
+  const marca    = obterMarcaVeiculo('ev-marca');
   const modelo   = document.getElementById('ev-modelo').value.trim();
   const anoStr   = document.getElementById('ev-ano').value;
   const tipo     = document.getElementById('ev-tipo').value;

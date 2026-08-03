@@ -395,7 +395,25 @@
         <div class="ct">Adicionar veículo</div>
         <div class="g3">
           <div class="frow"><label>Matrícula *</label><input type="text" id="v-mat" placeholder="ex: 51-PQ-43" oninput="this.value=this.value.toUpperCase()"></div>
-          <div class="frow"><label>Marca</label><input type="text" id="v-marca" placeholder="ex: Volvo"></div>
+          <div class="frow">
+            <label>Marca</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <img id="v-marca-logo" src="" alt="" style="width:22px;height:22px;object-fit:contain;display:none;flex-shrink:0">
+              <select id="v-marca" onchange="atualizarMarcaVeiculo('v-marca')" style="flex:1">
+                <option value="">— seleccionar —</option>
+                <option value="Volvo">Volvo</option>
+                <option value="Scania">Scania</option>
+                <option value="MAN">MAN</option>
+                <option value="DAF">DAF</option>
+                <option value="Mercedes-Benz">Mercedes-Benz</option>
+                <option value="Iveco">Iveco</option>
+                <option value="Renault Trucks">Renault Trucks</option>
+                <option value="Ford Trucks">Ford Trucks</option>
+                <option value="Outra">Outra…</option>
+              </select>
+            </div>
+            <input type="text" id="v-marca-outra" placeholder="nome da marca" class="hidden" style="margin-top:6px">
+          </div>
           <div class="frow"><label>Modelo</label><input type="text" id="v-modelo" placeholder="ex: FH"></div>
         </div>
         <div class="g3">
@@ -438,7 +456,25 @@
         </div>
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="ev-mat" oninput="this.value=this.value.toUpperCase()"></div>
-          <div class="frow"><label>Marca</label><input type="text" id="ev-marca"></div>
+          <div class="frow">
+            <label>Marca</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <img id="ev-marca-logo" src="" alt="" style="width:22px;height:22px;object-fit:contain;display:none;flex-shrink:0">
+              <select id="ev-marca" onchange="atualizarMarcaVeiculo('ev-marca')" style="flex:1">
+                <option value="">— seleccionar —</option>
+                <option value="Volvo">Volvo</option>
+                <option value="Scania">Scania</option>
+                <option value="MAN">MAN</option>
+                <option value="DAF">DAF</option>
+                <option value="Mercedes-Benz">Mercedes-Benz</option>
+                <option value="Iveco">Iveco</option>
+                <option value="Renault Trucks">Renault Trucks</option>
+                <option value="Ford Trucks">Ford Trucks</option>
+                <option value="Outra">Outra…</option>
+              </select>
+            </div>
+            <input type="text" id="ev-marca-outra" placeholder="nome da marca" class="hidden" style="margin-top:6px">
+          </div>
           <div class="frow"><label>Modelo</label><input type="text" id="ev-modelo"></div>
           <div class="frow"><label>Ano</label><input type="number" id="ev-ano" min="1980" max="2100"></div>
           <div class="frow"><label>Tipo</label>
