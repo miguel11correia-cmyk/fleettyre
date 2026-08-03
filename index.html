@@ -948,7 +948,14 @@
               <option value="Outro">Outro</option>
             </select>
           </div>
-          <div class="frow"><label>Nº Eixos</label><input type="number" id="vr-eixos" min="1" max="10"></div>
+          <div class="frow"><label>Nº Eixos</label>
+            <select id="vr-eixos">
+              <option value="">— seleccionar —</option>
+              <option value="2x2">2x2</option>
+              <option value="2x2x2">2x2x2</option>
+              <option value="2x2x2 (rodado duplo)">2x2x2 (rodado duplo)</option>
+            </select>
+          </div>
         </div>
         <div class="frow"><label>Observações</label><input type="text" id="vr-obs" placeholder="opcional"></div>
         <button class="btn btn-p" onclick="adicionarReboqueFrota()">+ Adicionar reboque</button>
@@ -994,7 +1001,14 @@
               <option value="Outro">Outro</option>
             </select>
           </div>
-          <div class="frow"><label>Nº Eixos</label><input type="number" id="evr-eixos" min="1" max="10"></div>
+          <div class="frow"><label>Nº Eixos</label>
+            <select id="evr-eixos">
+              <option value="">— seleccionar —</option>
+              <option value="2x2">2x2</option>
+              <option value="2x2x2">2x2x2</option>
+              <option value="2x2x2 (rodado duplo)">2x2x2 (rodado duplo)</option>
+            </select>
+          </div>
           <div class="frow"><label>Observações</label><input type="text" id="evr-obs"></div>
           <button class="btn btn-p w100" onclick="guardarEdicaoReboqueFrota()" style="margin-top:12px">💾 Guardar alterações</button>
           <div id="evr-feedback" class="feedback hidden"></div>
