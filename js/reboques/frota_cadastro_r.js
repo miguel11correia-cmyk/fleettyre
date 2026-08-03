@@ -3,6 +3,9 @@
 let listaReboquesFrota = [];
 let editReboqueFrotaId  = null;
 
+// Nº de pneus esperados (activos) consoante a configuração de eixos
+const EIXOS_TYRES_REBOQUE = { '2x2': 4, '2x2x2': 6, '2x2x2 (rodado duplo)': 12 };
+
 async function carregarListaReboquesFrota() {
   const { data } = await sb.from('reboques_frota').select('*').eq('ativo', true).order('matricula');
   listaReboquesFrota = data || [];
@@ -62,8 +65,7 @@ async function loadFrotaCadastroReboques() {
   const tbody = document.getElementById('frota-cadastro-r-tbody');
   if (!tbody) return;
   tbody.innerHTML = data.map(v => {
-    const eixosNum  = parseInt(v.num_eixos);
-    const esperados = Number.isFinite(eixosNum) ? eixosNum * 2 : null;
+    const esperados = EIXOS_TYRES_REBOQUE[v.num_eixos];
     const activos   = activosPorMat[v.matricula] || 0;
     const aviso     = esperados != null && activos < esperados;
     return `<tr>
@@ -89,7 +91,7 @@ async function adicionarReboqueFrota() {
   const modelo   = document.getElementById('vr-modelo').value.trim();
   const anoStr   = document.getElementById('vr-ano').value;
   const tipo     = document.getElementById('vr-tipo').value;
-  const eixosStr = document.getElementById('vr-eixos').value;
+  const eixos    = document.getElementById('vr-eixos').value;
   const obs      = document.getElementById('vr-obs').value.trim();
 
   if (!mat) { showFeedback('vr-feedback', 'Matrícula é obrigatória.', true); return; }
@@ -101,7 +103,7 @@ async function adicionarReboqueFrota() {
     modelo:      modelo || null,
     ano:         anoStr   !== '' ? parseInt(anoStr)   : null,
     tipo:        tipo    || null,
-    num_eixos:   eixosStr !== '' ? parseInt(eixosStr) : null,
+    num_eixos:   eixos  || null,
     observacoes: obs     || null,
   };
 
@@ -153,7 +155,7 @@ async function guardarEdicaoReboqueFrota() {
   const modelo   = document.getElementById('evr-modelo').value.trim();
   const anoStr   = document.getElementById('evr-ano').value;
   const tipo     = document.getElementById('evr-tipo').value;
-  const eixosStr = document.getElementById('evr-eixos').value;
+  const eixos    = document.getElementById('evr-eixos').value;
   const obs      = document.getElementById('evr-obs').value.trim();
 
   if (!mat) { showFeedback('evr-feedback', 'Matrícula é obrigatória.', true); return; }
@@ -164,7 +166,7 @@ async function guardarEdicaoReboqueFrota() {
     modelo:      modelo || null,
     ano:         anoStr   !== '' ? parseInt(anoStr)   : null,
     tipo:        tipo    || null,
-    num_eixos:   eixosStr !== '' ? parseInt(eixosStr) : null,
+    num_eixos:   eixos  || null,
     observacoes: obs     || null,
   };
 
