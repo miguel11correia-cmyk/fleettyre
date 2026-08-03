@@ -1,6 +1,6 @@
 // ── FROTA ──────────────────────────────────────────────
 
-const ICON_VEICULO = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M2.5 14V7.3a1 1 0 0 1 1-1h3.8l3.7 3.6V14"/><rect x="4.3" y="8" width="2.6" height="2.6" rx="0.4"/><path d="M2.5 14h9.5"/><circle cx="6" cy="15.4" r="1.7"/></svg>';
+const ICON_VEICULO = '<svg viewBox="0 0 512.001 512.001" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><use href="#icon-truck"/></svg>';
 
 async function initFrotaSelect() {
   loading(true);
