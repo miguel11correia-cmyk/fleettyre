@@ -113,7 +113,7 @@ function renderInfoVeiculo(v, mat) {
     </div>
     <div class="g3" style="margin-bottom:0">
       <div><span style="font-size:11px;color:var(--text3)">Tipo</span><br>${v.tipo || '—'}</div>
-      <div><span style="font-size:11px;color:var(--text3)">Nº Eixos</span><br>${v.num_eixos || '—'}</div>
+      <div><span style="font-size:11px;color:var(--text3)">Configuração eixos</span><br>${v.num_eixos || '—'}</div>
       <div><span style="font-size:11px;color:var(--text3)">Reboque habitual</span><br>${v.reboque_hab || '—'}</div>
     </div>`;
 }

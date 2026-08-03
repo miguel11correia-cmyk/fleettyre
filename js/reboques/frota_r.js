@@ -112,7 +112,7 @@ function renderInfoReboque(v, mat) {
     </div>
     <div class="g2" style="margin-bottom:0">
       <div><span style="font-size:11px;color:var(--text3)">Tipo</span><br>${v.tipo || '—'}</div>
-      <div><span style="font-size:11px;color:var(--text3)">Nº Eixos</span><br>${v.num_eixos || '—'}</div>
+      <div><span style="font-size:11px;color:var(--text3)">Configuração eixos</span><br>${v.num_eixos || '—'}</div>
     </div>`;
 }
 
