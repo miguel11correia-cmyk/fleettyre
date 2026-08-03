@@ -16,6 +16,10 @@ const MARCAS_VEICULO = [
   { slug: 'ford',     nome: 'Ford Trucks' },
 ];
 
+// Nº de pneus esperados (activos) consoante a configuração de eixos —
+// "Outro" fica de fora porque não há uma contagem fixa para comparar.
+const EIXOS_TYRES_VEICULO = { '4x2': 6, '6x2 Pusher': 10, '6x2 Tag': 10 };
+
 function logoMarcaVeiculo(nome) {
   const m = MARCAS_VEICULO.find(x => x.nome === nome);
   return m ? `assets/marcas/${m.slug}.svg` : null;
@@ -117,16 +121,29 @@ async function initFrotaCadastro() {
 
 async function loadFrotaCadastro() {
   loading(true);
-  const { data, error } = await sb.from('veiculos').select('*').eq('ativo', true).order('matricula');
+  const [{ data, error }, { data: pneusData }] = await Promise.all([
+    sb.from('veiculos').select('*').eq('ativo', true).order('matricula'),
+    sb.from('pneus').select('matricula, mes_desmont'),
+  ]);
   loading(false);
   if (error || !data) return;
 
   listaVeiculos = data;
 
+  // Pneus activos (sem desmontagem) por matrícula
+  const activosPorMat = {};
+  (pneusData || []).forEach(r => {
+    if (!r.mes_desmont) activosPorMat[r.matricula] = (activosPorMat[r.matricula] || 0) + 1;
+  });
+
   const tbody = document.getElementById('frota-cadastro-tbody');
   if (!tbody) return;
-  tbody.innerHTML = data.map(v => `<tr>
-    <td><strong>${v.matricula}</strong>${!v.num_eixos ? ' <span title="Eixos por preencher" style="color:var(--red)">●</span>' : ''}</td>
+  tbody.innerHTML = data.map(v => {
+    const esperados = EIXOS_TYRES_VEICULO[v.num_eixos];
+    const activos   = activosPorMat[v.matricula] || 0;
+    const aviso     = esperados != null && activos < esperados;
+    return `<tr>
+    <td><strong>${v.matricula}</strong>${aviso ? ` <span title="Só ${activos} de ${esperados} pneus activos" style="color:var(--red)">●</span>` : ''}</td>
     <td>${v.marca || '—'}</td>
     <td>${v.modelo || '—'}</td>
     <td>${v.ano || '—'}</td>
@@ -139,7 +156,8 @@ async function loadFrotaCadastro() {
         <button class="btn btn-sm" onclick="apagarVeiculo(${v.id},'${v.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
       </div>
     </td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 async function adicionarVeiculo() {
