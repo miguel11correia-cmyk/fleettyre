@@ -12,7 +12,7 @@ create table if not exists public.veiculos (
   marca         text,
   modelo        text,
   ano           integer,
-  tipo          text, -- Tractor, Rígido, Outro
+  tipo          text, -- Trator, Rígido, Outro
   num_eixos     integer,
   reboque_hab   text, -- matrícula do reboque habitual
   observacoes   text,
