@@ -84,6 +84,8 @@ function mostrarApp() {
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('user-email').textContent = currentUser.email;
   carregarListasFornMarca();
+  carregarListaVeiculos();
+  carregarListaReboquesFrota();
   loadDashboard();
 }
 

@@ -25,6 +25,7 @@ function nav(id, el) {
   fecharPainel();
 
   if      (id === 'dashboard')     loadDashboard();
+  else if (id === 'frota-cadastro') initFrotaCadastro();
   else if (id === 'registar')      { /* formulário, sem load */ }
   else if (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
@@ -46,6 +47,7 @@ function navR(id, el) {
   if (el) el.classList.add('active');
 
   if      (id === 'dashboard-r')    loadDashboardReboques();
+  else if (id === 'frota-cadastro-r') initFrotaCadastroReboques();
   else if (id === 'registar-r')     { /* formulário, sem load */ }
   else if (id === 'frota-r')        initFrotaSelectReboques();
   else if (id === 'alertas-r')      loadAlertasReboques();
