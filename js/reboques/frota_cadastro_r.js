@@ -44,16 +44,30 @@ async function initFrotaCadastroReboques() {
 
 async function loadFrotaCadastroReboques() {
   loading(true);
-  const { data, error } = await sb.from('reboques_frota').select('*').eq('ativo', true).order('matricula');
+  const [{ data, error }, { data: reboquesData }] = await Promise.all([
+    sb.from('reboques_frota').select('*').eq('ativo', true).order('matricula'),
+    sb.from('reboques').select('matricula, mes_desmont'),
+  ]);
   loading(false);
   if (error || !data) return;
 
   listaReboquesFrota = data;
 
+  // Pneus activos (sem desmontagem) por matrícula — esperado: 2 pneus por eixo
+  const activosPorMat = {};
+  (reboquesData || []).forEach(r => {
+    if (!r.mes_desmont) activosPorMat[r.matricula] = (activosPorMat[r.matricula] || 0) + 1;
+  });
+
   const tbody = document.getElementById('frota-cadastro-r-tbody');
   if (!tbody) return;
-  tbody.innerHTML = data.map(v => `<tr>
-    <td><strong>${v.matricula}</strong>${!v.num_eixos ? ' <span title="Eixos por preencher" style="color:var(--red)">●</span>' : ''}</td>
+  tbody.innerHTML = data.map(v => {
+    const eixosNum  = parseInt(v.num_eixos);
+    const esperados = Number.isFinite(eixosNum) ? eixosNum * 2 : null;
+    const activos   = activosPorMat[v.matricula] || 0;
+    const aviso     = esperados != null && activos < esperados;
+    return `<tr>
+    <td><strong>${v.matricula}</strong>${aviso ? ` <span title="Só ${activos} de ${esperados} pneus activos" style="color:var(--red)">●</span>` : ''}</td>
     <td>${v.marca || '—'}</td>
     <td>${v.modelo || '—'}</td>
     <td>${v.ano || '—'}</td>
@@ -65,7 +79,8 @@ async function loadFrotaCadastroReboques() {
         <button class="btn btn-sm" onclick="apagarReboqueFrota(${v.id},'${v.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
       </div>
     </td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 async function adicionarReboqueFrota() {
