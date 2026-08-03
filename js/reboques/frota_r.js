@@ -1,5 +1,7 @@
 // ── REBOQUES/FROTA.JS ────────────────────────────────────────────
 
+const ICON_REBOQUE = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><rect x="2.5" y="6.3" width="15" height="6.2" rx="0.8"/><circle cx="5.8" cy="15.2" r="1.4"/><circle cx="9.8" cy="15.2" r="1.4"/><circle cx="13.8" cy="15.2" r="1.4"/></svg>';
+
 let painelRId = null;
 let editRId   = null;
 
@@ -96,13 +98,13 @@ function renderInfoReboque(v, mat) {
   if (!el) return;
 
   if (!v) {
-    el.innerHTML = `<div class="ct">🔗 ${mat}</div>
+    el.innerHTML = `<div class="ct">${ICON_REBOQUE}${mat}</div>
       <p style="font-size:12px;color:var(--text3)">Sem ficha de reboque registada em "Frota".</p>`;
     return;
   }
 
   el.innerHTML = `
-    <div class="ct">🔗 ${v.matricula}</div>
+    <div class="ct">${ICON_REBOQUE}${v.matricula}</div>
     <div class="g3" style="margin-bottom:0">
       <div><span style="font-size:11px;color:var(--text3)">Marca</span><br>${v.marca || '—'}</div>
       <div><span style="font-size:11px;color:var(--text3)">Modelo</span><br>${v.modelo || '—'}</div>
