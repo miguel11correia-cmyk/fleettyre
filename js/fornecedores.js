@@ -17,7 +17,7 @@ async function carregarListasFornMarca() {
 
 function preencherSelectores() {
   // Selectores de veículos e da fatura de stock
-  ['r-forn', 'rr-forn', 'f-forn'].forEach(id => {
+  ['r-forn', 'rr-forn', 'f-forn', 'e-forn', 're-forn'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
@@ -25,7 +25,7 @@ function preencherSelectores() {
       listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} — ${f.nome}</option>`).join('');
   });
 
-  ['r-marca', 'rr-marca'].forEach(id => {
+  ['r-marca', 'rr-marca', 'e-marca', 're-marca'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;

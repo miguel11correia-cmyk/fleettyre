@@ -185,6 +185,7 @@ async function abrirEdicaoReboque(id) {
   document.getElementById('re-eixo').value   = data.eixo         || '1';
   document.getElementById('re-marca').value  = data.marca        || '';
   document.getElementById('re-medida').value = data.medida       || '';
+  popularSelectorSubtipo('re-marca', 're-subtipo');
   document.getElementById('re-subtipo').value = data.subtipo     || '';
   document.getElementById('re-tipo').value   = data.tipo         || 'Novo';
   document.getElementById('re-forn').value   = data.fornecedor   || '';

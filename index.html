@@ -591,13 +591,13 @@
             <option value="Tração">Tração</option>
           </select>
         </div>
-        <div class="frow"><label>Marca</label><input type="text" id="e-marca" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="frow"><label>Marca</label><select id="e-marca" onchange="popularSelectorSubtipo('e-marca','e-subtipo')"><option value="">— seleccionar —</option></select></div>
         <div class="frow"><label>Medida</label><input type="text" id="e-medida"></div>
-        <div class="frow"><label>Subtipo</label><input type="text" id="e-subtipo" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="frow"><label>Subtipo</label><select id="e-subtipo"><option value="">— nenhum —</option></select></div>
         <div class="frow"><label>Tipo</label>
           <select id="e-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select>
         </div>
-        <div class="frow"><label>Fornecedor</label><input type="text" id="e-forn" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="frow"><label>Fornecedor</label><select id="e-forn"><option value="">— seleccionar —</option></select></div>
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Custos</div>
         <div class="frow"><label>Custo pneu (€)</label><input type="number" id="e-custo" min="0" step="0.01"></div>
         <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="e-mo" min="0" step="0.01"></div>
@@ -1066,11 +1066,11 @@
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
           <div class="frow"><label>Eixo</label><select id="re-eixo"><option value="1">Eixo 1</option><option value="2">Eixo 2</option><option value="3">Eixo 3</option></select></div>
-          <div class="frow"><label>Marca</label><input type="text" id="re-marca" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Marca</label><select id="re-marca" onchange="popularSelectorSubtipo('re-marca','re-subtipo')"><option value="">— seleccionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
-          <div class="frow"><label>Subtipo</label><input type="text" id="re-subtipo" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Subtipo</label><select id="re-subtipo"><option value="">— nenhum —</option></select></div>
           <div class="frow"><label>Tipo</label><select id="re-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
-          <div class="frow"><label>Fornecedor</label><input type="text" id="re-forn" oninput="this.value=this.value.toUpperCase()"></div>
+          <div class="frow"><label>Fornecedor</label><select id="re-forn"><option value="">— seleccionar —</option></select></div>
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
           <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7"></div>

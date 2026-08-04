@@ -213,6 +213,7 @@ async function abrirEdicao(id) {
   document.getElementById('e-pos').value     = data.posicao      || '';
   document.getElementById('e-marca').value   = data.marca        || '';
   document.getElementById('e-medida').value  = data.medida       || '';
+  popularSelectorSubtipo('e-marca', 'e-subtipo');
   document.getElementById('e-subtipo').value = data.subtipo      || '';
   document.getElementById('e-tipo').value    = data.tipo         || 'Novo';
   document.getElementById('e-forn').value    = data.fornecedor   || '';
