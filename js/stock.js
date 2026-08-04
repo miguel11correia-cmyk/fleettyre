@@ -123,9 +123,11 @@ function renderStockDesmontados(pneus, tabela) {
       estadoHtml = '<span class="badge b-ok">Pronto</span>';
     } else if (r.pronto) {
       estadoHtml = '<span class="badge b-ok">✓ Pronto</span> '
+        + (r.custo_pronto > 0 ? '<span style="font-size:10px;color:var(--text3)">(' + fmtEur(r.custo_pronto) + ')</span> ' : '')
         + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button>';
     } else {
       estadoHtml = '<span class="badge b-alert">Pendente</span> '
+        + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:22px;font-size:10px;padding:0 4px;margin:0 4px;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle">'
         + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:22px;padding:0 8px;font-size:10px">✓ Marcar pronto</button>';
     }
 
@@ -147,8 +149,14 @@ function renderStockDesmontados(pneus, tabela) {
 }
 
 async function marcarProntoDesmontado(id, tabela, pronto) {
+  const updates = { pronto };
+  if (pronto) {
+    const inp = document.getElementById('custo-pronto-' + id);
+    const val = inp ? parseFloat(inp.value) : NaN;
+    if (Number.isFinite(val) && val >= 0) updates.custo_pronto = val;
+  }
   loading(true);
-  const { error } = await sb.from(tabela).update({ pronto }).eq('id', id);
+  const { error } = await sb.from(tabela).update(updates).eq('id', id);
   loading(false);
   if (error) { alert('Erro: ' + error.message); return; }
   loadStock();
@@ -331,13 +339,14 @@ async function abrirSelStock() {
         const rTipo = r.tipo || '';
         const rMat = r.matricula.replace(/'/g, "\\'");
         const rTab = r._tabela;
-        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipo + '\',\'' + rMat + '\',\'' + rTab + '\')">';
+        const rCustoPronto = r.custo_pronto || 0;
+        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipo + '\',\'' + rMat + '\',\'' + rTab + '\',' + rCustoPronto + ')">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
         html += '<div><span style="font-weight:500;font-size:13px">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span><span style="margin-left:8px">' + tipoBadge(r.tipo) + '</span></div>';
         const rDestCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
         html += '<span class="badge ' + rDestCls + '">' + r.destino + '</span>';
         html += '</div>';
-        html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + '</div>';
+        html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + (rCustoPronto>0?' · <span style="color:var(--amber);font-weight:500">'+fmtEur(rCustoPronto)+'</span>':'') + '</div>';
         html += '</div>';
       });
     }
@@ -361,6 +370,8 @@ function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco) {
   });
   const elCustoV = document.getElementById('r-custo');  if (elCustoV) elCustoV.value = preco > 0 ? preco : '';
   const elCustoR = document.getElementById('rr-custo'); if (elCustoR) elCustoR.value = preco > 0 ? preco : '';
+  popularSelectorSubtipo('r-marca', 'r-subtipo');
+  popularSelectorSubtipo('rr-marca', 'rr-subtipo');
   stockLinhaSelId      = linhaId;
   stockDesmontadoSelId = null;
   const msg = '✓ Pneu de fatura: ' + marca + ' ' + medida + ' ' + tipo + (preco > 0 ? ' — ' + fmtEur(preco) : '') + ' — ' + fornecedor;
@@ -368,15 +379,18 @@ function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco) {
   fecharSelStock();
 }
 
-function selecionarDesmontadoDeStock(id, marca, medida, tipo, matriculaOrigem, tabela) {
+function selecionarDesmontadoDeStock(id, marca, medida, tipo, matriculaOrigem, tabela, custoPronto) {
   // Preencher campos — suporta tanto veículos (r-*) como reboques (rr-*)
-  [['r-marca','rr-marca',marca], ['r-medida','rr-medida',medida], ['r-tipo','rr-tipo',tipo], ['r-forn','rr-forn','PARQUE'], ['r-custo','rr-custo','']].forEach(([v,r,val]) => {
+  const custoVal = custoPronto > 0 ? custoPronto : '';
+  [['r-marca','rr-marca',marca], ['r-medida','rr-medida',medida], ['r-tipo','rr-tipo',tipo], ['r-forn','rr-forn','PARQUE'], ['r-custo','rr-custo',custoVal]].forEach(([v,r,val]) => {
     const elV = document.getElementById(v); if (elV) elV.value = val;
     const elR = document.getElementById(r); if (elR) elR.value = val;
   });
+  popularSelectorSubtipo('r-marca', 'r-subtipo');
+  popularSelectorSubtipo('rr-marca', 'rr-subtipo');
   stockLinhaSelId      = null;
   stockDesmontadoSelId = { id, tabela };
-  const msg = '✓ Pneu de armazém: ' + marca + ' ' + medida + ' ' + tipo + ' — ' + (tabela === 'reboques' ? 'reboque' : 'veículo') + ' ' + matriculaOrigem;
+  const msg = '✓ Pneu de armazém: ' + marca + ' ' + medida + ' ' + tipo + (custoPronto > 0 ? ' — ' + fmtEur(custoPronto) : '') + ' — ' + (tabela === 'reboques' ? 'reboque' : 'veículo') + ' ' + matriculaOrigem;
   ['r-stock-info','rr-stock-info'].forEach(fid => { const el = document.getElementById(fid); if (el) { el.textContent = msg; el.classList.remove('hidden'); } });
   fecharSelStock();
 }

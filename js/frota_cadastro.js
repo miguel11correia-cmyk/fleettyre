@@ -8,10 +8,10 @@ let editVeiculoId  = null;
 const MARCAS_VEICULO = [
   { slug: 'volvo',    nome: 'Volvo' },
   { slug: 'scania',   nome: 'Scania' },
-  { slug: 'man',      nome: 'MAN' },
-  { slug: 'daf',      nome: 'DAF' },
+  { slug: 'man',      nome: 'MAN',      scale: 1.3 },
+  { slug: 'daf',      nome: 'DAF',      scale: 1.3 },
   { slug: 'mercedes', nome: 'Mercedes-Benz' },
-  { slug: 'iveco',    nome: 'Iveco' },
+  { slug: 'iveco',    nome: 'Iveco',    scale: 1.3 },
   { slug: 'renault',  nome: 'Renault Trucks' },
   { slug: 'ford',     nome: 'Ford Trucks' },
 ];
@@ -25,12 +25,20 @@ function logoMarcaVeiculo(nome) {
   return m ? `assets/marcas/${m.slug}.svg` : null;
 }
 
+function logoScaleVeiculo(nome) {
+  const m = MARCAS_VEICULO.find(x => x.nome === nome);
+  return (m && m.scale) || 1;
+}
+
 // HTML da marca com mini-logo à frente, para o cartão de "Por matrícula"
 function renderMarcaComLogo(nome) {
   if (!nome) return '—';
   const src = logoMarcaVeiculo(nome);
   if (!src) return nome;
-  return `<img src="${src}" alt="" style="height:16px;width:auto;max-width:28px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
+  const escala = logoScaleVeiculo(nome);
+  const h = Math.round(16 * escala);
+  const mw = Math.round(28 * escala);
+  return `<img src="${src}" alt="" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
 }
 
 // Actualiza o mini-logo e mostra/esconde o campo "Outra" consoante a
@@ -46,8 +54,15 @@ function atualizarMarcaVeiculo(selectId) {
 
   const src = logoMarcaVeiculo(sel.value);
   if (logo) {
-    if (src) { logo.src = src; logo.style.display = ''; }
-    else     { logo.style.display = 'none'; }
+    if (src) {
+      logo.src = src;
+      const escala = logoScaleVeiculo(sel.value);
+      logo.style.height   = Math.round(22 * escala) + 'px';
+      logo.style.maxWidth = Math.round(38 * escala) + 'px';
+      logo.style.display  = '';
+    } else {
+      logo.style.display = 'none';
+    }
   }
 }
 
