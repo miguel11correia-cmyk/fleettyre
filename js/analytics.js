@@ -31,12 +31,18 @@ function amostraComparativa(linhasOrdenadas, valorKey, media) {
 
 async function loadAnalytics() {
   loading(true);
-  const { data, error } = await sb.from('pneus').select('*');
+  const [{ data, error }, { data: veiculosData }] = await Promise.all([
+    sb.from('pneus').select('*'),
+    sb.from('veiculos').select('matricula, km_atual'),
+  ]);
   loading(false);
   if (error || !data) return;
 
+  const kmAtualPorMat = {};
+  (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
+
   renderRoiPorTipo(data);
-  renderComparacaoVeiculos(data);
+  renderComparacaoVeiculos(data, kmAtualPorMat);
 }
 
 // ── ANÁLISE 1 — ROI POR TIPO DE PNEU ──────────────────────────────
@@ -84,7 +90,7 @@ function renderRoiPorTipo(data) {
 
 // ── ANÁLISE 2 — COMPARAÇÃO ENTRE VEÍCULOS ─────────────────────────
 
-function renderComparacaoVeiculos(data) {
+function renderComparacaoVeiculos(data, kmAtualPorMat) {
   const porMat = {};
   data.forEach(r => {
     if (!porMat[r.matricula]) porMat[r.matricula] = [];
@@ -94,8 +100,8 @@ function renderComparacaoVeiculos(data) {
   const linhas = [];
   Object.keys(porMat).forEach(mat => {
     const regs      = porMat[mat];
-    const comKms    = regs.filter(r => r.kms_desmont && r.kms_mont && r.kms_desmont > r.kms_mont);
-    const kmsEfArr  = comKms.map(r => r.kms_desmont - r.kms_mont);
+    const kmAtual   = kmAtualPorMat ? kmAtualPorMat[mat] : null;
+    const kmsEfArr  = regs.map(r => kmsEfectuados(r, kmAtual)).filter(x => x != null).map(x => x.km);
     const kmsMed    = kmsEfArr.length > 0 ? kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length : null;
 
     const comCusto   = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);

@@ -39,7 +39,15 @@ function taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas) {
   return 0.08; // fallback sector pesados
 }
 
-function kmsReaisOuEstimados(pneu, todosDoCamiao) {
+function kmsReaisOuEstimados(pneu, todosDoCamiao, kmAtualVeiculo) {
+  // 0. Km actual real do veículo (integração Cartrack), quando existe —
+  // substitui as estimativas abaixo por um valor conhecido em vez de
+  // inferido. Sem esta informação (veículo ou frota sem integração),
+  // segue-se exactamente a lógica antiga sem qualquer alteração.
+  if (kmAtualVeiculo != null && pneu.kms_mont && kmAtualVeiculo > pneu.kms_mont) {
+    return kmAtualVeiculo - pneu.kms_mont;
+  }
+
   // 1. Usar KMs máximos conhecidos do camião (registo mais recente com KMs)
   const kmsMax = todosDoCamiao
     .filter(r => r.kms_mont && r.kms_mont > 0)
@@ -78,9 +86,15 @@ function kmsReaisOuEstimados(pneu, todosDoCamiao) {
 
 async function loadAlertas() {
   loading(true);
-  const { data, error } = await sb.from('pneus').select('*');
+  const [{ data, error }, { data: veiculosData }] = await Promise.all([
+    sb.from('pneus').select('*'),
+    sb.from('veiculos').select('matricula, km_atual'),
+  ]);
   loading(false);
   if (error || !data) return;
+
+  const kmAtualPorMat = {};
+  (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
 
   const taxasPorMTP = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}|${r.posicao || 'DESCONHECIDA'}`);
   const taxasPorMT  = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}`);
@@ -99,7 +113,9 @@ async function loadAlertas() {
   const activos = data.filter(r => !r.mes_desmont && r.mes_mont && r.kms_mont);
 
   activos.forEach(r => {
-    const kmsFeitos = kmsReaisOuEstimados(r, porMat[r.matricula] || [r]);
+    const kmAtualV  = kmAtualPorMat[r.matricula];
+    const kmsFeitos = kmsReaisOuEstimados(r, porMat[r.matricula] || [r], kmAtualV);
+    const kmReal    = kmAtualV != null && r.kms_mont && kmAtualV > r.kms_mont;
     const taxa      = taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas);
     const escInicial = escIni(r.tipo);
     const escEstimada = Math.max(0, Math.round((escInicial - (kmsFeitos / 1000 * taxa)) * 10) / 10);
@@ -107,6 +123,7 @@ async function loadAlertas() {
     estimativas.push({
       ...r,
       kmsFeitos,
+      kmReal,
       taxa,
       escEstimada,
     });
@@ -134,7 +151,7 @@ async function loadAlertas() {
       return `<div class="alerta-row">
         <div class="alerta-info">
           <span class="alerta-mat">${r.matricula} — ${r.posicao || '—'}</span>
-          <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont} · ${fmt(r.kmsFeitos)} km efectuados</span>
+          <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont} · ${fmt(r.kmsFeitos)} km efectuados${r.kmReal ? ' 📡' : ''}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${cor}"></div></div>
@@ -156,7 +173,7 @@ async function loadAlertas() {
         <td>${r.marca   || '—'}</td>
         <td>${tipoBadge(r.tipo)}</td>
         <td style="text-align:right">${r.mes_mont}</td>
-        <td style="text-align:right">${fmt(r.kmsFeitos)}</td>
+        <td style="text-align:right">${fmt(r.kmsFeitos)}${r.kmReal ? ' 📡' : ''}</td>
         <td style="text-align:right">${r.taxa.toFixed(3)} mm/1000km</td>
         <td><span class="${escCls}">${r.escEstimada} mm</span></td>
       </tr>`;
