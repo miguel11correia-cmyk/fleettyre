@@ -172,10 +172,9 @@ async function loadAlertas() {
         <td>${r.posicao || '—'}</td>
         <td>${r.marca   || '—'}</td>
         <td>${tipoBadge(r.tipo)}</td>
-        <td style="text-align:right">${r.mes_mont}</td>
         <td style="text-align:right">${fmt(r.kmsFeitos)}${r.kmReal ? ' 📡' : ''}</td>
-        <td style="text-align:right">${r.taxa.toFixed(3)} mm/1000km</td>
         <td><span class="${escCls}">${r.escEstimada} mm</span></td>
+        <td style="text-align:right">${r.taxa.toFixed(3)} mm/1000km</td>
       </tr>`;
     }).join('');
   }
