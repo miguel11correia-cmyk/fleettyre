@@ -42,9 +42,6 @@ async function loadFornecedores() {
   loading(false);
   if (error || !data) return;
 
-  // Renderizar gestão de fornecedores
-  await renderGestaoFornecedores();
-
   // Analytics
   const agg = {};
   data.forEach(r => {
