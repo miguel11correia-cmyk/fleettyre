@@ -36,9 +36,9 @@ async function loadFrota() {
   if (error || !data) return;
 
   // ── KPIs da matrícula ──
-  const activos   = data.filter(r => !r.mes_desmont).length;
-  const comKms    = data.filter(r => r.kms_desmont && r.kms_mont && r.kms_desmont > r.kms_mont);
-  const kmsEfArr  = comKms.map(r => r.kms_desmont - r.kms_mont);
+  const activos  = data.filter(r => !r.mes_desmont).length;
+  const kmAtual  = veiculo?.km_atual ?? null;
+  const kmsEfArr = data.map(r => kmsEfectuados(r, kmAtual)).filter(x => x != null).map(x => x.km);
   const kmsmedios = kmsEfArr.length > 0
     ? Math.round(kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length)
     : null;
@@ -62,8 +62,10 @@ async function loadFrota() {
   // ── Tabela ──
   const tbody = document.getElementById('frota-tbody');
   tbody.innerHTML = data.map(r => {
-    const kmsEf = (r.kms_desmont && r.kms_mont && r.kms_desmont > r.kms_mont)
-      ? fmt(r.kms_desmont - r.kms_mont) : '—';
+    const kmsEfInfo = kmsEfectuados(r, kmAtual);
+    const kmsEf = kmsEfInfo
+      ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km actual (Cartrack)">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
+      : '—';
     const esc   = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
     const escCls= (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
     const custoTot = (r.custo_pneu || 0) + (r.custo_mo || 0);

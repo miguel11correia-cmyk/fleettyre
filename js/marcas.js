@@ -6,9 +6,15 @@ let subtipoMarcaId      = null;
 
 async function loadMarcas() {
   loading(true);
-  const { data, error } = await sb.from('pneus').select('*');
+  const [{ data, error }, { data: veiculosData }] = await Promise.all([
+    sb.from('pneus').select('*'),
+    sb.from('veiculos').select('matricula, km_atual'),
+  ]);
   loading(false);
   if (error || !data) return;
+
+  const kmAtualPorMat = {};
+  (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
 
   const hoje = mesAtual();
   const agg  = {};
@@ -20,7 +26,8 @@ async function loadMarcas() {
     else if (r.tipo === 'Remix')       agg[k].remix++;
     else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
     else if (r.tipo === 'Piso Aberto') agg[k].piso++;
-    if (r.kms_desmont && r.kms_mont)   agg[k].kmsArr.push(r.kms_desmont - r.kms_mont);
+    const kmsInfo = kmsEfectuados(r, kmAtualPorMat[r.matricula]);
+    if (kmsInfo)                       agg[k].kmsArr.push(kmsInfo.km);
     if (r.custo_pneu > 0)              agg[k].custos.push(Number(r.custo_pneu));
     const taxa = taxaDesgaste(r);
     if (taxa !== null)                 agg[k].taxaArr.push(taxa);

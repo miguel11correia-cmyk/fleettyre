@@ -55,6 +55,21 @@ function taxaDesgaste(r) {
   return (desgaste / kmsEf) * 1000;
 }
 
+// Kms efectuados por um registo de pneu — real quando já foi desmontado
+// (kms_desmont - kms_mont, como sempre), ou estimado a partir do km
+// actual do veículo (integração Cartrack) quando ainda está montado e
+// essa informação existe. Devolve null quando não há forma de saber —
+// mantém o comportamento antigo para veículos/frotas sem essa integração.
+function kmsEfectuados(r, kmAtualVeiculo) {
+  if (r.kms_desmont && r.kms_mont && r.kms_desmont > r.kms_mont) {
+    return { km: r.kms_desmont - r.kms_mont, estimado: false };
+  }
+  if (!r.mes_desmont && kmAtualVeiculo != null && r.kms_mont && kmAtualVeiculo > r.kms_mont) {
+    return { km: kmAtualVeiculo - r.kms_mont, estimado: true };
+  }
+  return null;
+}
+
 function mesesEntre(mesInicio, mesFim) {
   if (!mesInicio || !mesFim) return 0;
   const [aI, mI] = mesInicio.split('-').map(Number);
