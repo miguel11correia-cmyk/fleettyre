@@ -1,5 +1,20 @@
 // ── REBOQUES/ALERTAS.JS ──────────────────────────────────────────
 
+function nivelDuracao(mesesActivo, lim) {
+  if (mesesActivo >= lim.critico) return 'critico';
+  if (mesesActivo >= lim.aviso)   return 'medio';
+  return 'ok';
+}
+
+const ALERTASR_NIVEL_INFO = {
+  critico: { label: 'crítico', badgeCls: 'b-alert', tituloIcone: '🔴', tituloTxt: 'Reboques com pneus críticos' },
+  medio:   { label: 'médio',   badgeCls: 'b-warn',  tituloIcone: '🟡', tituloTxt: 'Reboques com pneus em atenção' },
+  ok:      { label: 'ok',      badgeCls: 'b-ok',    tituloIcone: '🟢', tituloTxt: 'Reboques com pneus em bom estado' },
+};
+
+let alertasRFiltro = 'critico';
+let alertasRPorVeiculo = [];
+
 async function loadAlertasReboques() {
   loading(true);
   const { data, error } = await sb.from('reboques').select('*');
@@ -13,12 +28,13 @@ async function loadAlertasReboques() {
   const comMeses = activos.map(r => {
     const meses = mesesEntre(r.mes_mont, hoje);
     const lim   = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
-    return { ...r, mesesActivo: meses, lim };
+    const nivel = nivelDuracao(meses, lim);
+    return { ...r, mesesActivo: meses, lim, nivel };
   }).sort((a, b) => b.mesesActivo - a.mesesActivo);
 
-  const criticos = comMeses.filter(r => r.mesesActivo >= r.lim.critico);
-  const avisos   = comMeses.filter(r => r.mesesActivo >= r.lim.aviso && r.mesesActivo < r.lim.critico);
-  const normais  = comMeses.filter(r => r.mesesActivo < r.lim.aviso);
+  const criticos = comMeses.filter(r => r.nivel === 'critico');
+  const medios   = comMeses.filter(r => r.nivel === 'medio');
+  const oks      = comMeses.filter(r => r.nivel === 'ok');
 
   // Actualizar badge
   const badge = document.getElementById('badge-alertas-r');
@@ -27,56 +43,40 @@ async function loadAlertasReboques() {
     badge.classList.toggle('hidden', criticos.length === 0);
   }
 
-  // ── Críticos ──
-  const listCrit = document.getElementById('r-alertas-criticos');
-  if (listCrit) {
-    if (criticos.length === 0) {
-      listCrit.innerHTML = '<p class="empty-msg">Nenhum pneu ativo acima do limite crítico.</p>';
-    } else {
-      listCrit.innerHTML = criticos.map(r => {
-        const pct = Math.min(100, Math.round((r.mesesActivo / r.lim.critico) * 100));
-        return `<div class="alerta-row">
-          <div class="alerta-info">
-            <span class="alerta-mat">${r.matricula} — Eixo ${r.eixo || '?'}</span>
-            <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont} · Limite: ${r.lim.critico} meses</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="prog"><div class="prog-fill" style="width:${pct}%;background:#c93030"></div></div>
-            <span class="badge b-alert">${r.mesesActivo} meses</span>
-          </div>
-        </div>`;
-      }).join('');
-    }
-  }
+  // Agrupar por matrícula — cada reboque aparece em todos os níveis onde tem pelo menos um pneu
+  const porMat = {};
+  comMeses.forEach(r => {
+    if (!porMat[r.matricula]) porMat[r.matricula] = [];
+    porMat[r.matricula].push(r);
+  });
+  alertasRPorVeiculo = Object.keys(porMat).map(mat => {
+    const pneus = porMat[mat];
+    const pior = pneus.some(p => p.nivel === 'critico') ? 'critico'
+               : pneus.some(p => p.nivel === 'medio')   ? 'medio'
+               : 'ok';
+    return { matricula: mat, pneus, pior };
+  });
 
-  // ── Avisos ──
-  const listAvis = document.getElementById('r-alertas-avisos');
-  if (listAvis) {
-    if (avisos.length === 0) {
-      listAvis.innerHTML = '<p class="empty-msg">Nenhum pneu ativo na zona de aviso.</p>';
-    } else {
-      listAvis.innerHTML = avisos.map(r => {
-        const pct = Math.min(100, Math.round((r.mesesActivo / r.lim.critico) * 100));
-        return `<div class="alerta-row">
-          <div class="alerta-info">
-            <span class="alerta-mat">${r.matricula} — Eixo ${r.eixo || '?'}</span>
-            <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · Mont.: ${r.mes_mont} · Limite aviso: ${r.lim.aviso} meses</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="prog"><div class="prog-fill" style="width:${pct}%;background:#c47b0a"></div></div>
-            <span class="badge b-warn">${r.mesesActivo} meses</span>
-          </div>
-        </div>`;
-      }).join('');
-    }
-  }
+  // Cartões-resumo
+  const stats = {
+    critico: { pneus: criticos.length, veiculos: alertasRPorVeiculo.filter(v => v.pneus.some(p => p.nivel === 'critico')).length },
+    medio:   { pneus: medios.length,   veiculos: alertasRPorVeiculo.filter(v => v.pneus.some(p => p.nivel === 'medio')).length },
+    ok:      { pneus: oks.length,      veiculos: alertasRPorVeiculo.filter(v => v.pneus.some(p => p.nivel === 'ok')).length },
+  };
+  Object.keys(stats).forEach(n => {
+    const v = document.getElementById('ral-n-' + n);
+    const s = document.getElementById('ral-s-' + n);
+    if (v) v.textContent = stats[n].pneus;
+    if (s) s.textContent = `pneus em ${stats[n].veiculos} reboque${stats[n].veiculos === 1 ? '' : 's'}`;
+  });
+
+  renderAlertasRVeiculos();
 
   // ── Tabela completa pneus ativos ──
   const tbody = document.getElementById('r-alertas-tbody');
   if (tbody) {
     tbody.innerHTML = comMeses.map(r => {
-      const cls = r.mesesActivo >= r.lim.critico ? 'badge b-alert' :
-                  r.mesesActivo >= r.lim.aviso   ? 'badge b-warn'  : '';
+      const cls = 'badge ' + ALERTASR_NIVEL_INFO[r.nivel].badgeCls;
       return `<tr>
         <td>${r.matricula}</td>
         <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
@@ -112,4 +112,62 @@ async function loadAlertasReboques() {
       }).join('');
     }
   }
+}
+
+function filtrarAlertasReboques(nivel) {
+  alertasRFiltro = nivel;
+  renderAlertasRVeiculos();
+}
+
+function renderAlertasRVeiculos() {
+  document.querySelectorAll('#page-alertas-r .alertas-stat').forEach(el => {
+    el.classList.toggle('selected', el.dataset.nivel === alertasRFiltro);
+  });
+
+  const info = ALERTASR_NIVEL_INFO[alertasRFiltro];
+  const titulo = document.getElementById('alertas-r-lista-titulo');
+  if (titulo) titulo.textContent = `${info.tituloIcone} ${info.tituloTxt}`;
+
+  const cont = document.getElementById('alertas-r-lista');
+  if (!cont) return;
+
+  const visiveis = alertasRPorVeiculo
+    .filter(v => v.pneus.some(p => p.nivel === alertasRFiltro))
+    .sort((a, b) => Math.max(...b.pneus.map(p => p.mesesActivo)) - Math.max(...a.pneus.map(p => p.mesesActivo)));
+
+  if (visiveis.length === 0) {
+    cont.innerHTML = `<p class="empty-msg">Nenhum reboque com pneus no nível ${info.label}.</p>`;
+    return;
+  }
+
+  cont.innerHTML = visiveis.map(v => `
+    <div class="alerta-veic ${v.pior}" onclick="irParaReboque('${v.matricula}')">
+      <div>
+        <div class="alerta-veic-mat">${v.matricula}</div>
+        <span class="badge ${ALERTASR_NIVEL_INFO[v.pior].badgeCls}">${ALERTASR_NIVEL_INFO[v.pior].label}</span>
+      </div>
+      <div class="alerta-veic-pneus">
+        ${v.pneus.map(p => `<span class="badge ${ALERTASR_NIVEL_INFO[p.nivel].badgeCls}">${p.eixo ? 'Eixo ' + p.eixo : '—'} · ${p.mesesActivo}m</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function irParaReboque(mat) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-frota-r').classList.remove('hidden');
+  const btn = document.querySelector('.ni[data-page="frota-r"]');
+  if (btn) btn.classList.add('active');
+  fecharPainelReboque();
+  await initFrotaSelectReboques();
+  const sel = document.getElementById('sel-mat-r');
+  if (sel) { sel.value = mat; await loadFrotaReboques(); }
+}
+
+function toggleTabelaAlertasR() {
+  const wrap  = document.getElementById('tabela-alertas-r-wrap');
+  const label = document.getElementById('tabela-alertas-r-toggle');
+  wrap.classList.toggle('hidden');
+  label.textContent = wrap.classList.contains('hidden') ? '▸ Expandir' : '▾ Recolher';
 }

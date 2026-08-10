@@ -227,7 +227,7 @@ function filtrarAlertas(nivel) {
 }
 
 function renderAlertasVeiculos() {
-  document.querySelectorAll('.alertas-stat').forEach(el => {
+  document.querySelectorAll('#page-alertas .alertas-stat').forEach(el => {
     el.classList.toggle('selected', el.dataset.nivel === alertasFiltro);
   });
 
