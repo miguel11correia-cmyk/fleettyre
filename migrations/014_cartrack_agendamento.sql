@@ -9,6 +9,13 @@
 --
 -- Horário: 05:00 UTC (≈ 06:00 em Portugal no horário de Verão, 05:00
 -- no horário de Inverno) — antes do início do dia de trabalho.
+--
+-- IMPORTANTE: substitui <A_TUA_PUBLISHABLE_KEY> abaixo pela tua chave
+-- publishable/anon (Settings → API Keys no Supabase) antes de correr.
+-- Não deixes a chave real escrita num ficheiro que vai para o
+-- repositório — mesmo sendo uma chave feita para ser pública (a
+-- segurança dela vem das políticas RLS, não do segredo), é boa
+-- prática não a deixar espalhada em texto sem necessidade.
 -- ══════════════════════════════════════════════════════════════════
 
 create extension if not exists pg_cron with schema extensions;
@@ -22,7 +29,7 @@ select cron.schedule(
     url     := 'https://yvnopdrsnhmfhikioots.supabase.co/functions/v1/cartrack-sync',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer sb_publishable_YhrR_RC6-5pwfouudB2WrQ_ah-H3lxZ'
+      'Authorization', 'Bearer <A_TUA_PUBLISHABLE_KEY>'
     )
   ) as request_id;
   $$
