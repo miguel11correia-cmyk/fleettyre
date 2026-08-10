@@ -636,9 +636,26 @@
         <h2>Alertas</h2>
         <button class="btn btn-sm" onclick="loadAlertas()">↻ Atualizar</button>
       </div>
+      <div class="alertas-stats">
+        <div class="alertas-stat" data-nivel="critico" onclick="filtrarAlertas('critico')">
+          <div class="alertas-stat-l">🔴 Crítico · ≤3mm</div>
+          <div class="alertas-stat-v" id="al-n-critico">—</div>
+          <div class="alertas-stat-s" id="al-s-critico">—</div>
+        </div>
+        <div class="alertas-stat" data-nivel="medio" onclick="filtrarAlertas('medio')">
+          <div class="alertas-stat-l">🟡 Médio · 3-5mm</div>
+          <div class="alertas-stat-v" id="al-n-medio">—</div>
+          <div class="alertas-stat-s" id="al-s-medio">—</div>
+        </div>
+        <div class="alertas-stat" data-nivel="ok" onclick="filtrarAlertas('ok')">
+          <div class="alertas-stat-l">🟢 Ok · &gt;5mm</div>
+          <div class="alertas-stat-v" id="al-n-ok">—</div>
+          <div class="alertas-stat-s" id="al-s-ok">—</div>
+        </div>
+      </div>
       <div class="card">
-        <div class="ct alert-title">⚠️ Pneus com escultura registada ≤ 3mm</div>
-        <div id="alertas-list"><p class="empty-msg">A carregar...</p></div>
+        <div class="ct" id="alertas-lista-titulo">🔴 Veículos com pneus críticos</div>
+        <div id="alertas-veiculos"><p class="empty-msg">A carregar...</p></div>
       </div>
       <div class="card">
         <div class="ct">📐 Como o sistema calcula o desgaste</div>
@@ -650,8 +667,11 @@
         </div>
       </div>
       <div class="card">
-        <div class="ct">Taxa de desgaste calculada por registo</div>
-        <div class="table-wrap">
+        <div onclick="toggleTabelaDesgaste()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+          <div class="ct" style="margin:0">Taxa de desgaste calculada por registo (tabela completa)</div>
+          <span style="font-size:11px;color:var(--text3)" id="tabela-desgaste-toggle">▸ Expandir</span>
+        </div>
+        <div class="table-wrap hidden" id="tabela-desgaste-wrap" style="margin-top:8px">
           <table>
             <thead><tr>
               <th>Matrícula</th><th>Posição</th><th>Marca</th><th>Tipo</th>
@@ -1126,14 +1146,38 @@
           <p><strong>Eixo 3 (traseiro)</strong> — Aviso: 12 meses · Crítico: 14 meses</p>
         </div>
       </div>
-      <div class="card"><div class="ct alert-title">🔴 Crítico</div><div id="r-alertas-criticos"><p class="empty-msg">A calcular...</p></div></div>
-      <div class="card"><div class="ct" style="color:var(--amber)">🟡 Atenção</div><div id="r-alertas-avisos"><p class="empty-msg">A calcular...</p></div></div>
+      <div class="alertas-stats">
+        <div class="alertas-stat" data-nivel="critico" onclick="filtrarAlertasReboques('critico')">
+          <div class="alertas-stat-l">🔴 Crítico</div>
+          <div class="alertas-stat-v" id="ral-n-critico">—</div>
+          <div class="alertas-stat-s" id="ral-s-critico">—</div>
+        </div>
+        <div class="alertas-stat" data-nivel="medio" onclick="filtrarAlertasReboques('medio')">
+          <div class="alertas-stat-l">🟡 Médio</div>
+          <div class="alertas-stat-v" id="ral-n-medio">—</div>
+          <div class="alertas-stat-s" id="ral-s-medio">—</div>
+        </div>
+        <div class="alertas-stat" data-nivel="ok" onclick="filtrarAlertasReboques('ok')">
+          <div class="alertas-stat-l">🟢 Ok</div>
+          <div class="alertas-stat-v" id="ral-n-ok">—</div>
+          <div class="alertas-stat-s" id="ral-s-ok">—</div>
+        </div>
+      </div>
       <div class="card">
-        <div class="ct">📊 Todos os pneus ativos</div>
-        <div class="table-wrap"><table>
-          <thead><tr><th>Matrícula</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Mês mont.</th><th>Meses ativo</th><th>Limite</th></tr></thead>
-          <tbody id="r-alertas-tbody"></tbody>
-        </table></div>
+        <div class="ct" id="alertas-r-lista-titulo">🔴 Reboques com pneus críticos</div>
+        <div id="alertas-r-lista"><p class="empty-msg">A carregar...</p></div>
+      </div>
+      <div class="card">
+        <div onclick="toggleTabelaAlertasR()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+          <div class="ct" style="margin:0">Todos os pneus ativos (tabela completa)</div>
+          <span style="font-size:11px;color:var(--text3)" id="tabela-alertas-r-toggle">▸ Expandir</span>
+        </div>
+        <div class="table-wrap hidden" id="tabela-alertas-r-wrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th>Matrícula</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Mês mont.</th><th>Meses ativo</th><th>Limite</th></tr></thead>
+            <tbody id="r-alertas-tbody"></tbody>
+          </table>
+        </div>
       </div>
       <div class="card">
         <div class="ct">📁 Histórico de durações</div>

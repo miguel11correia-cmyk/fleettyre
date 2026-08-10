@@ -84,6 +84,21 @@ function kmsReaisOuEstimados(pneu, todosDoCamiao, kmAtualVeiculo) {
   return Math.round(meses * 7500);
 }
 
+function nivelDesgaste(escEstimada) {
+  if (escEstimada <= 3) return 'critico';
+  if (escEstimada <= 5) return 'medio';
+  return 'ok';
+}
+
+const ALERTAS_NIVEL_INFO = {
+  critico: { label: 'crítico', badgeCls: 'b-alert', tituloIcone: '🔴', tituloTxt: 'Veículos com pneus críticos' },
+  medio:   { label: 'médio',   badgeCls: 'b-warn',  tituloIcone: '🟡', tituloTxt: 'Veículos com pneus em atenção' },
+  ok:      { label: 'ok',      badgeCls: 'b-ok',    tituloIcone: '🟢', tituloTxt: 'Veículos com pneus em bom estado' },
+};
+
+let alertasFiltro = 'critico';
+let alertasPorVeiculo = [];
+
 async function loadAlertas() {
   loading(true);
   const [{ data, error }, { data: veiculosData }] = await Promise.all([
@@ -119,54 +134,57 @@ async function loadAlertas() {
     const taxa      = taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas);
     const escInicial = escIni(r.tipo);
     const escEstimada = Math.max(0, Math.round((escInicial - (kmsFeitos / 1000 * taxa)) * 10) / 10);
+    const nivel = nivelDesgaste(escEstimada);
 
-    estimativas.push({
-      ...r,
-      kmsFeitos,
-      kmReal,
-      taxa,
-      escEstimada,
-    });
+    estimativas.push({ ...r, kmsFeitos, kmReal, taxa, escEstimada, nivel });
   });
 
   estimativas.sort((a, b) => a.escEstimada - b.escEstimada);
 
-  const criticos = estimativas.filter(r => r.escEstimada <= 3);
-  const aviso    = estimativas.filter(r => r.escEstimada > 3 && r.escEstimada <= 5);
+  const criticos = estimativas.filter(r => r.nivel === 'critico');
+  const medios   = estimativas.filter(r => r.nivel === 'medio');
+  const oks      = estimativas.filter(r => r.nivel === 'ok');
 
-  // Badge
+  // Badge da barra lateral
   const badge = document.getElementById('badge-alertas');
   badge.textContent = criticos.length;
   badge.classList.toggle('hidden', criticos.length === 0);
   document.getElementById('k-alerts').textContent = criticos.length;
 
-  // Críticos
-  const list = document.getElementById('alertas-list');
-  if (criticos.length === 0) {
-    list.innerHTML = '<p class="empty-msg">Nenhum pneu ativo com escultura estimada ≤ 3mm.</p>';
-  } else {
-    list.innerHTML = criticos.map(r => {
-      const pct = Math.max(3, Math.round((r.escEstimada / escIni(r.tipo)) * 100));
-      const cor = r.escEstimada <= 1 ? '#c93030' : r.escEstimada <= 2 ? '#c47b0a' : '#e34948';
-      return `<div class="alerta-row">
-        <div class="alerta-info">
-          <span class="alerta-mat">${r.matricula} — ${r.posicao || '—'}</span>
-          <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont} · ${fmt(r.kmsFeitos)} km efetuados${r.kmReal ? ' 📡' : ''}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${cor}"></div></div>
-          <span class="badge b-alert">~${r.escEstimada} mm</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  // Agrupar por veículo — cada veículo aparece em todos os níveis onde tem pelo menos um pneu
+  const porMatEstim = {};
+  estimativas.forEach(r => {
+    if (!porMatEstim[r.matricula]) porMatEstim[r.matricula] = [];
+    porMatEstim[r.matricula].push(r);
+  });
+  alertasPorVeiculo = Object.keys(porMatEstim).map(mat => {
+    const pneus = porMatEstim[mat];
+    const pior = pneus.some(p => p.nivel === 'critico') ? 'critico'
+               : pneus.some(p => p.nivel === 'medio')   ? 'medio'
+               : 'ok';
+    return { matricula: mat, pneus, pior };
+  });
+
+  // Cartões-resumo
+  const stats = {
+    critico: { pneus: criticos.length, veiculos: alertasPorVeiculo.filter(v => v.pneus.some(p => p.nivel === 'critico')).length },
+    medio:   { pneus: medios.length,   veiculos: alertasPorVeiculo.filter(v => v.pneus.some(p => p.nivel === 'medio')).length },
+    ok:      { pneus: oks.length,      veiculos: alertasPorVeiculo.filter(v => v.pneus.some(p => p.nivel === 'ok')).length },
+  };
+  Object.keys(stats).forEach(n => {
+    const v = document.getElementById('al-n-' + n);
+    const s = document.getElementById('al-s-' + n);
+    if (v) v.textContent = stats[n].pneus;
+    if (s) s.textContent = `pneus em ${stats[n].veiculos} veículo${stats[n].veiculos === 1 ? '' : 's'}`;
+  });
+
+  renderAlertasVeiculos();
 
   // Tabela completa
   const tbody = document.getElementById('desgaste-tbody');
   if (tbody) {
     tbody.innerHTML = estimativas.map(r => {
-      const escCls = r.escEstimada <= 3 ? 'badge b-alert' :
-                     r.escEstimada <= 5 ? 'badge b-warn'  : '';
+      const escCls = 'badge ' + ALERTAS_NIVEL_INFO[r.nivel].badgeCls;
       return `<tr>
         <td>${r.matricula}</td>
         <td>${r.posicao || '—'}</td>
@@ -177,25 +195,6 @@ async function loadAlertas() {
         <td style="text-align:right">${r.taxa.toFixed(3)} mm/1000km</td>
       </tr>`;
     }).join('');
-  }
-
-  // Avisos
-  const avisoDiv = document.getElementById('alertas-aviso');
-  if (avisoDiv) {
-    if (aviso.length === 0) {
-      avisoDiv.innerHTML = '<p class="empty-msg">Nenhum pneu ativo com escultura estimada entre 3 e 5mm.</p>';
-    } else {
-      avisoDiv.innerHTML = aviso.map(r => `<div class="alerta-row">
-        <div class="alerta-info">
-          <span class="alerta-mat">${r.matricula} — ${r.posicao || '—'}</span>
-          <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="prog"><div class="prog-fill" style="width:${Math.round(r.escEstimada/escIni(r.tipo)*100)}%;background:#c47b0a"></div></div>
-          <span class="badge b-warn">~${r.escEstimada} mm</span>
-        </div>
-      </div>`).join('');
-    }
   }
 
   // Histórico de taxas
@@ -220,4 +219,62 @@ async function loadAlertas() {
       }).join('');
     }
   }
+}
+
+function filtrarAlertas(nivel) {
+  alertasFiltro = nivel;
+  renderAlertasVeiculos();
+}
+
+function renderAlertasVeiculos() {
+  document.querySelectorAll('#page-alertas .alertas-stat').forEach(el => {
+    el.classList.toggle('selected', el.dataset.nivel === alertasFiltro);
+  });
+
+  const info = ALERTAS_NIVEL_INFO[alertasFiltro];
+  const titulo = document.getElementById('alertas-lista-titulo');
+  if (titulo) titulo.textContent = `${info.tituloIcone} ${info.tituloTxt}`;
+
+  const cont = document.getElementById('alertas-veiculos');
+  if (!cont) return;
+
+  const visiveis = alertasPorVeiculo
+    .filter(v => v.pneus.some(p => p.nivel === alertasFiltro))
+    .sort((a, b) => Math.min(...a.pneus.map(p => p.escEstimada)) - Math.min(...b.pneus.map(p => p.escEstimada)));
+
+  if (visiveis.length === 0) {
+    cont.innerHTML = `<p class="empty-msg">Nenhum veículo com pneus no nível ${info.label}.</p>`;
+    return;
+  }
+
+  cont.innerHTML = visiveis.map(v => `
+    <div class="alerta-veic ${v.pior}" onclick="irParaVeiculo('${v.matricula}')">
+      <div>
+        <div class="alerta-veic-mat">${v.matricula}</div>
+        <span class="badge ${ALERTAS_NIVEL_INFO[v.pior].badgeCls}">${ALERTAS_NIVEL_INFO[v.pior].label}</span>
+      </div>
+      <div class="alerta-veic-pneus">
+        ${v.pneus.map(p => `<span class="badge ${ALERTAS_NIVEL_INFO[p.nivel].badgeCls}">${p.posicao || '—'} · ${p.escEstimada}mm${p.kmReal ? ' 📡' : ''}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function irParaVeiculo(mat) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-frota').classList.remove('hidden');
+  const btn = document.querySelector('.ni[data-page="frota"]');
+  if (btn) btn.classList.add('active');
+  fecharPainel();
+  await initFrotaSelect();
+  const sel = document.getElementById('sel-mat');
+  if (sel) { sel.value = mat; await loadFrota(); }
+}
+
+function toggleTabelaDesgaste() {
+  const wrap  = document.getElementById('tabela-desgaste-wrap');
+  const label = document.getElementById('tabela-desgaste-toggle');
+  wrap.classList.toggle('hidden');
+  label.textContent = wrap.classList.contains('hidden') ? '▸ Expandir' : '▾ Recolher';
 }

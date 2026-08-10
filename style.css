@@ -555,6 +555,40 @@ tbody tr:hover td { background: var(--bg); }
 .prog { height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; width: 80px; display: inline-block; }
 .prog-fill { height: 100%; border-radius: 3px; }
 
+.alertas-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.alertas-stat {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.alertas-stat:hover    { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.alertas-stat.selected { border-color: var(--border2); box-shadow: inset 0 0 0 1px var(--border2); }
+.alertas-stat-l { font-size: 11px; color: var(--text2); margin-bottom: 5px; }
+.alertas-stat-v { font-size: 22px; font-weight: 500; line-height: 1.1; color: var(--text); }
+.alertas-stat-s { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+.alerta-veic {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border: 0.5px solid var(--border);
+  border-left: 3px solid var(--border2);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.alerta-veic:last-child { margin-bottom: 0; }
+.alerta-veic:hover      { box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.alerta-veic.critico { border-left-color: var(--red); }
+.alerta-veic.medio   { border-left-color: var(--amber); }
+.alerta-veic.ok      { border-left-color: var(--green); }
+.alerta-veic-mat  { min-width: 100px; font-size: 13px; font-weight: 500; }
+.alerta-veic-pneus { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+
 /* ── INFO BOX ─────────────────────────────────────────────────── */
 .info-box {
   font-size: 12px;
