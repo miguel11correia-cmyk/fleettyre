@@ -119,7 +119,7 @@ function renderInfoVeiculo(v, mat) {
       <div><span style="font-size:11px;color:var(--text3)">Reboque habitual</span><br>${v.reboque_hab || '—'}</div>
     </div>
     ${v.km_atual != null ? `<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text2)">
-      📡 KM actual (Cartrack): <strong>${fmt(v.km_atual)}</strong> km${v.km_atual_em ? ' · actualizado ' + relativo(v.km_atual_em) : ''}
+      KM actual (Cartrack): <strong>${fmt(v.km_atual)}</strong> km${v.km_atual_em ? ' · actualizado ' + relativo(v.km_atual_em) : ''}
     </div>` : ''}`;
 }
 
