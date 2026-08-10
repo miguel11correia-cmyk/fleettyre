@@ -115,7 +115,19 @@ function renderInfoVeiculo(v, mat) {
       <div><span style="font-size:11px;color:var(--text3)">Tipo</span><br>${v.tipo || '—'}</div>
       <div><span style="font-size:11px;color:var(--text3)">Configuração eixos</span><br>${v.num_eixos || '—'}</div>
       <div><span style="font-size:11px;color:var(--text3)">Reboque habitual</span><br>${v.reboque_hab || '—'}</div>
-    </div>`;
+    </div>
+    ${v.km_atual != null ? `<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text2)">
+      📡 KM actual (Cartrack): <strong>${fmt(v.km_atual)}</strong> km${v.km_atual_em ? ' · actualizado ' + relativo(v.km_atual_em) : ''}
+    </div>` : ''}`;
+}
+
+function relativo(isoDate) {
+  const diffMin = Math.round((Date.now() - new Date(isoDate).getTime()) / 60000);
+  if (diffMin < 60)   return `há ${diffMin} min`;
+  const diffH = Math.round(diffMin / 60);
+  if (diffH < 24)     return `há ${diffH}h`;
+  const diffD = Math.round(diffH / 24);
+  return `há ${diffD} dia${diffD === 1 ? '' : 's'}`;
 }
 
 async function abrirPainel(id) {
