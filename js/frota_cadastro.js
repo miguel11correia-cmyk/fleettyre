@@ -41,8 +41,8 @@ function renderMarcaComLogo(nome) {
   return `<img src="${src}" alt="" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
 }
 
-// Actualiza o mini-logo e mostra/esconde o campo "Outra" consoante a
-// opção seleccionada no select de marca indicado (ex: 'v-marca', 'ev-marca').
+// Atualiza o mini-logo e mostra/esconde o campo "Outra" consoante a
+// opção selecionada no select de marca indicado (ex: 'v-marca', 'ev-marca').
 function atualizarMarcaVeiculo(selectId) {
   const sel      = document.getElementById(selectId);
   const logo     = document.getElementById(selectId + '-logo');
@@ -119,7 +119,7 @@ async function popularSelectorVeiculos() {
   const mats = Object.values(mapa).sort((a, b) => a.matricula.localeCompare(b.matricula));
 
   const val = sel.value;
-  sel.innerHTML = '<option value="">— seleccionar —</option>' +
+  sel.innerHTML = '<option value="">— selecionar —</option>' +
     mats.map(v => {
       const label = (v.marca || v.modelo)
         ? `${v.matricula} — ${[v.marca, v.modelo].filter(Boolean).join(' ')}`
@@ -158,7 +158,7 @@ async function loadFrotaCadastro() {
     const activos   = activosPorMat[v.matricula] || 0;
     const aviso     = esperados != null && activos < esperados;
     return `<tr>
-    <td><strong>${v.matricula}</strong>${aviso ? ` <span title="Só ${activos} de ${esperados} pneus activos" style="color:var(--red)">●</span>` : ''}</td>
+    <td><strong>${v.matricula}</strong>${aviso ? ` <span title="Só ${activos} de ${esperados} pneus ativos" style="color:var(--red)">●</span>` : ''}</td>
     <td>${v.marca || '—'}</td>
     <td>${v.modelo || '—'}</td>
     <td>${v.ano || '—'}</td>
@@ -272,13 +272,13 @@ async function guardarEdicaoVeiculo() {
 
   if (error) { showFeedback('ev-feedback', 'Erro: ' + error.message, true); return; }
 
-  showFeedback('ev-feedback', 'Veículo actualizado.');
+  showFeedback('ev-feedback', 'Veículo atualizado.');
   await carregarListaVeiculos();
   setTimeout(() => { fecharEdicaoVeiculo(); loadFrotaCadastro(); }, 800);
 }
 
 async function apagarVeiculo(id, matricula) {
-  if (!confirm(`Tem a certeza que quer apagar o veículo ${matricula}? Esta acção não pode ser desfeita.`)) return;
+  if (!confirm(`Tem a certeza que quer apagar o veículo ${matricula}? Esta ação não pode ser desfeita.`)) return;
   loading(true);
   const { error } = await sb.from('veiculos').delete().eq('id', id);
   loading(false);

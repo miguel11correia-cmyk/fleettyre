@@ -26,7 +26,7 @@ const server = http.createServer((req, res) => {
   const ext  = path.extname(filePath);
   const mime = MIME[ext] || 'text/plain';
 
-  // Headers para desactivar cache no Cloudflare e browsers
+  // Headers para desativar cache no Cloudflare e browsers
   const headers = {
     'Content-Type': mime,
     'Cache-Control': 'no-cache, no-store, must-revalidate',

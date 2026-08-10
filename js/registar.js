@@ -72,13 +72,13 @@ async function _guardarRegistoUnico() {
     showFeedback('r-feedback', 'Erro ao guardar: ' + error.message, true);
     return false;
   }
-  // Descontar stock de fatura se foi seleccionado
+  // Descontar stock de fatura se foi selecionado
   if (stockLinhaSelId) {
     await descontarStock(stockLinhaSelId);
     stockLinhaSelId = null;
   }
 
-  // Marcar pneu desmontado como remontado — na tabela correcta (pneus ou reboques)
+  // Marcar pneu desmontado como remontado — na tabela correta (pneus ou reboques)
   if (stockDesmontadoSelId) {
     const { id, tabela } = stockDesmontadoSelId;
     await sb.from(tabela).update({ remontado: true }).eq('id', id);

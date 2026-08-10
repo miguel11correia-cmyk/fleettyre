@@ -267,7 +267,7 @@ async function apagarFatura(id) {
   loadStock();
 }
 
-// ── SELECCIONAR DE STOCK ──────────────────────────────────────────
+// ── SELECIONAR DE STOCK ──────────────────────────────────────────
 
 async function abrirSelStock() {
   loading(true);

@@ -64,7 +64,7 @@ async function loadFrota() {
   tbody.innerHTML = data.map(r => {
     const kmsEfInfo = kmsEfectuados(r, kmAtual);
     const kmsEf = kmsEfInfo
-      ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km actual (Cartrack)">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
+      ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km atual">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
       : '—';
     const esc   = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
     const escCls= (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
@@ -119,7 +119,7 @@ function renderInfoVeiculo(v, mat) {
       <div><span style="font-size:11px;color:var(--text3)">Reboque habitual</span><br>${v.reboque_hab || '—'}</div>
     </div>
     ${v.km_atual != null ? `<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text2)">
-      KM actual (Cartrack): <strong>${fmt(v.km_atual)}</strong> km${v.km_atual_em ? ' · actualizado ' + relativo(v.km_atual_em) : ''}
+      KM atual: <strong>${fmt(v.km_atual)}</strong> km${v.km_atual_em ? ' · atualizado ' + relativo(v.km_atual_em) : ''}
     </div>` : ''}`;
 }
 
@@ -298,13 +298,13 @@ async function guardarEdicao() {
 
   if (error) { showFeedback('e-feedback', 'Erro: ' + error.message, true); return; }
 
-  showFeedback('e-feedback', 'Registo actualizado.');
+  showFeedback('e-feedback', 'Registo atualizado.');
   setTimeout(() => { fecharEdicao(); loadFrota(); loadDashboard(); }, 800);
 }
 
 
 async function apagarRegisto(id, matricula) {
-  if (!confirm(`Tem a certeza que quer apagar este registo de ${matricula}? Esta acção não pode ser desfeita.`)) return;
+  if (!confirm(`Tem a certeza que quer apagar este registo de ${matricula}? Esta ação não pode ser desfeita.`)) return;
   loading(true);
   const { error } = await sb.from('pneus').delete().eq('id', id);
   loading(false);

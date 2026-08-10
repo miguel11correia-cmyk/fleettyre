@@ -94,7 +94,7 @@ async function renderGestaoMarcas() {
     </div>
     <div class="table-wrap${marcGestaoExpandida ? '' : ' hidden'}" style="margin-top:8px">
       <table>
-        <thead><tr><th>Código</th><th>Nome</th><th>Acção</th></tr></thead>
+        <thead><tr><th>Código</th><th>Nome</th><th>Ação</th></tr></thead>
         <tbody>
           ${(data || []).map(m => `<tr>
             <td><strong>${m.codigo}</strong></td>
@@ -151,7 +151,7 @@ async function carregarListaSubtipos() {
   popularSelectorSubtipo('rr-marca', 'rr-subtipo');
 }
 
-// Popula o select de subtipos consoante a marca actualmente seleccionada no select de marca indicado
+// Popula o select de subtipos consoante a marca atualmente selecionada no select de marca indicado
 function popularSelectorSubtipo(selMarcaId, selSubtipoId) {
   const selMarca   = document.getElementById(selMarcaId);
   const selSubtipo = document.getElementById(selSubtipoId);

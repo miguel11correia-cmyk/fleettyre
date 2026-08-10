@@ -40,7 +40,7 @@ function taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas) {
 }
 
 function kmsReaisOuEstimados(pneu, todosDoCamiao, kmAtualVeiculo) {
-  // 0. Km actual real do veículo (integração Cartrack), quando existe —
+  // 0. Km atual real do veículo (integração Cartrack), quando existe —
   // substitui as estimativas abaixo por um valor conhecido em vez de
   // inferido. Sem esta informação (veículo ou frota sem integração),
   // segue-se exactamente a lógica antiga sem qualquer alteração.
@@ -108,7 +108,7 @@ async function loadAlertas() {
     porMat[r.matricula].push(r);
   });
 
-  // Para cada pneu activo, calcular KMs reais ou estimados
+  // Para cada pneu ativo, calcular KMs reais ou estimados
   const estimativas = [];
   const activos = data.filter(r => !r.mes_desmont && r.mes_mont && r.kms_mont);
 
@@ -143,7 +143,7 @@ async function loadAlertas() {
   // Críticos
   const list = document.getElementById('alertas-list');
   if (criticos.length === 0) {
-    list.innerHTML = '<p class="empty-msg">Nenhum pneu activo com escultura estimada ≤ 3mm.</p>';
+    list.innerHTML = '<p class="empty-msg">Nenhum pneu ativo com escultura estimada ≤ 3mm.</p>';
   } else {
     list.innerHTML = criticos.map(r => {
       const pct = Math.max(3, Math.round((r.escEstimada / escIni(r.tipo)) * 100));
@@ -151,7 +151,7 @@ async function loadAlertas() {
       return `<div class="alerta-row">
         <div class="alerta-info">
           <span class="alerta-mat">${r.matricula} — ${r.posicao || '—'}</span>
-          <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont} · ${fmt(r.kmsFeitos)} km efectuados${r.kmReal ? ' 📡' : ''}</span>
+          <span class="alerta-det">${r.marca || '—'} ${r.medida || ''} · ${r.tipo || '—'} · Mont.: ${r.mes_mont} · ${fmt(r.kmsFeitos)} km efetuados${r.kmReal ? ' 📡' : ''}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${cor}"></div></div>
@@ -183,7 +183,7 @@ async function loadAlertas() {
   const avisoDiv = document.getElementById('alertas-aviso');
   if (avisoDiv) {
     if (aviso.length === 0) {
-      avisoDiv.innerHTML = '<p class="empty-msg">Nenhum pneu activo com escultura estimada entre 3 e 5mm.</p>';
+      avisoDiv.innerHTML = '<p class="empty-msg">Nenhum pneu ativo com escultura estimada entre 3 e 5mm.</p>';
     } else {
       avisoDiv.innerHTML = aviso.map(r => `<div class="alerta-row">
         <div class="alerta-info">

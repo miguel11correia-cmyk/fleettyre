@@ -405,7 +405,7 @@ input::placeholder { color: var(--text3); }
   border-color: var(--border2);
 }
 .btn-p:hover { background: #e6e2db; border-color: #c5c2bc; }
-/* Destaque próprio do ecrã de login — única excepção deliberada à paleta neutra */
+/* Destaque próprio do ecrã de login — única exceção deliberada à paleta neutra */
 .btn-brand { background: var(--brand-red); color: #fff; border-color: var(--brand-red-dk); }
 .btn-brand:hover { background: var(--brand-red-dk); }
 .btn-s {

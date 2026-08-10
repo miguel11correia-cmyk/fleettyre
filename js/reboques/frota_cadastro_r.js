@@ -3,7 +3,7 @@
 let listaReboquesFrota = [];
 let editReboqueFrotaId  = null;
 
-// Nº de pneus esperados (activos) consoante a configuração de eixos
+// Nº de pneus esperados (ativos) consoante a configuração de eixos
 const EIXOS_TYRES_REBOQUE = { '2x2': 4, '2x2x2': 6, '2x2x2 (rodado duplo)': 12 };
 
 async function carregarListaReboquesFrota() {
@@ -30,7 +30,7 @@ async function popularSelectorReboquesFrota() {
   const mats = Object.values(mapa).sort((a, b) => a.matricula.localeCompare(b.matricula));
 
   const val = sel.value;
-  sel.innerHTML = '<option value="">— seleccionar —</option>' +
+  sel.innerHTML = '<option value="">— selecionar —</option>' +
     mats.map(v => {
       const label = (v.marca || v.modelo)
         ? `${v.matricula} — ${[v.marca, v.modelo].filter(Boolean).join(' ')}`
@@ -56,7 +56,7 @@ async function loadFrotaCadastroReboques() {
 
   listaReboquesFrota = data;
 
-  // Pneus activos (sem desmontagem) por matrícula — esperado: 2 pneus por eixo
+  // Pneus ativos (sem desmontagem) por matrícula — esperado: 2 pneus por eixo
   const activosPorMat = {};
   (reboquesData || []).forEach(r => {
     if (!r.mes_desmont) activosPorMat[r.matricula] = (activosPorMat[r.matricula] || 0) + 1;
@@ -69,7 +69,7 @@ async function loadFrotaCadastroReboques() {
     const activos   = activosPorMat[v.matricula] || 0;
     const aviso     = esperados != null && activos < esperados;
     return `<tr>
-    <td><strong>${v.matricula}</strong>${aviso ? ` <span title="Só ${activos} de ${esperados} pneus activos" style="color:var(--red)">●</span>` : ''}</td>
+    <td><strong>${v.matricula}</strong>${aviso ? ` <span title="Só ${activos} de ${esperados} pneus ativos" style="color:var(--red)">●</span>` : ''}</td>
     <td>${v.marca || '—'}</td>
     <td>${v.modelo || '—'}</td>
     <td>${v.ano || '—'}</td>
@@ -176,13 +176,13 @@ async function guardarEdicaoReboqueFrota() {
 
   if (error) { showFeedback('evr-feedback', 'Erro: ' + error.message, true); return; }
 
-  showFeedback('evr-feedback', 'Reboque actualizado.');
+  showFeedback('evr-feedback', 'Reboque atualizado.');
   await carregarListaReboquesFrota();
   setTimeout(() => { fecharEdicaoReboqueFrota(); loadFrotaCadastroReboques(); }, 800);
 }
 
 async function apagarReboqueFrota(id, matricula) {
-  if (!confirm(`Tem a certeza que quer apagar o reboque ${matricula}? Esta acção não pode ser desfeita.`)) return;
+  if (!confirm(`Tem a certeza que quer apagar o reboque ${matricula}? Esta ação não pode ser desfeita.`)) return;
   loading(true);
   const { error } = await sb.from('reboques_frota').delete().eq('id', id);
   loading(false);
