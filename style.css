@@ -255,9 +255,9 @@ body {
 /* ── SECÇÃO VEÍCULOS/REBOQUES ─────────────────────────────────── */
 .secao-btns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 10px 8px 8px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3px;
+  padding: 10px 5px 8px;
   border-bottom: 0.5px solid var(--border);
   margin-bottom: 4px;
 }
@@ -265,20 +265,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 7px 4px;
+  gap: 3px;
+  padding: 6px 2px;
   border: 0.5px solid var(--border2);
   border-radius: var(--radius);
   background: transparent;
   color: var(--text2);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
   transition: background .1s, color .1s;
   text-align: center;
 }
-.secao-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.secao-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 .secao-btn:hover { background: var(--bg2); color: var(--text); }
 .secao-btn.secao-active {
   background: #3f3f46;

@@ -167,6 +167,10 @@
     <div class="nav">
       <!-- SELECTOR DE SECÇÃO -->
       <div class="secao-btns">
+        <button id="btn-registos" class="secao-btn" onclick="toggleSecao('registos')">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg>
+          Registos
+        </button>
         <button id="btn-veiculos" class="secao-btn secao-active" onclick="toggleSecao('veiculos')">
           <svg viewBox="0 0 512.001 512.001" fill="currentColor"><use href="#icon-truck"/></svg>
           Veículos
@@ -177,14 +181,28 @@
         </button>
       </div>
 
+      <!-- MENU REGISTOS -->
+      <div id="menu-registos" class="hidden">
+        <div class="nav-section">Registos</div>
+        <div class="ni" onclick="navReg('fornecedores-registo',this)" data-page="fornecedores-registo">
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg></span>Fornecedores
+        </div>
+        <div class="ni" onclick="navReg('marcas-registo',this)" data-page="marcas-registo">
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5h5.5V8L8 16.5l-5.5-5.5L11 2.5Z"/><circle cx="13.3" cy="5.7" r="1"/></svg></span>Marcas
+        </div>
+        <div class="ni" onclick="navReg('frota-cadastro',this)" data-page="frota-cadastro">
+          <span class="ni-icon"><svg viewBox="0 0 512.001 512.001" fill="currentColor"><use href="#icon-truck"/></svg></span>Registar veículo
+        </div>
+        <div class="ni" onclick="navReg('frota-cadastro-r',this)" data-page="frota-cadastro-r">
+          <span class="ni-icon"><svg viewBox="0 0 15 15"><use href="#icon-trailer"/></svg></span>Registar reboque
+        </div>
+      </div>
+
       <!-- MENU VEÍCULOS -->
       <div id="menu-veiculos">
         <div class="nav-section">Geral</div>
         <div class="ni active" onclick="nav('dashboard',this)" data-page="dashboard">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="3.4" height="7"/><rect x="8.3" y="6" width="3.4" height="11"/><rect x="13.6" y="2.5" width="3.4" height="14.5"/></svg></span>Dashboard
-        </div>
-        <div class="ni" onclick="nav('frota-cadastro',this)" data-page="frota-cadastro">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg></span>Frota
         </div>
         <div class="ni" onclick="nav('registar',this)" data-page="registar">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg></span>Registar pneu
@@ -218,9 +236,6 @@
         <div class="nav-section">Geral</div>
         <div class="ni" onclick="navR('dashboard-r',this)" data-page="dashboard-r">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="3.4" height="7"/><rect x="8.3" y="6" width="3.4" height="11"/><rect x="13.6" y="2.5" width="3.4" height="14.5"/></svg></span>Dashboard
-        </div>
-        <div class="ni" onclick="navR('frota-cadastro-r',this)" data-page="frota-cadastro-r">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg></span>Frota
         </div>
         <div class="ni" onclick="navR('registar-r',this)" data-page="registar-r">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg></span>Registar pneu
@@ -655,10 +670,6 @@
         <button class="btn btn-sm" onclick="loadFornecedores()">↻ Actualizar</button>
       </div>
       <div class="card">
-        <div class="ct">Gestão de fornecedores</div>
-        <div id="gestao-fornecedores"><p class="empty-msg">A carregar...</p></div>
-      </div>
-      <div class="card">
         <div class="ct">Resumo por fornecedor</div>
         <div class="table-wrap">
           <table>
@@ -677,10 +688,44 @@
     </div>
 
     <!-- MARCAS -->
-    <div class="page hidden" id="page-marcas" style="position:relative">
+    <div class="page hidden" id="page-marcas">
       <div class="page-header">
         <h2>Marcas</h2>
         <button class="btn btn-sm" onclick="loadMarcas()">↻ Actualizar</button>
+      </div>
+      <div class="card">
+        <div class="ct">Desempenho por marca</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
+              <th>KMs médios/pneu</th><th>Taxa desgaste média (mm/1000km)</th><th>Custo médio/pneu (€)</th>
+            </tr></thead>
+            <tbody id="marc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">KMs médios por marca</div>
+        <div class="cw-t"><canvas id="c-marc-km" aria-label="KMs médios por marca"></canvas></div>
+      </div>
+    </div>
+
+    <!-- REGISTOS — FORNECEDORES -->
+    <div class="page hidden" id="page-fornecedores-registo">
+      <div class="page-header">
+        <h2>Fornecedores</h2>
+      </div>
+      <div class="card">
+        <div class="ct">Gestão de fornecedores</div>
+        <div id="gestao-fornecedores"><p class="empty-msg">A carregar...</p></div>
+      </div>
+    </div>
+
+    <!-- REGISTOS — MARCAS -->
+    <div class="page hidden" id="page-marcas-registo">
+      <div class="page-header">
+        <h2>Marcas</h2>
       </div>
       <div class="card">
         <div class="ct">Gestão de marcas</div>
@@ -707,22 +752,6 @@
           </div>
           <div id="subtipos-feedback" class="feedback hidden"></div>
         </div>
-      </div>
-      <div class="card">
-        <div class="ct">Desempenho por marca</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
-              <th>KMs médios/pneu</th><th>Taxa desgaste média (mm/1000km)</th><th>Custo médio/pneu (€)</th>
-            </tr></thead>
-            <tbody id="marc-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ct">KMs médios por marca</div>
-        <div class="cw-t"><canvas id="c-marc-km" aria-label="KMs médios por marca"></canvas></div>
       </div>
     </div>
 

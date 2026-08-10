@@ -10,9 +10,6 @@ async function loadMarcas() {
   loading(false);
   if (error || !data) return;
 
-  // Renderizar gestão de marcas
-  await renderGestaoMarcas();
-
   const hoje = mesAtual();
   const agg  = {};
   data.filter(r => r.marca).forEach(r => {
