@@ -49,7 +49,7 @@ async function loadFrotaReboques() {
   document.getElementById('rfk4').textContent = custoTotal > 0 ? fmtEur(custoTotal) : '—';
   document.getElementById('rfk5').textContent = custoMed ? fmtEur(custoMed) : '—';
 
-  // Custo por mês activo
+  // Custo por mês ativo
   const custoMes = (custoMed && mesesMed && mesesMed > 0)
     ? fmtEur(custoMed / mesesMed) : '—';
   document.getElementById('rfk6').textContent = custoMes;
@@ -128,7 +128,7 @@ async function abrirPainelReboque(id) {
 
   document.getElementById('rpainel-info').innerHTML =
     `<strong>${data.matricula}</strong> · Eixo ${data.eixo || '—'}<br>
-     <span style="color:var(--text2)">${data.marca || '—'} ${data.medida || ''} · Montado: ${data.mes_mont} · <strong>${mesesActivo} meses activo</strong></span><br>
+     <span style="color:var(--text2)">${data.marca || '—'} ${data.medida || ''} · Montado: ${data.mes_mont} · <strong>${mesesActivo} meses ativo</strong></span><br>
      <span style="color:${mesesActivo >= lim.critico ? 'var(--red)' : mesesActivo >= lim.aviso ? 'var(--amber)' : 'var(--green)'}">
        Limite eixo ${data.eixo || '?'}: aviso ${lim.aviso}m · crítico ${lim.critico}m
      </span>`;
@@ -236,12 +236,12 @@ async function guardarEdicaoReboque() {
   loading(false);
 
   if (error) { showFeedback('re-feedback', 'Erro: ' + error.message, true); return; }
-  showFeedback('re-feedback', 'Registo actualizado.');
+  showFeedback('re-feedback', 'Registo atualizado.');
   setTimeout(() => { fecharEdicaoReboque(); loadFrotaReboques(); loadDashboardReboques(); }, 800);
 }
 
 async function apagarRegistoReboque(id, matricula) {
-  if (!confirm(`Tem a certeza que quer apagar este registo de ${matricula}? Esta acção não pode ser desfeita.`)) return;
+  if (!confirm(`Tem a certeza que quer apagar este registo de ${matricula}? Esta ação não pode ser desfeita.`)) return;
   loading(true);
   const { error } = await sb.from('reboques').delete().eq('id', id);
   loading(false);

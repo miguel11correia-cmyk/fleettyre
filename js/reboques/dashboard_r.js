@@ -21,7 +21,7 @@ async function loadDashboardReboques() {
   const activos = data.filter(r => !r.mes_desmont);
   const mats    = [...new Set(data.map(r => r.matricula))];
 
-  // Alertas — pneus activos com meses >= limite de aviso
+  // Alertas — pneus ativos com meses >= limite de aviso
   const alertas = activos.filter(r => {
     const meses = mesesEntre(r.mes_mont, hoje);
     const lim   = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
@@ -47,14 +47,14 @@ async function loadDashboardReboques() {
     badge.classList.toggle('hidden', alertas.length === 0);
   }
 
-  // ── Gráfico tipo (só pneus activos) ──
+  // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(activos, 'tipo');
   const tLabels = Object.keys(tipos);
   const tColors = tLabels.map(l => l === 'Novo' ? '#5f8f62' : l === 'Remix' ? '#4f7396' : l === 'Rechapado' ? '#8a5a75' : '#c2a13f');
   document.getElementById('rleg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('rc-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
 
-  // ── Gráfico fornecedor (só pneus activos) ──
+  // ── Gráfico fornecedor (só pneus ativos) ──
   const forns = countBy(activos, 'fornecedor');
   const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
   document.getElementById('rleg-forn').innerHTML = makeLegend(fKeys, COLORS);

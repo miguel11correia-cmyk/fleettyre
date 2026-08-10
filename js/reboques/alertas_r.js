@@ -9,7 +9,7 @@ async function loadAlertasReboques() {
   const hoje    = mesAtual();
   const activos = data.filter(r => !r.mes_desmont && r.mes_mont);
 
-  // Calcular meses activos e classificar
+  // Calcular meses ativos e classificar
   const comMeses = activos.map(r => {
     const meses = mesesEntre(r.mes_mont, hoje);
     const lim   = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
@@ -31,7 +31,7 @@ async function loadAlertasReboques() {
   const listCrit = document.getElementById('r-alertas-criticos');
   if (listCrit) {
     if (criticos.length === 0) {
-      listCrit.innerHTML = '<p class="empty-msg">Nenhum pneu activo acima do limite crítico.</p>';
+      listCrit.innerHTML = '<p class="empty-msg">Nenhum pneu ativo acima do limite crítico.</p>';
     } else {
       listCrit.innerHTML = criticos.map(r => {
         const pct = Math.min(100, Math.round((r.mesesActivo / r.lim.critico) * 100));
@@ -53,7 +53,7 @@ async function loadAlertasReboques() {
   const listAvis = document.getElementById('r-alertas-avisos');
   if (listAvis) {
     if (avisos.length === 0) {
-      listAvis.innerHTML = '<p class="empty-msg">Nenhum pneu activo na zona de aviso.</p>';
+      listAvis.innerHTML = '<p class="empty-msg">Nenhum pneu ativo na zona de aviso.</p>';
     } else {
       listAvis.innerHTML = avisos.map(r => {
         const pct = Math.min(100, Math.round((r.mesesActivo / r.lim.critico) * 100));
@@ -71,7 +71,7 @@ async function loadAlertasReboques() {
     }
   }
 
-  // ── Tabela completa pneus activos ──
+  // ── Tabela completa pneus ativos ──
   const tbody = document.getElementById('r-alertas-tbody');
   if (tbody) {
     tbody.innerHTML = comMeses.map(r => {

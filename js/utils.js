@@ -55,9 +55,9 @@ function taxaDesgaste(r) {
   return (desgaste / kmsEf) * 1000;
 }
 
-// Kms efectuados por um registo de pneu — real quando já foi desmontado
+// Kms efetuados por um registo de pneu — real quando já foi desmontado
 // (kms_desmont - kms_mont, como sempre), ou estimado a partir do km
-// actual do veículo (integração Cartrack) quando ainda está montado e
+// atual do veículo (integração Cartrack) quando ainda está montado e
 // essa informação existe. Devolve null quando não há forma de saber —
 // mantém o comportamento antigo para veículos/frotas sem essa integração.
 function kmsEfectuados(r, kmAtualVeiculo) {

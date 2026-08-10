@@ -21,7 +21,7 @@ function preencherSelectores() {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    el.innerHTML = '<option value="">— seleccionar —</option>' +
+    el.innerHTML = '<option value="">— selecionar —</option>' +
       listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} — ${f.nome}</option>`).join('');
   });
 
@@ -29,7 +29,7 @@ function preencherSelectores() {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    el.innerHTML = '<option value="">— seleccionar —</option>' +
+    el.innerHTML = '<option value="">— selecionar —</option>' +
       listaMarcas.map(m => `<option value="${m.nome}" ${m.nome === val ? 'selected' : ''}>${m.codigo} — ${m.nome}</option>`).join('');
   });
 }
@@ -108,7 +108,7 @@ async function renderGestaoFornecedores() {
     </div>
     <div class="table-wrap${fornGestaoExpandida ? '' : ' hidden'}" style="margin-top:8px">
       <table>
-        <thead><tr><th>Código</th><th>Nome</th><th>Acção</th></tr></thead>
+        <thead><tr><th>Código</th><th>Nome</th><th>Ação</th></tr></thead>
         <tbody>
           ${(data || []).map(f => `<tr>
             <td><strong>${f.codigo}</strong></td>

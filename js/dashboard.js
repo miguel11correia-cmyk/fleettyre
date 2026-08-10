@@ -45,7 +45,7 @@ async function loadDashboard() {
   badge.textContent = alertas;
   badge.classList.toggle('hidden', alertas === 0);
 
-  // ── Gráfico tipo (só pneus activos) ──
+  // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(registosAtivos, 'tipo');
   const tLabels = Object.keys(tipos);
   const tColors = tLabels.map(l =>
@@ -54,13 +54,13 @@ async function loadDashboard() {
   document.getElementById('leg-tipo').innerHTML = makeLegend(tLabels, tColors);
   mkChart('c-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
 
-  // ── Gráfico fornecedor (só pneus activos) ──
+  // ── Gráfico fornecedor (só pneus ativos) ──
   const forns   = countBy(registosAtivos, 'fornecedor');
   const fKeys   = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
   document.getElementById('leg-forn').innerHTML = makeLegend(fKeys, COLORS);
   mkChart('c-forn', 'doughnut', fKeys, fKeys.map(k => forns[k]), COLORS.slice(0, fKeys.length));
 
-  // ── Gráfico marca (só pneus activos) ──
+  // ── Gráfico marca (só pneus ativos) ──
   const marcs   = countBy(registosAtivos.filter(r => r.marca), 'marca');
   const mKeys   = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
   document.getElementById('leg-marc').innerHTML = makeLegend(mKeys, COLORS);

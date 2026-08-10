@@ -4,7 +4,7 @@
 
 const TIPOS_ORDEM = ['Novo', 'Remix', 'Rechapado', 'Piso Aberto'];
 
-// Selecciona uma amostra legível para o gráfico: top 5 mais eficientes,
+// Seleciona uma amostra legível para o gráfico: top 5 mais eficientes,
 // top 5 menos eficientes, e até 3 mais próximos da média — sem duplicar
 // veículos que já entrem em mais do que um grupo (frotas pequenas).
 function amostraComparativa(linhasOrdenadas, valorKey, media) {
