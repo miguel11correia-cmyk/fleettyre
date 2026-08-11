@@ -7,7 +7,8 @@ App web gratuita para gerir montagens e desmontagens de pneus em camiões pesado
 ## Ficheiros
 
 ```
-index.html                       — estrutura da app
+index.html                       — landing page pública (marketing)
+app.html                          — estrutura da app (login + páginas internas)
 style.css                        — estilos
 server.js                        — servidor Node (injecta as chaves Supabase via variáveis de ambiente)
 js/                               — lógica da app (auth, dados, gráficos), um ficheiro por secção

@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    if (filePath.endsWith('index.html')) {
+    if (filePath.endsWith('app.html')) {
       const html = injectEnv(data.toString());
       res.writeHead(200, headers);
       res.end(html);
