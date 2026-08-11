@@ -116,6 +116,15 @@
     opacity: 0; transition: opacity 1.4s ease;
   }
   .lp-slide.active { opacity: 1; }
+  .lp-hero-dots {
+    position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+    z-index: 3; display: flex; gap: 8px;
+  }
+  .lp-hero-dot {
+    width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0;
+    background: rgba(255,255,255,0.5); cursor: pointer;
+  }
+  .lp-hero-dot.active { background: #fff; }
 
   .lp-section { padding: 56px 24px; }
   .lp-section.alt { background: var(--surface); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
@@ -140,7 +149,7 @@
   .lp-feature p { font-size: 13px; color: var(--text2); line-height: 1.5; }
 
   .lp-steps {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; counter-reset: step;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: step;
   }
   .lp-step { position: relative; padding-left: 44px; }
   .lp-step::before {
@@ -213,6 +222,11 @@
     <img class="lp-slide active" src="assets/login-hero.jpg" alt="Camião de frota pesada em estrada">
     <img class="lp-slide" src="assets/hero-2.jpeg" alt="Pormenor de pneu de camião">
     <img class="lp-slide" src="assets/hero-3.png" alt="Pneus armazenados em armazém">
+    <div class="lp-hero-dots">
+      <button class="lp-hero-dot active" aria-label="Imagem 1"></button>
+      <button class="lp-hero-dot" aria-label="Imagem 2"></button>
+      <button class="lp-hero-dot" aria-label="Imagem 3"></button>
+    </div>
   </div>
 </section>
 
@@ -255,20 +269,23 @@
 
 <section class="lp-section">
   <div class="wrap">
-    <h2>Como funciona</h2>
-    <p class="sub">Sem instalação nem hardware adicional: comece a usar em minutos.</p>
+    <h2 style="margin-bottom:32px">Como funciona</h2>
     <div class="lp-steps">
       <div class="lp-step">
         <h3>Regista a frota</h3>
-        <p>Veículos, reboques e pneus: matrícula, marca, medida, fornecedor e custo.</p>
+        <p>Adiciona veículos, reboques e pneus em poucos minutos: matrícula, marca, medida, fornecedor, custo e data de montagem.</p>
       </div>
       <div class="lp-step">
         <h3>Acompanha o desgaste</h3>
-        <p>A FleetTyre calcula a taxa de desgaste de cada pneu e avisa antes de chegar ao limite.</p>
+        <p>A FleetTyre calcula a taxa de desgaste (mm por 1000 km) de cada pneu a partir do histórico real, e identifica os que se aproximam do limite.</p>
+      </div>
+      <div class="lp-step">
+        <h3>Recebe alertas por prioridade</h3>
+        <p>Consulta a qualquer momento os veículos com pneus críticos ou em atenção, organizados por urgência, antes que virem um problema em estrada.</p>
       </div>
       <div class="lp-step">
         <h3>Decide com dados</h3>
-        <p>Consulte exatamente quanto cada pneu, marca ou veículo custa a operar, e onde poupar.</p>
+        <p>Compara o custo por quilómetro entre marcas, fornecedores e veículos, e identifica exatamente onde vale a pena poupar.</p>
       </div>
     </div>
   </div>
@@ -310,13 +327,23 @@
 <script>
 (function () {
   var slides = document.querySelectorAll('.lp-slide');
+  var dots = document.querySelectorAll('.lp-hero-dot');
   if (slides.length < 2) return;
   var i = 0;
-  setInterval(function () {
+
+  function irPara(n) {
     slides[i].classList.remove('active');
-    i = (i + 1) % slides.length;
+    dots[i].classList.remove('active');
+    i = n;
     slides[i].classList.add('active');
-  }, 5000);
+    dots[i].classList.add('active');
+  }
+
+  dots.forEach(function (dot, n) {
+    dot.addEventListener('click', function () { irPara(n); });
+  });
+
+  setInterval(function () { irPara((i + 1) % slides.length); }, 5000);
 })();
 </script>
 
