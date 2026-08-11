@@ -69,7 +69,7 @@
 <style>
   body { font-size: 15px; line-height: 1.6; }
   a { color: inherit; text-decoration: none; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
   .lp-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -83,11 +83,18 @@
   .lp-header-actions a.link { font-size: 13px; color: var(--text2); padding: 8px 4px; }
 
   .lp-hero {
+    position: relative;
     background: var(--bg);
-    padding: 64px 24px 56px;
+    overflow: hidden;
+    min-height: 560px;
+    display: flex;
+    align-items: center;
   }
-  .lp-hero-grid {
-    display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center;
+  .lp-hero-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 480px;
+    padding: 64px 0;
   }
   .lp-hero h1 {
     font-size: 38px; font-weight: 500; line-height: 1.2; margin-bottom: 16px;
@@ -98,13 +105,10 @@
   }
   .lp-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
-  .lp-hero-img-wrap {
-    border-radius: 16px; overflow: hidden; border: 0.5px solid var(--border);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
-  }
   .lp-hero-img {
-    position: relative;
-    aspect-ratio: 4 / 3;
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 48%;
     clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
   }
   .lp-slide {
@@ -169,8 +173,14 @@
   .lp-footer a:hover { color: var(--text); }
 
   @media (max-width: 860px) {
-    .lp-hero-grid { grid-template-columns: 1fr; }
-    .lp-hero-img-wrap { order: -1; max-height: 260px; }
+    .lp-hero { display: flex; flex-direction: column; min-height: 0; }
+    .lp-hero-copy { max-width: none; padding: 24px; }
+    .lp-hero-img {
+      position: relative; top: auto; right: auto; bottom: auto;
+      width: 100%; height: 240px;
+      clip-path: none;
+      order: -1;
+    }
     .lp-feature-grid { grid-template-columns: repeat(2, 1fr); }
     .lp-steps { grid-template-columns: 1fr; }
     .lp-hero h1 { font-size: 30px; }
@@ -190,21 +200,19 @@
 </header>
 
 <section class="lp-hero">
-  <div class="wrap lp-hero-grid">
-    <div>
+  <div class="wrap">
+    <div class="lp-hero-copy">
       <h1>Controlo total dos pneus da sua frota pesada</h1>
       <p class="lead">A FleetTyre centraliza o registo, o desgaste e os custos dos pneus de camiões e reboques numa só plataforma, substituindo folhas de cálculo dispersas por dados fiáveis e alertas automáticos.</p>
       <div class="lp-hero-actions">
         <a class="btn" href="app.html" style="padding:11px 20px;font-size:14px">Entrar</a>
       </div>
     </div>
-    <div class="lp-hero-img-wrap">
-      <div class="lp-hero-img">
-        <img class="lp-slide active" src="assets/login-hero.jpg" alt="Camião de frota pesada em estrada">
-        <img class="lp-slide" src="assets/hero-2.jpeg" alt="Pormenor de pneu de camião">
-        <img class="lp-slide" src="assets/hero-3.jpeg" alt="Pneus armazenados em armazém">
-      </div>
-    </div>
+  </div>
+  <div class="lp-hero-img">
+    <img class="lp-slide active" src="assets/login-hero.jpg" alt="Camião de frota pesada em estrada">
+    <img class="lp-slide" src="assets/hero-2.jpeg" alt="Pormenor de pneu de camião">
+    <img class="lp-slide" src="assets/hero-3.jpeg" alt="Pneus armazenados em armazém">
   </div>
 </section>
 
