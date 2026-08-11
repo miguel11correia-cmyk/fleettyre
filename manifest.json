@@ -2,7 +2,7 @@
   "name": "FleetTyre",
   "short_name": "FleetTyre",
   "description": "Gestão de pneus para frotas de veículos pesados",
-  "start_url": "/",
+  "start_url": "/app.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
