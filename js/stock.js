@@ -123,11 +123,13 @@ function renderStockDesmontados(pneus, tabela) {
       estadoHtml = '<span class="badge b-ok">Pronto</span>';
     } else if (r.pronto) {
       estadoHtml = '<span class="badge b-ok">✓ Pronto</span> '
-        + (r.custo_pronto > 0 ? '<span style="font-size:10px;color:var(--text3)">(' + fmtEur(r.custo_pronto) + ')</span> ' : '')
+        + (r.fornecedor_pronto ? '<span style="font-size:10px;color:var(--text3)">' + r.fornecedor_pronto + (r.custo_pronto > 0 ? ' · ' + fmtEur(r.custo_pronto) : '') + '</span> ' : (r.custo_pronto > 0 ? '<span style="font-size:10px;color:var(--text3)">(' + fmtEur(r.custo_pronto) + ')</span> ' : ''))
         + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button>';
     } else {
+      const optsForn = '<option value="">Fornecedor</option>' + (listaFornecedores || []).map(f => '<option value="' + f.nome + '">' + f.nome + '</option>').join('');
       estadoHtml = '<span class="badge b-alert">Pendente</span> '
-        + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:22px;font-size:10px;padding:0 4px;margin:0 4px;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle">'
+        + '<select id="forn-pronto-' + r.id + '" style="height:22px;font-size:10px;padding:0 2px;margin:0 4px 0 4px;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle;max-width:100px">' + optsForn + '</select>'
+        + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:22px;font-size:10px;padding:0 4px;margin:0 4px 0 0;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle">'
         + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:22px;padding:0 8px;font-size:10px">✓ Marcar pronto</button>';
     }
 
@@ -154,6 +156,8 @@ async function marcarProntoDesmontado(id, tabela, pronto) {
     const inp = document.getElementById('custo-pronto-' + id);
     const val = inp ? parseFloat(inp.value) : NaN;
     if (Number.isFinite(val) && val >= 0) updates.custo_pronto = val;
+    const selForn = document.getElementById('forn-pronto-' + id);
+    if (selForn && selForn.value) updates.fornecedor_pronto = selForn.value;
   }
   loading(true);
   const { error } = await sb.from(tabela).update(updates).eq('id', id);
@@ -180,13 +184,19 @@ function fecharPainelFatura() {
 }
 
 function adicionarLinhaFatura() {
-  linhasFatura.push({ marca: '', medida: '', tipo: 'Novo', quantidade: '', preco: '' });
+  linhasFatura.push({ marca: '', subtipo: '', medida: '', tipo: 'Novo', quantidade: '', preco: '' });
   renderLinhasFatura();
 }
 
 function removerLinhaFatura(idx) {
   linhasFatura.splice(idx, 1);
   renderLinhasFatura();
+}
+
+function mudarMarcaLinhaFatura(i, valor) {
+  linhasFatura[i].marca   = valor;
+  linhasFatura[i].subtipo = '';
+  popularSelectorSubtipo('f-linha-marca-' + i, 'f-linha-subtipo-' + i);
 }
 
 function renderLinhasFatura() {
@@ -196,6 +206,9 @@ function renderLinhasFatura() {
     container.innerHTML = '<p style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Clique em "+ Linha" para adicionar pneus.</p>';
     return;
   }
+  const optsMarca = val => '<option value="">— selecionar —</option>' +
+    (listaMarcas || []).map(m => '<option value="' + m.nome + '"' + (m.nome === val ? ' selected' : '') + '>' + m.codigo + ' — ' + m.nome + '</option>').join('');
+
   let html = '';
   linhasFatura.forEach((l, i) => {
     html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;background:var(--bg)">'
@@ -204,16 +217,22 @@ function renderLinhasFatura() {
       + '<button class="btn-close" onclick="removerLinhaFatura(' + i + ')">✕</button>'
       + '</div>'
       + '<div class="g3" style="gap:8px;margin-bottom:8px">'
-      + '<div class="frow" style="margin:0"><label>Marca</label><input type="text" value="' + l.marca + '" oninput="linhasFatura[' + i + '].marca=this.value.toUpperCase();this.value=this.value.toUpperCase()" placeholder="MICHELIN"></div>'
+      + '<div class="frow" style="margin:0"><label>Marca</label><select id="f-linha-marca-' + i + '" onchange="mudarMarcaLinhaFatura(' + i + ',this.value)">' + optsMarca(l.marca) + '</select></div>'
+      + '<div class="frow" style="margin:0"><label>Subtipo</label><select id="f-linha-subtipo-' + i + '" onchange="linhasFatura[' + i + '].subtipo=this.value"><option value="">— nenhum —</option></select></div>'
       + '<div class="frow" style="margin:0"><label>Medida</label><input type="text" value="' + l.medida + '" oninput="linhasFatura[' + i + '].medida=this.value" placeholder="315/80"></div>'
-      + '<div class="frow" style="margin:0"><label>Tipo</label><select onchange="linhasFatura[' + i + '].tipo=this.value"><option ' + (l.tipo==='Novo'?'selected':'') + '>Novo</option><option ' + (l.tipo==='Remix'?'selected':'') + '>Remix</option><option ' + (l.tipo==='Rechapado'?'selected':'') + '>Rechapado</option><option ' + (l.tipo==='Piso Aberto'?'selected':'') + '>Piso Aberto</option></select></div>'
       + '</div>'
-      + '<div class="g2" style="gap:8px">'
+      + '<div class="g3" style="gap:8px">'
+      + '<div class="frow" style="margin:0"><label>Tipo</label><select onchange="linhasFatura[' + i + '].tipo=this.value"><option ' + (l.tipo==='Novo'?'selected':'') + '>Novo</option><option ' + (l.tipo==='Remix'?'selected':'') + '>Remix</option><option ' + (l.tipo==='Rechapado'?'selected':'') + '>Rechapado</option><option ' + (l.tipo==='Piso Aberto'?'selected':'') + '>Piso Aberto</option></select></div>'
       + '<div class="frow" style="margin:0"><label>Quantidade *</label><input type="number" value="' + l.quantidade + '" oninput="linhasFatura[' + i + '].quantidade=this.value" placeholder="ex: 4" min="1"></div>'
       + '<div class="frow" style="margin:0"><label>Preço unit. (€)</label><input type="number" value="' + l.preco + '" oninput="linhasFatura[' + i + '].preco=this.value" placeholder="ex: 320" min="0" step="0.01"></div>'
       + '</div></div>';
   });
   container.innerHTML = html;
+  linhasFatura.forEach((l, i) => {
+    popularSelectorSubtipo('f-linha-marca-' + i, 'f-linha-subtipo-' + i);
+    const selSub = document.getElementById('f-linha-subtipo-' + i);
+    if (selSub && l.subtipo) selSub.value = l.subtipo;
+  });
 }
 
 async function guardarFatura() {
@@ -242,6 +261,7 @@ async function guardarFatura() {
   const linhasInsert = linhasFatura.map(l => ({
     fatura_id:       faturaData.id,
     marca:           l.marca   || null,
+    subtipo:         l.subtipo || null,
     medida:          l.medida  || null,
     tipo:            l.tipo    || 'Novo',
     quantidade_ini:  parseInt(l.quantidade),
@@ -317,9 +337,10 @@ async function abrirSelStock() {
         const lMarca = (l.marca || '').replace(/'/g, "\\'");
         const lMedida = (l.medida || '').replace(/'/g, "\\'");
         const lTipo = l.tipo || '';
+        const lSubtipo = (l.subtipo || '').replace(/'/g, "\\'");
         const lForn = (l.fornecedor || '').replace(/'/g, "\\'");
         const lPreco = l.preco_unitario || 0;
-        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDeStock(' + lId + ',\'' + lMarca + '\',\'' + lMedida + '\',\'' + lTipo + '\',\'' + lForn + '\',' + lPreco + ')">';
+        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDeStock(' + lId + ',\'' + lMarca + '\',\'' + lMedida + '\',\'' + lTipo + '\',\'' + lForn + '\',' + lPreco + ',\'' + lSubtipo + '\')">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
         html += '<div><span style="font-weight:500;font-size:13px">' + (l.marca||'—') + ' ' + (l.medida||'') + '</span><span style="margin-left:8px">' + tipoBadge(l.tipo) + '</span></div>';
         html += '<span style="color:var(--amber);font-weight:500">' + (l.preco_unitario ? fmtEur(l.preco_unitario) : '—') + '</span>';
@@ -340,13 +361,14 @@ async function abrirSelStock() {
         const rMat = r.matricula.replace(/'/g, "\\'");
         const rTab = r._tabela;
         const rCustoPronto = r.custo_pronto || 0;
-        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipo + '\',\'' + rMat + '\',\'' + rTab + '\',' + rCustoPronto + ')">';
+        const rFornPronto = (r.fornecedor_pronto || 'PARQUE').replace(/'/g, "\\'");
+        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipo + '\',\'' + rMat + '\',\'' + rTab + '\',' + rCustoPronto + ',\'' + rFornPronto + '\')">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
         html += '<div><span style="font-weight:500;font-size:13px">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span><span style="margin-left:8px">' + tipoBadge(r.tipo) + '</span></div>';
         const rDestCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
         html += '<span class="badge ' + rDestCls + '">' + r.destino + '</span>';
         html += '</div>';
-        html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + (rCustoPronto>0?' · <span style="color:var(--amber);font-weight:500">'+fmtEur(rCustoPronto)+'</span>':'') + '</div>';
+        html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + (r.fornecedor_pronto ? ' · ' + r.fornecedor_pronto : '') + (rCustoPronto>0?' · <span style="color:var(--amber);font-weight:500">'+fmtEur(rCustoPronto)+'</span>':'') + '</div>';
         html += '</div>';
       });
     }
@@ -362,7 +384,7 @@ function fecharSelStock() {
   document.getElementById('stock-overlay').style.display = 'none';
 }
 
-function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco) {
+function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco, subtipo) {
   // Preencher campos — suporta tanto veículos (r-*) como reboques (rr-*)
   [['r-marca','rr-marca'], ['r-medida','rr-medida'], ['r-tipo','rr-tipo'], ['r-forn','rr-forn']].forEach(([v, r]) => {
     const elV = document.getElementById(v); if (elV) elV.value = v === 'r-tipo' ? tipo : (v === 'r-forn' ? fornecedor : (v === 'r-marca' ? marca : medida));
@@ -372,6 +394,10 @@ function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco) {
   const elCustoR = document.getElementById('rr-custo'); if (elCustoR) elCustoR.value = preco > 0 ? preco : '';
   popularSelectorSubtipo('r-marca', 'r-subtipo');
   popularSelectorSubtipo('rr-marca', 'rr-subtipo');
+  if (subtipo) {
+    const elSubV = document.getElementById('r-subtipo');  if (elSubV) elSubV.value = subtipo;
+    const elSubR = document.getElementById('rr-subtipo'); if (elSubR) elSubR.value = subtipo;
+  }
   stockLinhaSelId      = linhaId;
   stockDesmontadoSelId = null;
   const msg = '✓ Pneu de fatura: ' + marca + ' ' + medida + ' ' + tipo + (preco > 0 ? ' — ' + fmtEur(preco) : '') + ' — ' + fornecedor;
@@ -379,10 +405,11 @@ function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco) {
   fecharSelStock();
 }
 
-function selecionarDesmontadoDeStock(id, marca, medida, tipo, matriculaOrigem, tabela, custoPronto) {
+function selecionarDesmontadoDeStock(id, marca, medida, tipo, matriculaOrigem, tabela, custoPronto, fornecedorPronto) {
   // Preencher campos — suporta tanto veículos (r-*) como reboques (rr-*)
   const custoVal = custoPronto > 0 ? custoPronto : '';
-  [['r-marca','rr-marca',marca], ['r-medida','rr-medida',medida], ['r-tipo','rr-tipo',tipo], ['r-forn','rr-forn','PARQUE'], ['r-custo','rr-custo',custoVal]].forEach(([v,r,val]) => {
+  const fornVal  = fornecedorPronto || 'PARQUE';
+  [['r-marca','rr-marca',marca], ['r-medida','rr-medida',medida], ['r-tipo','rr-tipo',tipo], ['r-forn','rr-forn',fornVal], ['r-custo','rr-custo',custoVal]].forEach(([v,r,val]) => {
     const elV = document.getElementById(v); if (elV) elV.value = val;
     const elR = document.getElementById(r); if (elR) elR.value = val;
   });
