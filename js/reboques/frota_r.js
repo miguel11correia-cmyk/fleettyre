@@ -106,7 +106,7 @@ function renderInfoReboque(v, mat) {
   el.innerHTML = `
     <div class="ct">${ICON_REBOQUE}${v.matricula}</div>
     <div class="g3" style="margin-bottom:0">
-      <div><span style="font-size:11px;color:var(--text3)">Marca</span><br>${v.marca || '—'}</div>
+      <div><span style="font-size:11px;color:var(--text3)">Marca</span><br>${renderMarcaComLogoReboque(v.marca)}</div>
       <div><span style="font-size:11px;color:var(--text3)">Modelo</span><br>${v.modelo || '—'}</div>
       <div><span style="font-size:11px;color:var(--text3)">Ano</span><br>${v.ano || '—'}</div>
     </div>

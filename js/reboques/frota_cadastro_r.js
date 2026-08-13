@@ -3,8 +3,105 @@
 let listaReboquesFrota = [];
 let editReboqueFrotaId  = null;
 
+// Lista fixa de marcas de reboque — igual para todos os clientes, não é
+// gerida por empresa (ao contrário das marcas de pneus).
+const MARCAS_REBOQUE = [
+  { slug: 'lecitrailer', nome: 'Lecitrailer' },
+  { slug: 'krone',       nome: 'Krone',              scale: 1.3 },
+  { slug: 'kogel',       nome: 'Kögel' },
+  { slug: 'stas',        nome: 'Stas',     ext: 'webp' },
+  { slug: 'montenegro',  nome: 'Montenegro' },
+  { slug: 'trouillet',   nome: 'Trouillet' },
+  { slug: 'schmitz',     nome: 'Schmitz Cargobull',  scale: 1.3 },
+  { slug: 'spitzer',     nome: 'Spitzer',            scale: 1.3 },
+  { slug: 'lecinena',    nome: 'Lecinena' },
+  { slug: 'benalu',      nome: 'Benalu' },
+  { slug: 'guillen',     nome: 'Guillén' },
+  { slug: 'broshuis',    nome: 'Broshuis' },
+  { slug: 'hermanns',    nome: 'Hermanns' },
+  { slug: 'fruehauf',    nome: 'Fruehauf',           scale: 1.3 },
+  { slug: 'invepe',      nome: 'Invepe' },
+  { slug: 'renders',     nome: 'Renders',  ext: 'svg' },
+  { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp' },
+];
+
 // Nº de pneus esperados (ativos) consoante a configuração de eixos
 const EIXOS_TYRES_REBOQUE = { '2x2': 4, '2x2x2': 6, '2x2x2 (rodado duplo)': 12 };
+
+function logoMarcaReboque(nome) {
+  const m = MARCAS_REBOQUE.find(x => x.nome === nome);
+  return m ? `assets/marcas-reboques/${m.slug}.${m.ext || 'png'}` : null;
+}
+
+function logoScaleReboque(nome) {
+  const m = MARCAS_REBOQUE.find(x => x.nome === nome);
+  return (m && m.scale) || 1;
+}
+
+// HTML da marca com mini-logo à frente, para o cartão de "Por reboque"
+function renderMarcaComLogoReboque(nome) {
+  if (!nome) return '—';
+  const src = logoMarcaReboque(nome);
+  if (!src) return nome;
+  const escala = logoScaleReboque(nome);
+  const h = Math.round(16 * escala);
+  const mw = Math.round(28 * escala);
+  return `<img src="${src}" alt="" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
+}
+
+// Atualiza o mini-logo e mostra/esconde o campo "Outra" consoante a
+// opção selecionada no select de marca indicado (ex: 'vr-marca', 'evr-marca').
+function atualizarMarcaReboque(selectId) {
+  const sel      = document.getElementById(selectId);
+  const logo     = document.getElementById(selectId + '-logo');
+  const outraInp = document.getElementById(selectId + '-outra');
+  if (!sel) return;
+
+  const ehOutra = sel.value === 'Outra';
+  if (outraInp) outraInp.classList.toggle('hidden', !ehOutra);
+
+  const src = logoMarcaReboque(sel.value);
+  if (logo) {
+    if (src) {
+      logo.src = src;
+      const escala = logoScaleReboque(sel.value);
+      logo.style.height   = Math.round(22 * escala) + 'px';
+      logo.style.maxWidth = Math.round(38 * escala) + 'px';
+      logo.style.display  = '';
+    } else {
+      logo.style.display = 'none';
+    }
+  }
+}
+
+// Devolve o nome final da marca, resolvendo "Outra" para o texto livre
+function obterMarcaReboque(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return '';
+  if (sel.value === 'Outra') {
+    const outraInp = document.getElementById(selectId + '-outra');
+    return outraInp ? outraInp.value.trim() : '';
+  }
+  return sel.value;
+}
+
+// Prepara o select de marca (e o campo "Outra"/logo) para mostrar um valor
+// já guardado — usado ao abrir o painel de edição.
+function definirMarcaReboque(selectId, nomeAtual) {
+  const sel      = document.getElementById(selectId);
+  const outraInp = document.getElementById(selectId + '-outra');
+  if (!sel) return;
+
+  const conhecida = MARCAS_REBOQUE.some(m => m.nome === nomeAtual);
+  if (nomeAtual && !conhecida) {
+    sel.value = 'Outra';
+    if (outraInp) outraInp.value = nomeAtual;
+  } else {
+    sel.value = nomeAtual || '';
+    if (outraInp) outraInp.value = '';
+  }
+  atualizarMarcaReboque(selectId);
+}
 
 async function carregarListaReboquesFrota() {
   const { data } = await sb.from('reboques_frota').select('*').eq('ativo', true).order('matricula');
@@ -87,7 +184,7 @@ async function loadFrotaCadastroReboques() {
 
 async function adicionarReboqueFrota() {
   const mat      = document.getElementById('vr-mat').value.trim().toUpperCase();
-  const marca    = document.getElementById('vr-marca').value.trim();
+  const marca    = obterMarcaReboque('vr-marca');
   const modelo   = document.getElementById('vr-modelo').value.trim();
   const anoStr   = document.getElementById('vr-ano').value;
   const tipo     = document.getElementById('vr-tipo').value;
@@ -120,9 +217,10 @@ async function adicionarReboqueFrota() {
 }
 
 function limparFormReboqueFrota() {
-  ['vr-mat', 'vr-marca', 'vr-modelo', 'vr-ano', 'vr-eixos', 'vr-obs']
+  ['vr-mat', 'vr-marca', 'vr-marca-outra', 'vr-modelo', 'vr-ano', 'vr-eixos', 'vr-obs']
     .forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('vr-tipo').value = '';
+  atualizarMarcaReboque('vr-marca');
 }
 
 async function abrirEdicaoReboqueFrota(id) {
@@ -131,7 +229,7 @@ async function abrirEdicaoReboqueFrota(id) {
   editReboqueFrotaId = id;
 
   document.getElementById('evr-mat').value    = v.matricula   || '';
-  document.getElementById('evr-marca').value  = v.marca       || '';
+  definirMarcaReboque('evr-marca', v.marca || '');
   document.getElementById('evr-modelo').value = v.modelo      || '';
   document.getElementById('evr-ano').value    = v.ano         || '';
   document.getElementById('evr-tipo').value   = v.tipo        || '';
@@ -151,7 +249,7 @@ async function guardarEdicaoReboqueFrota() {
   if (editReboqueFrotaId == null) return;
 
   const mat      = document.getElementById('evr-mat').value.trim().toUpperCase();
-  const marca    = document.getElementById('evr-marca').value.trim();
+  const marca    = obterMarcaReboque('evr-marca');
   const modelo   = document.getElementById('evr-modelo').value.trim();
   const anoStr   = document.getElementById('evr-ano').value;
   const tipo     = document.getElementById('evr-tipo').value;
