@@ -25,6 +25,8 @@ const MARCAS_REBOQUE = [
   { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp', scale: 1.7 },
   { slug: 'wielton',     nome: 'Wielton',  ext: 'jpg',  scale: 3, maxW: 140 },
   { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 1.8 },
+  { slug: 'pacton',      nome: 'Pacton' },
+  { slug: 'seka',        nome: 'Seka' },
 ];
 
 // Nº de pneus esperados (ativos) consoante a configuração de eixos
