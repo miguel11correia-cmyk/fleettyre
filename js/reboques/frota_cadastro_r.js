@@ -23,6 +23,8 @@ const MARCAS_REBOQUE = [
   { slug: 'invepe',      nome: 'Invepe' },
   { slug: 'renders',     nome: 'Renders',  ext: 'svg' },
   { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp' },
+  { slug: 'wielton',     nome: 'Wielton' },
+  { slug: 'kassbohrer',  nome: 'Kässbohrer' },
 ];
 
 // Nº de pneus esperados (ativos) consoante a configuração de eixos
