@@ -7,7 +7,7 @@ let editReboqueFrotaId  = null;
 // gerida por empresa (ao contrário das marcas de pneus).
 const MARCAS_REBOQUE = [
   { slug: 'lecitrailer', nome: 'Lecitrailer',        scale: 2.5, maxW: 120 },
-  { slug: 'krone',       nome: 'Krone',              scale: 2.5, maxW: 120 },
+  { slug: 'krone',       nome: 'Krone',    ext: 'jpg',  scale: 2.5, maxW: 120 },
   { slug: 'kogel',       nome: 'Kögel' },
   { slug: 'stas',        nome: 'Stas',     ext: 'webp', scale: 2.5, maxW: 120 },
   { slug: 'montenegro',  nome: 'Montenegro' },
@@ -23,7 +23,7 @@ const MARCAS_REBOQUE = [
   { slug: 'invepe',      nome: 'Invepe',             scale: 1.6 },
   { slug: 'renders',     nome: 'Renders',  ext: 'svg', scale: 1.6 },
   { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp', scale: 1.7 },
-  { slug: 'wielton',     nome: 'Wielton',             scale: 2.5, maxW: 120 },
+  { slug: 'wielton',     nome: 'Wielton',  ext: 'jpg',  scale: 2.5, maxW: 120 },
   { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 1.8 },
 ];
 
