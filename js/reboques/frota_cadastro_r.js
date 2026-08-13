@@ -6,7 +6,7 @@ let editReboqueFrotaId  = null;
 // Lista fixa de marcas de reboque — igual para todos os clientes, não é
 // gerida por empresa (ao contrário das marcas de pneus).
 const MARCAS_REBOQUE = [
-  { slug: 'lecitrailer', nome: 'Lecitrailer',        scale: 3, maxW: 140 },
+  { slug: 'lecitrailer', nome: 'Lecitrailer',        scale: 3, maxW: 140, maxH: 34 },
   { slug: 'krone',       nome: 'Krone',    ext: 'jpg',  scale: 2.5, maxW: 120 },
   { slug: 'kogel',       nome: 'Kögel' },
   { slug: 'stas',        nome: 'Stas',     ext: 'webp', scale: 2.5, maxW: 120 },
@@ -48,13 +48,23 @@ function logoMaxWReboque(nome, base) {
   return (m && m.maxW) ? Math.round(m.maxW * (base / 46)) : base;
 }
 
+// Teto de altura em px — normalmente todas partilham o mesmo (para as
+// linhas do formulário não desalinharem), mas uma marca "curta" (pouco
+// larga) pode ficar presa por este teto antes de a largura fazer efeito;
+// aqui dá para abrir uma exceção pontual, com cuidado para não voltar a
+// ficar mais alta que os campos ao lado.
+function logoMaxHReboque(nome, base) {
+  const m = MARCAS_REBOQUE.find(x => x.nome === nome);
+  return (m && m.maxH) ? Math.round(m.maxH * (base / 28)) : base;
+}
+
 // HTML da marca com mini-logo à frente, para o cartão de "Por reboque"
 function renderMarcaComLogoReboque(nome) {
   if (!nome) return '—';
   const src = logoMarcaReboque(nome);
   if (!src) return nome;
   const escala = logoScaleReboque(nome);
-  const h = Math.min(Math.round(16 * escala), 20);
+  const h = Math.min(Math.round(16 * escala), logoMaxHReboque(nome, 20));
   const mw = Math.min(Math.round(32 * escala), logoMaxWReboque(nome, 46));
   return `<img src="${src}" alt="" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
 }
@@ -75,7 +85,7 @@ function atualizarMarcaReboque(selectId) {
     if (src) {
       logo.src = src;
       const escala = logoScaleReboque(sel.value);
-      logo.style.height   = Math.min(Math.round(22 * escala), 28) + 'px';
+      logo.style.height   = Math.min(Math.round(22 * escala), logoMaxHReboque(sel.value, 28)) + 'px';
       logo.style.maxWidth = Math.min(Math.round(46 * escala), logoMaxWReboque(sel.value, 64)) + 'px';
       logo.style.display  = 'block';
     } else {
