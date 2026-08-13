@@ -23,8 +23,8 @@ const MARCAS_REBOQUE = [
   { slug: 'invepe',      nome: 'Invepe',             scale: 1.6 },
   { slug: 'renders',     nome: 'Renders',  ext: 'svg', scale: 1.6 },
   { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp', scale: 1.7 },
-  { slug: 'wielton',     nome: 'Wielton',             scale: 2.6 },
-  { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 2.6 },
+  { slug: 'wielton',     nome: 'Wielton',             scale: 1.8 },
+  { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 1.8 },
 ];
 
 // Nº de pneus esperados (ativos) consoante a configuração de eixos
@@ -46,8 +46,8 @@ function renderMarcaComLogoReboque(nome) {
   const src = logoMarcaReboque(nome);
   if (!src) return nome;
   const escala = logoScaleReboque(nome);
-  const h = Math.round(16 * escala);
-  const mw = Math.round(40 * escala);
+  const h = Math.min(Math.round(16 * escala), 20);
+  const mw = Math.min(Math.round(32 * escala), 46);
   return `<img src="${src}" alt="" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
 }
 
@@ -67,8 +67,8 @@ function atualizarMarcaReboque(selectId) {
     if (src) {
       logo.src = src;
       const escala = logoScaleReboque(sel.value);
-      logo.style.height   = Math.round(22 * escala) + 'px';
-      logo.style.maxWidth = Math.round(50 * escala) + 'px';
+      logo.style.height   = Math.min(Math.round(22 * escala), 28) + 'px';
+      logo.style.maxWidth = Math.min(Math.round(46 * escala), 64) + 'px';
       logo.style.display  = 'block';
     } else {
       logo.style.display = 'none';
