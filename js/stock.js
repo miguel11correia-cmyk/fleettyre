@@ -109,7 +109,7 @@ function renderStockDesmontados(pneus, tabela) {
     return;
   }
 
-  let html = '<div class="table-wrap"><table>';
+  let html = '<div class="table-wrap"><table style="min-width:1000px">';
   html += '<thead><tr><th>Matrícula</th><th>Mês desmont.</th><th>Posição</th><th>Marca</th><th>Medida</th><th>Tipo</th><th>Escultura</th><th>Destino</th><th>Estado</th><th>Duração</th></tr></thead><tbody>';
   pneus.forEach(r => {
     const duracao = tabela === 'pneus'
