@@ -6,25 +6,25 @@ let editReboqueFrotaId  = null;
 // Lista fixa de marcas de reboque — igual para todos os clientes, não é
 // gerida por empresa (ao contrário das marcas de pneus).
 const MARCAS_REBOQUE = [
-  { slug: 'lecitrailer', nome: 'Lecitrailer',        scale: 1.4 },
-  { slug: 'krone',       nome: 'Krone',              scale: 1.5 },
+  { slug: 'lecitrailer', nome: 'Lecitrailer',        scale: 1.7 },
+  { slug: 'krone',       nome: 'Krone',              scale: 1.7 },
   { slug: 'kogel',       nome: 'Kögel' },
-  { slug: 'stas',        nome: 'Stas',     ext: 'webp', scale: 1.4 },
+  { slug: 'stas',        nome: 'Stas',     ext: 'webp', scale: 1.6 },
   { slug: 'montenegro',  nome: 'Montenegro' },
-  { slug: 'trouillet',   nome: 'Trouillet',          scale: 1.4 },
-  { slug: 'schmitz',     nome: 'Schmitz Cargobull',  scale: 1.6 },
-  { slug: 'spitzer',     nome: 'Spitzer',            scale: 1.5 },
-  { slug: 'lecinena',    nome: 'Lecinena',           scale: 1.4 },
-  { slug: 'benalu',      nome: 'Benalu',             scale: 1.4 },
-  { slug: 'guillen',     nome: 'Guillén',            scale: 1.4 },
-  { slug: 'broshuis',    nome: 'Broshuis',           scale: 1.4 },
-  { slug: 'hermanns',    nome: 'Hermanns',           scale: 1.4 },
+  { slug: 'trouillet',   nome: 'Trouillet',          scale: 1.6 },
+  { slug: 'schmitz',     nome: 'Schmitz Cargobull',  scale: 1.7 },
+  { slug: 'spitzer',     nome: 'Spitzer',            scale: 1.7 },
+  { slug: 'lecinena',    nome: 'Lecinena',           scale: 1.6 },
+  { slug: 'benalu',      nome: 'Benalu',             scale: 1.6 },
+  { slug: 'guillen',     nome: 'Guillén',            scale: 1.7 },
+  { slug: 'broshuis',    nome: 'Broshuis',           scale: 1.6 },
+  { slug: 'hermanns',    nome: 'Hermanns',           scale: 1.6 },
   { slug: 'fruehauf',    nome: 'Fruehauf',           scale: 1.3 },
-  { slug: 'invepe',      nome: 'Invepe',             scale: 1.4 },
-  { slug: 'renders',     nome: 'Renders',  ext: 'svg', scale: 1.4 },
-  { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp', scale: 1.5 },
-  { slug: 'wielton',     nome: 'Wielton',             scale: 2 },
-  { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 2 },
+  { slug: 'invepe',      nome: 'Invepe',             scale: 1.6 },
+  { slug: 'renders',     nome: 'Renders',  ext: 'svg', scale: 1.6 },
+  { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp', scale: 1.7 },
+  { slug: 'wielton',     nome: 'Wielton',             scale: 2.6 },
+  { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 2.6 },
 ];
 
 // Nº de pneus esperados (ativos) consoante a configuração de eixos
@@ -47,7 +47,7 @@ function renderMarcaComLogoReboque(nome) {
   if (!src) return nome;
   const escala = logoScaleReboque(nome);
   const h = Math.round(16 * escala);
-  const mw = Math.round(28 * escala);
+  const mw = Math.round(40 * escala);
   return `<img src="${src}" alt="" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
 }
 
@@ -68,8 +68,8 @@ function atualizarMarcaReboque(selectId) {
       logo.src = src;
       const escala = logoScaleReboque(sel.value);
       logo.style.height   = Math.round(22 * escala) + 'px';
-      logo.style.maxWidth = Math.round(38 * escala) + 'px';
-      logo.style.display  = '';
+      logo.style.maxWidth = Math.round(50 * escala) + 'px';
+      logo.style.display  = 'block';
     } else {
       logo.style.display = 'none';
     }
