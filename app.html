@@ -925,7 +925,36 @@
         <div class="ct">Adicionar reboque</div>
         <div class="g3">
           <div class="frow"><label>Matrícula *</label><input type="text" id="vr-mat" placeholder="ex: RC-12-34" oninput="this.value=this.value.toUpperCase()"></div>
-          <div class="frow"><label>Marca</label><input type="text" id="vr-marca" placeholder="ex: Schmitz"></div>
+          <div class="frow">
+            <label>Marca</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <img id="vr-marca-logo" src="" alt="" style="height:22px;width:auto;max-width:38px;object-fit:contain;display:none;flex-shrink:0">
+              <select id="vr-marca" onchange="atualizarMarcaReboque('vr-marca')" style="flex:1">
+                <option value="">— selecionar —</option>
+                <option value="Lecitrailer">Lecitrailer</option>
+                <option value="Krone">Krone</option>
+                <option value="Kögel">Kögel</option>
+                <option value="Stas">Stas</option>
+                <option value="Montenegro">Montenegro</option>
+                <option value="Trouillet">Trouillet</option>
+                <option value="Schmitz Cargobull">Schmitz Cargobull</option>
+                <option value="Spitzer">Spitzer</option>
+                <option value="Lecinena">Lecinena</option>
+                <option value="Benalu">Benalu</option>
+                <option value="Guillén">Guillén</option>
+                <option value="Broshuis">Broshuis</option>
+                <option value="Hermanns">Hermanns</option>
+                <option value="Fruehauf">Fruehauf</option>
+                <option value="Invepe">Invepe</option>
+                <option value="Renders">Renders</option>
+                <option value="Lamberet">Lamberet</option>
+                <option value="Wielton">Wielton</option>
+                <option value="Kässbohrer">Kässbohrer</option>
+                <option value="Outra">Outra…</option>
+              </select>
+            </div>
+            <input type="text" id="vr-marca-outra" placeholder="nome da marca" class="hidden" style="margin-top:6px">
+          </div>
           <div class="frow"><label>Modelo</label><input type="text" id="vr-modelo" placeholder="ex: S.KO"></div>
         </div>
         <div class="g3">
@@ -980,7 +1009,36 @@
         </div>
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="evr-mat" oninput="this.value=this.value.toUpperCase()"></div>
-          <div class="frow"><label>Marca</label><input type="text" id="evr-marca"></div>
+          <div class="frow">
+            <label>Marca</label>
+            <div style="display:flex;align-items:center;gap:8px">
+              <img id="evr-marca-logo" src="" alt="" style="height:22px;width:auto;max-width:38px;object-fit:contain;display:none;flex-shrink:0">
+              <select id="evr-marca" onchange="atualizarMarcaReboque('evr-marca')" style="flex:1">
+                <option value="">— selecionar —</option>
+                <option value="Lecitrailer">Lecitrailer</option>
+                <option value="Krone">Krone</option>
+                <option value="Kögel">Kögel</option>
+                <option value="Stas">Stas</option>
+                <option value="Montenegro">Montenegro</option>
+                <option value="Trouillet">Trouillet</option>
+                <option value="Schmitz Cargobull">Schmitz Cargobull</option>
+                <option value="Spitzer">Spitzer</option>
+                <option value="Lecinena">Lecinena</option>
+                <option value="Benalu">Benalu</option>
+                <option value="Guillén">Guillén</option>
+                <option value="Broshuis">Broshuis</option>
+                <option value="Hermanns">Hermanns</option>
+                <option value="Fruehauf">Fruehauf</option>
+                <option value="Invepe">Invepe</option>
+                <option value="Renders">Renders</option>
+                <option value="Lamberet">Lamberet</option>
+                <option value="Wielton">Wielton</option>
+                <option value="Kässbohrer">Kässbohrer</option>
+                <option value="Outra">Outra…</option>
+              </select>
+            </div>
+            <input type="text" id="evr-marca-outra" placeholder="nome da marca" class="hidden" style="margin-top:6px">
+          </div>
           <div class="frow"><label>Modelo</label><input type="text" id="evr-modelo"></div>
           <div class="frow"><label>Ano</label><input type="number" id="evr-ano" min="1980" max="2100"></div>
           <div class="frow"><label>Tipo de reboque</label>
