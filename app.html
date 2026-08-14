@@ -495,11 +495,11 @@
           <div class="kpi"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk6">—</div><div class="kpi-s">custo ÷ km médio</div></div>
         </div>
         <div class="card hidden" id="frota-lugares-card">
-          <div class="ct">Lugares — clique em "Desmontar" para libertar, ou "+ Montar" para preencher</div>
+          <div class="ct">Posições</div>
           <div class="table-wrap">
             <table id="frota-lugares-table">
               <thead><tr>
-                <th>Lugar</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th>
+                <th>Posição</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th>
                 <th>KMs Mont.</th><th>Mês Mont.</th><th>KMs Efect.</th><th>Escultura</th>
                 <th>Custo €</th><th>M.Obra €</th><th>Ação</th>
               </tr></thead>
@@ -1111,9 +1111,9 @@
           <div class="kpi"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk6">—</div><div class="kpi-s">custo ÷ duração</div></div>
         </div>
         <div class="card hidden" id="rfrota-lugares-card">
-          <div class="ct">Lugares — clique em "Desmontar" para libertar, ou "+ Montar" para preencher</div>
+          <div class="ct">Posições</div>
           <div class="table-wrap"><table>
-            <thead><tr><th>Lugar</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th><th>Mês Mont.</th><th>Meses ativo</th><th>Escultura</th><th>Custo €</th><th>M.Obra €</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Posição</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th><th>Mês Mont.</th><th>Meses ativo</th><th>Escultura</th><th>Custo €</th><th>M.Obra €</th><th>Ação</th></tr></thead>
             <tbody id="rfrota-lugares-tbody"></tbody>
           </table></div>
         </div>
@@ -1146,7 +1146,7 @@
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
-          <div class="frow"><label>Eixo / Lugar</label><select id="re-pos"><option value="Eixo 1">Eixo 1</option><option value="Eixo 2">Eixo 2</option><option value="Eixo 3">Eixo 3</option></select></div>
+          <div class="frow"><label>Posição</label><select id="re-pos"><option value="Eixo 1">Eixo 1</option><option value="Eixo 2">Eixo 2</option><option value="Eixo 3">Eixo 3</option></select></div>
           <div class="frow"><label>Marca</label><select id="re-marca" onchange="popularSelectorSubtipo('re-marca','re-subtipo')"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
           <div class="frow"><label>Subtipo</label><select id="re-subtipo"><option value="">— nenhum —</option></select></div>

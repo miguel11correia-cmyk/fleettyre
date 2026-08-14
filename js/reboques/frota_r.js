@@ -71,7 +71,7 @@ async function loadFrotaReboques() {
 
     document.getElementById('rfrota-lugares-tbody').innerHTML =
       slots.map(lugar => linhaLugarReboque(lugar, porLugar[lugar], mat, hoje)).join('') +
-      semLugar.map(r => linhaLugarReboque(r.posicao || (r.eixo ? 'Eixo ' + r.eixo : '(sem lugar)'), r, mat, hoje, true)).join('');
+      semLugar.map(r => linhaLugarReboque(r.posicao || (r.eixo ? 'Eixo ' + r.eixo : '(sem posição)'), r, mat, hoje, true)).join('');
 
     document.getElementById('rfrota-tbody').innerHTML = historicoArr.map(r => linhaHistoricoReboque(r, hoje)).join('');
   } else {
@@ -100,7 +100,7 @@ function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
                    mesesActivo >= lim.aviso   ? 'b-warn'  : '';
   const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
   const escStr   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
-  const avisoIcon = aviso ? ` <span title="Lugar não reconhecido na configuração actual do reboque — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
+  const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do reboque — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
       <button class="btn btn-s" onclick="abrirPainelReboque(${r.id})">🔧 Desmontar</button>
       <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
