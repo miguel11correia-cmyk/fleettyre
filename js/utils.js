@@ -92,43 +92,43 @@ function mesAtual() {
 
 const SLOTS_VEICULO = {
   '4x2': [
-    'Direção Esquerda', 'Direção Direita',
-    'Tração Esquerda Interior', 'Tração Esquerda Exterior',
-    'Tração Direita Interior', 'Tração Direita Exterior',
+    'Direção Esq', 'Direção Drt',
+    'Tração Esq Int', 'Tração Esq Ext',
+    'Tração Drt Int', 'Tração Drt Ext',
   ],
   '6x2 Pusher': [
-    'Direção Esquerda', 'Direção Direita',
-    'Pusher Esquerda Interior', 'Pusher Esquerda Exterior',
-    'Pusher Direita Interior', 'Pusher Direita Exterior',
-    'Tração Esquerda Interior', 'Tração Esquerda Exterior',
-    'Tração Direita Interior', 'Tração Direita Exterior',
+    'Direção Esq', 'Direção Drt',
+    'Pusher Esq Int', 'Pusher Esq Ext',
+    'Pusher Drt Int', 'Pusher Drt Ext',
+    'Tração Esq Int', 'Tração Esq Ext',
+    'Tração Drt Int', 'Tração Drt Ext',
   ],
   '6x2 Tag': [
-    'Direção Esquerda', 'Direção Direita',
-    'Tração Esquerda Interior', 'Tração Esquerda Exterior',
-    'Tração Direita Interior', 'Tração Direita Exterior',
-    'Tag Esquerda Interior', 'Tag Esquerda Exterior',
-    'Tag Direita Interior', 'Tag Direita Exterior',
+    'Direção Esq', 'Direção Drt',
+    'Tração Esq Int', 'Tração Esq Ext',
+    'Tração Drt Int', 'Tração Drt Ext',
+    'Tag Esq Int', 'Tag Esq Ext',
+    'Tag Drt Int', 'Tag Drt Ext',
   ],
 };
 
 const SLOTS_REBOQUE = {
   '2x2': [
-    'Eixo 1 Esquerda', 'Eixo 1 Direita',
-    'Eixo 2 Esquerda', 'Eixo 2 Direita',
+    'Eixo 1 Esq', 'Eixo 1 Drt',
+    'Eixo 2 Esq', 'Eixo 2 Drt',
   ],
   '2x2x2': [
-    'Eixo 1 Esquerda', 'Eixo 1 Direita',
-    'Eixo 2 Esquerda', 'Eixo 2 Direita',
-    'Eixo 3 Esquerda', 'Eixo 3 Direita',
+    'Eixo 1 Esq', 'Eixo 1 Drt',
+    'Eixo 2 Esq', 'Eixo 2 Drt',
+    'Eixo 3 Esq', 'Eixo 3 Drt',
   ],
   '2x2x2 (rodado duplo)': [
-    'Eixo 1 Esquerda Interior', 'Eixo 1 Esquerda Exterior',
-    'Eixo 1 Direita Interior', 'Eixo 1 Direita Exterior',
-    'Eixo 2 Esquerda Interior', 'Eixo 2 Esquerda Exterior',
-    'Eixo 2 Direita Interior', 'Eixo 2 Direita Exterior',
-    'Eixo 3 Esquerda Interior', 'Eixo 3 Esquerda Exterior',
-    'Eixo 3 Direita Interior', 'Eixo 3 Direita Exterior',
+    'Eixo 1 Esq Int', 'Eixo 1 Esq Ext',
+    'Eixo 1 Drt Int', 'Eixo 1 Drt Ext',
+    'Eixo 2 Esq Int', 'Eixo 2 Esq Ext',
+    'Eixo 2 Drt Int', 'Eixo 2 Drt Ext',
+    'Eixo 3 Esq Int', 'Eixo 3 Esq Ext',
+    'Eixo 3 Drt Int', 'Eixo 3 Drt Ext',
   ],
 };
 
