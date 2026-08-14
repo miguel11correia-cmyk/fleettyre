@@ -57,43 +57,122 @@ async function loadFrota() {
   document.getElementById('fk3').textContent = kmsmedios ? fmt(kmsmedios) : '—';
   document.getElementById('fk4').textContent = custoTotal > 0 ? fmtEur(custoTotal) : '—';
   document.getElementById('fk5').textContent = custoMed   ? fmtEur(custoMed)   : '—';
-  document.getElementById('fk6').textContent = eurKm      ? '€\u202f' + eurKm   : '—';
+  document.getElementById('fk6').textContent = eurKm      ? '€ ' + eurKm   : '—';
 
-  // ── Tabela ──
-  const tbody = document.getElementById('frota-tbody');
-  tbody.innerHTML = data.map(r => {
-    const kmsEfInfo = kmsEfectuados(r, kmAtual);
-    const kmsEf = kmsEfInfo
-      ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km atual">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
-      : '—';
-    const esc   = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
-    const escCls= (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
-    const custoTot = (r.custo_pneu || 0) + (r.custo_mo || 0);
-    const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
-        ${!r.mes_desmont ? `<button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>` : '<span style="color:var(--text3);font-size:11px">✓</span>'}
-        <button class="btn btn-sm" onclick="abrirEdicao(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-        <button class="btn btn-sm" onclick="apagarRegisto(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
-      </div>`;
-    return `<tr>
-      <td>${r.mes_mont || '—'}</td>
-      <td>${r.posicao  || '—'}</td>
-      <td>${r.marca    || '—'}</td>
-      <td>${r.fornecedor || '—'}</td>
-      <td>${r.medida   || '—'}</td>
-      <td>${r.subtipo  || '—'}</td>
-      <td>${tipoBadge(r.tipo)}</td>
-      <td style="text-align:right">${fmt(r.kms_mont)}</td>
-      <td>${r.mes_desmont || '—'}</td>
-      <td style="text-align:right">${r.kms_desmont ? fmt(r.kms_desmont) : '—'}</td>
-      <td style="text-align:right">${kmsEf}</td>
-      <td><span class="${escCls}">${esc}</span></td>
-      <td>${r.destino  || '—'}</td>
-      <td style="text-align:right">${r.custo_pneu != null ? fmtEur(r.custo_pneu) : '—'}</td>
-      <td style="text-align:right">${r.custo_mo   != null ? fmtEur(r.custo_mo)   : '—'}</td>
-      <td style="text-align:right">${custoTot > 0 ? fmtEur(custoTot) : '—'}</td>
-      <td>${acBtn}</td>
+  // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
+  const slots        = SLOTS_VEICULO[veiculo?.num_eixos];
+  const activosArr    = data.filter(r => !r.mes_desmont);
+  const historicoArr  = data.filter(r => r.mes_desmont);
+  const lugaresCard   = document.getElementById('frota-lugares-card');
+  const historicoCt   = document.getElementById('frota-historico-ct');
+
+  if (slots) {
+    lugaresCard.classList.remove('hidden');
+    historicoCt.textContent = 'Histórico de pneus';
+
+    const porLugar = {};
+    activosArr.forEach(r => { porLugar[r.posicao] = r; });
+    const semLugar = activosArr.filter(r => !slots.includes(r.posicao));
+
+    document.getElementById('frota-lugares-tbody').innerHTML =
+      slots.map(lugar => linhaLugar(lugar, porLugar[lugar], mat, kmAtual)).join('') +
+      semLugar.map(r => linhaLugar(r.posicao || '(sem lugar)', r, mat, kmAtual, true)).join('');
+
+    document.getElementById('frota-tbody').innerHTML = historicoArr.map(r => linhaHistorico(r, kmAtual)).join('');
+  } else {
+    lugaresCard.classList.add('hidden');
+    historicoCt.textContent = 'Histórico de pneus — clique em "Desmontar" para registar saída';
+    document.getElementById('frota-tbody').innerHTML = data.map(r => linhaHistorico(r, kmAtual)).join('');
+  }
+}
+
+// Uma linha da tabela "Lugares" — preenchida com o pneu activo desse
+// lugar, ou vazia com um botão para montar. `aviso=true` assinala um
+// pneu activo cujo lugar não corresponde à configuração actual do
+// veículo (raro — só acontece com dados que o backfill não conseguiu
+// mapear automaticamente).
+function linhaLugar(lugar, r, mat, kmAtual, aviso) {
+  if (!r) {
+    return `<tr style="color:var(--text3)">
+      <td>${lugar}</td>
+      <td colspan="11">— vazio —</td>
+      <td><button class="btn btn-sm" onclick="montarNoLugar('${mat}','${lugar}')" style="height:28px;padding:0 8px;font-size:11px">+ Montar</button></td>
     </tr>`;
-  }).join('');
+  }
+  const kmsEfInfo = kmsEfectuados(r, kmAtual);
+  const kmsEf = kmsEfInfo
+    ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km atual">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
+    : '—';
+  const esc    = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  const escCls = (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
+  const avisoIcon = aviso ? ` <span title="Lugar não reconhecido na configuração actual do veículo — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
+  const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
+      <button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>
+      <button class="btn btn-sm" onclick="abrirEdicao(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
+      <button class="btn btn-sm" onclick="apagarRegisto(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+    </div>`;
+  return `<tr>
+    <td>${lugar}${avisoIcon}</td>
+    <td>${r.marca || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
+    <td>${r.medida || '—'}</td>
+    <td>${r.subtipo || '—'}</td>
+    <td>${tipoBadge(r.tipo)}</td>
+    <td style="text-align:right">${fmt(r.kms_mont)}</td>
+    <td>${r.mes_mont || '—'}</td>
+    <td style="text-align:right">${kmsEf}</td>
+    <td><span class="${escCls}">${esc}</span></td>
+    <td style="text-align:right">${r.custo_pneu != null ? fmtEur(r.custo_pneu) : '—'}</td>
+    <td style="text-align:right">${r.custo_mo != null ? fmtEur(r.custo_mo) : '—'}</td>
+    <td>${acBtn}</td>
+  </tr>`;
+}
+
+// Uma linha da tabela "Histórico" (ou da tabela única, para veículos
+// sem configuração conhecida — mesmo comportamento de sempre).
+function linhaHistorico(r, kmAtual) {
+  const kmsEfInfo = kmsEfectuados(r, kmAtual);
+  const kmsEf = kmsEfInfo
+    ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km atual">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
+    : '—';
+  const esc   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  const escCls= (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
+  const custoTot = (r.custo_pneu || 0) + (r.custo_mo || 0);
+  const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
+      ${!r.mes_desmont ? `<button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>` : '<span style="color:var(--text3);font-size:11px">✓</span>'}
+      <button class="btn btn-sm" onclick="abrirEdicao(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
+      <button class="btn btn-sm" onclick="apagarRegisto(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+    </div>`;
+  return `<tr>
+    <td>${r.mes_mont || '—'}</td>
+    <td>${r.posicao  || '—'}</td>
+    <td>${r.marca    || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
+    <td>${r.medida   || '—'}</td>
+    <td>${r.subtipo  || '—'}</td>
+    <td>${tipoBadge(r.tipo)}</td>
+    <td style="text-align:right">${fmt(r.kms_mont)}</td>
+    <td>${r.mes_desmont || '—'}</td>
+    <td style="text-align:right">${r.kms_desmont ? fmt(r.kms_desmont) : '—'}</td>
+    <td style="text-align:right">${kmsEf}</td>
+    <td><span class="${escCls}">${esc}</span></td>
+    <td>${r.destino  || '—'}</td>
+    <td style="text-align:right">${r.custo_pneu != null ? fmtEur(r.custo_pneu) : '—'}</td>
+    <td style="text-align:right">${r.custo_mo   != null ? fmtEur(r.custo_mo)   : '—'}</td>
+    <td style="text-align:right">${custoTot > 0 ? fmtEur(custoTot) : '—'}</td>
+    <td>${acBtn}</td>
+  </tr>`;
+}
+
+// Atalho do botão "+ Montar" de um lugar vazio: abre "Registar pneu"
+// com a matrícula e a categoria desse lugar já preenchidas.
+function montarNoLugar(matricula, lugar) {
+  nav('registar', document.querySelector('[data-page="registar"]'));
+  const selMat = document.getElementById('r-mat');
+  selMat.value = matricula;
+  atualizarCategoriasPosicao('r-mat', 'r-pos', listaVeiculos, SLOTS_VEICULO);
+  document.getElementById('r-pos').value = categoriaPosicao(lugar);
+  document.getElementById('r-mes').focus();
 }
 
 function renderInfoVeiculo(v, mat) {
@@ -224,7 +303,8 @@ async function abrirEdicao(id) {
   document.getElementById('e-mat').value     = data.matricula    || '';
   document.getElementById('e-mes').value     = data.mes_mont     || '';
   document.getElementById('e-kms').value     = data.kms_mont     || '';
-  document.getElementById('e-pos').value     = data.posicao      || '';
+  const veiculoEd = listaVeiculos.find(v => v.matricula === data.matricula);
+  await atualizarLugaresEdicao('e-pos', 'pneus', data.matricula, data.posicao, veiculoEd?.num_eixos, SLOTS_VEICULO, data.id);
   document.getElementById('e-marca').value   = data.marca        || '';
   document.getElementById('e-medida').value  = data.medida       || '';
   popularSelectorSubtipo('e-marca', 'e-subtipo');

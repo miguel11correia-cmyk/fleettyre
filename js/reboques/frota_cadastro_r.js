@@ -29,8 +29,12 @@ const MARCAS_REBOQUE = [
   { slug: 'seka',        nome: 'Seka',                scale: 2, maxH: 34 },
 ];
 
-// Nº de pneus esperados (ativos) consoante a configuração de eixos
-const EIXOS_TYRES_REBOQUE = { '2x2': 4, '2x2x2': 6, '2x2x2 (rodado duplo)': 12 };
+// Nº de pneus esperados (ativos) consoante a configuração de eixos.
+// Derivado de SLOTS_REBOQUE (js/utils.js), que é a lista completa dos
+// lugares fixos por configuração.
+const EIXOS_TYRES_REBOQUE = Object.fromEntries(
+  Object.entries(SLOTS_REBOQUE).map(([k, v]) => [k, v.length])
+);
 
 function logoMarcaReboque(nome) {
   const m = MARCAS_REBOQUE.find(x => x.nome === nome);

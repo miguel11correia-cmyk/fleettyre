@@ -2,10 +2,20 @@
 
 async function guardarRegistoReboque() {
   const quantidade = parseInt(document.getElementById('rr-quantidade')?.value) || 1;
+  const mat        = document.getElementById('rr-mat').value.trim().toUpperCase();
+  const categoria  = document.getElementById('rr-eixo').value;
+
+  if (!mat) { showFeedback('rr-feedback', 'Matrícula do reboque é obrigatória.', true); return; }
+
+  const reboque   = listaReboquesFrota.find(v => v.matricula === mat);
+  const resolucao = await resolverLugaresRegisto('reboques', mat, categoria, quantidade, reboque?.num_eixos, SLOTS_REBOQUE);
+  if (!resolucao.ok) { showFeedback('rr-feedback', resolucao.erro, true); return; }
+  const posicoes = resolucao.posicoes;
+
   if (quantidade > 1) {
     let erros = 0;
     for (let i = 0; i < quantidade; i++) {
-      const ok = await _guardarRegistoReboqueUnico();
+      const ok = await _guardarRegistoReboqueUnico(posicoes[i]);
       if (!ok) { erros++; }
     }
     if (erros === 0) {
@@ -16,14 +26,14 @@ async function guardarRegistoReboque() {
     }
     return;
   }
-  const ok = await _guardarRegistoReboqueUnico();
+  const ok = await _guardarRegistoReboqueUnico(posicoes[0]);
   if (ok) { showFeedback('rr-feedback', 'Montagem guardada com sucesso.'); limparFormReboque(); }
 }
 
-async function _guardarRegistoReboqueUnico() {
+async function _guardarRegistoReboqueUnico(pos) {
   const mat    = document.getElementById('rr-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('rr-mes').value.trim();
-  const eixo   = parseInt(document.getElementById('rr-eixo').value) || null;
+  const eixo   = eixoDoLugar(pos);
   const marca  = document.getElementById('rr-marca').value.trim().toUpperCase();
   const medida = document.getElementById('rr-medida').value.trim();
   const subtipo= document.getElementById('rr-subtipo').value;
@@ -41,6 +51,7 @@ async function _guardarRegistoReboqueUnico() {
     matricula:  mat,
     mes_mont:   mes,
     eixo:       eixo,
+    posicao:    pos    || null,
     marca:      marca  || null,
     medida:     medida || null,
     subtipo:    subtipo || null,
@@ -81,7 +92,7 @@ function limparFormReboque() {
   ['rr-mat','rr-mes','rr-marca','rr-medida','rr-subtipo','rr-forn','rr-matpneu','rr-custo','rr-mo']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   const eixo = document.getElementById('rr-eixo');
-  if (eixo) eixo.value = '1';
+  if (eixo) eixo.value = 'Eixo 1';
   const tipo = document.getElementById('rr-tipo');
   if (tipo) tipo.value = 'Novo';
   stockLinhaSelId      = null;

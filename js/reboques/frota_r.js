@@ -54,43 +54,122 @@ async function loadFrotaReboques() {
     ? fmtEur(custoMed / mesesMed) : '—';
   document.getElementById('rfk6').textContent = custoMes;
 
-  const tbody = document.getElementById('rfrota-tbody');
-  tbody.innerHTML = data.map(r => {
-    const mesesActivo = mesesEntre(r.mes_mont, r.mes_desmont || hoje);
-    const lim = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
-    const alertCls = mesesActivo >= lim.critico ? 'b-alert' :
-                     mesesActivo >= lim.aviso   ? 'b-warn'  : '';
-    const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
-    const escStr   = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
-    const acBtn    = !r.mes_desmont
-      ? `<div style="display:flex;gap:4px;flex-wrap:wrap">
-           <button class="btn btn-s" onclick="abrirPainelReboque(${r.id})">🔧 Desmontar</button>
-           <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-           <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
-         </div>`
-      : `<div style="display:flex;gap:4px;flex-wrap:wrap">
-           <span style="color:var(--text3);font-size:11px">✓</span>
-           <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-           <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
-         </div>`;
-    return `<tr>
-      <td>${r.mes_mont || '—'}</td>
-      <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
-      <td>${r.marca    || '—'}</td>
-      <td>${r.fornecedor || '—'}</td>
-      <td>${r.medida   || '—'}</td>
-      <td>${r.subtipo  || '—'}</td>
-      <td>${tipoBadge(r.tipo)}</td>
-      <td>${mesesStr}</td>
-      <td>${r.mes_desmont || '—'}</td>
-      <td>${escStr}</td>
-      <td>${r.destino  || '—'}</td>
-      <td style="text-align:right">${r.custo_pneu > 0 ? fmtEur(r.custo_pneu) : '—'}</td>
-      <td style="text-align:right">${r.custo_mo > 0 ? fmtEur(r.custo_mo) : '—'}</td>
-      <td style="text-align:right">${r.custo_total > 0 ? fmtEur(r.custo_total) : '—'}</td>
-      <td>${acBtn}</td>
+  // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
+  const slots        = SLOTS_REBOQUE[reboque?.num_eixos];
+  const activosArr    = data.filter(r => !r.mes_desmont);
+  const historicoArr  = data.filter(r => r.mes_desmont);
+  const lugaresCard   = document.getElementById('rfrota-lugares-card');
+  const historicoCt   = document.getElementById('rfrota-historico-ct');
+
+  if (slots) {
+    lugaresCard.classList.remove('hidden');
+    historicoCt.textContent = 'Histórico';
+
+    const porLugar = {};
+    activosArr.forEach(r => { porLugar[r.posicao] = r; });
+    const semLugar = activosArr.filter(r => !slots.includes(r.posicao));
+
+    document.getElementById('rfrota-lugares-tbody').innerHTML =
+      slots.map(lugar => linhaLugarReboque(lugar, porLugar[lugar], mat, hoje)).join('') +
+      semLugar.map(r => linhaLugarReboque(r.posicao || (r.eixo ? 'Eixo ' + r.eixo : '(sem lugar)'), r, mat, hoje, true)).join('');
+
+    document.getElementById('rfrota-tbody').innerHTML = historicoArr.map(r => linhaHistoricoReboque(r, hoje)).join('');
+  } else {
+    lugaresCard.classList.add('hidden');
+    historicoCt.textContent = 'Histórico — clique em "Desmontar" para registar saída';
+    document.getElementById('rfrota-tbody').innerHTML = data.map(r => linhaHistoricoReboque(r, hoje)).join('');
+  }
+}
+
+// Uma linha da tabela "Lugares" — preenchida com o pneu activo desse
+// lugar, ou vazia com um botão para montar. `aviso=true` assinala um
+// pneu activo cujo lugar não corresponde à configuração actual do
+// reboque (raro — só acontece com dados que o backfill não conseguiu
+// mapear automaticamente).
+function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
+  if (!r) {
+    return `<tr style="color:var(--text3)">
+      <td>${lugar}</td>
+      <td colspan="10">— vazio —</td>
+      <td><button class="btn btn-sm" onclick="montarNoLugarReboque('${mat}','${lugar}')" style="height:28px;padding:0 8px;font-size:11px">+ Montar</button></td>
     </tr>`;
-  }).join('');
+  }
+  const mesesActivo = mesesEntre(r.mes_mont, hoje);
+  const lim = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
+  const alertCls = mesesActivo >= lim.critico ? 'b-alert' :
+                   mesesActivo >= lim.aviso   ? 'b-warn'  : '';
+  const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
+  const escStr   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  const avisoIcon = aviso ? ` <span title="Lugar não reconhecido na configuração actual do reboque — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
+  const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
+      <button class="btn btn-s" onclick="abrirPainelReboque(${r.id})">🔧 Desmontar</button>
+      <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
+      <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+    </div>`;
+  return `<tr>
+    <td>${lugar}${avisoIcon}</td>
+    <td>${r.marca    || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
+    <td>${r.medida   || '—'}</td>
+    <td>${r.subtipo  || '—'}</td>
+    <td>${tipoBadge(r.tipo)}</td>
+    <td>${r.mes_mont || '—'}</td>
+    <td>${mesesStr}</td>
+    <td>${escStr}</td>
+    <td style="text-align:right">${r.custo_pneu > 0 ? fmtEur(r.custo_pneu) : '—'}</td>
+    <td style="text-align:right">${r.custo_mo > 0 ? fmtEur(r.custo_mo) : '—'}</td>
+    <td>${acBtn}</td>
+  </tr>`;
+}
+
+// Uma linha da tabela "Histórico" (ou da tabela única, para reboques
+// sem configuração conhecida — mesmo comportamento de sempre).
+function linhaHistoricoReboque(r, hoje) {
+  const mesesActivo = mesesEntre(r.mes_mont, r.mes_desmont || hoje);
+  const lim = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
+  const alertCls = mesesActivo >= lim.critico ? 'b-alert' :
+                   mesesActivo >= lim.aviso   ? 'b-warn'  : '';
+  const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
+  const escStr   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  const acBtn    = !r.mes_desmont
+    ? `<div style="display:flex;gap:4px;flex-wrap:wrap">
+         <button class="btn btn-s" onclick="abrirPainelReboque(${r.id})">🔧 Desmontar</button>
+         <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
+         <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+       </div>`
+    : `<div style="display:flex;gap:4px;flex-wrap:wrap">
+         <span style="color:var(--text3);font-size:11px">✓</span>
+         <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
+         <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+       </div>`;
+  return `<tr>
+    <td>${r.mes_mont || '—'}</td>
+    <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
+    <td>${r.marca    || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
+    <td>${r.medida   || '—'}</td>
+    <td>${r.subtipo  || '—'}</td>
+    <td>${tipoBadge(r.tipo)}</td>
+    <td>${mesesStr}</td>
+    <td>${r.mes_desmont || '—'}</td>
+    <td>${escStr}</td>
+    <td>${r.destino  || '—'}</td>
+    <td style="text-align:right">${r.custo_pneu > 0 ? fmtEur(r.custo_pneu) : '—'}</td>
+    <td style="text-align:right">${r.custo_mo > 0 ? fmtEur(r.custo_mo) : '—'}</td>
+    <td style="text-align:right">${r.custo_total > 0 ? fmtEur(r.custo_total) : '—'}</td>
+    <td>${acBtn}</td>
+  </tr>`;
+}
+
+// Atalho do botão "+ Montar" de um lugar vazio: abre "Registar pneu"
+// (reboques) com a matrícula e a categoria desse lugar já preenchidas.
+function montarNoLugarReboque(matricula, lugar) {
+  navR('registar-r', document.querySelector('[data-page="registar-r"]'));
+  const selMat = document.getElementById('rr-mat');
+  selMat.value = matricula;
+  atualizarCategoriasPosicao('rr-mat', 'rr-eixo', listaReboquesFrota, SLOTS_REBOQUE);
+  document.getElementById('rr-eixo').value = categoriaPosicao(lugar);
+  document.getElementById('rr-mes').focus();
 }
 
 function renderInfoReboque(v, mat) {
@@ -182,7 +261,8 @@ async function abrirEdicaoReboque(id) {
 
   document.getElementById('re-mat').value    = data.matricula    || '';
   document.getElementById('re-mes').value    = data.mes_mont     || '';
-  document.getElementById('re-eixo').value   = data.eixo         || '1';
+  const reboqueEd = listaReboquesFrota.find(v => v.matricula === data.matricula);
+  await atualizarLugaresEdicao('re-pos', 'reboques', data.matricula, data.posicao || (data.eixo ? 'Eixo ' + data.eixo : ''), reboqueEd?.num_eixos, SLOTS_REBOQUE, data.id);
   document.getElementById('re-marca').value  = data.marca        || '';
   document.getElementById('re-medida').value = data.medida       || '';
   popularSelectorSubtipo('re-marca', 're-subtipo');
@@ -208,7 +288,8 @@ async function guardarEdicaoReboque() {
   if (editRId == null) return;
   const mat    = document.getElementById('re-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('re-mes').value.trim();
-  const eixo   = parseInt(document.getElementById('re-eixo').value) || null;
+  const pos    = document.getElementById('re-pos').value;
+  const eixo   = eixoDoLugar(pos);
   const marca  = document.getElementById('re-marca').value.trim().toUpperCase();
   const medida = document.getElementById('re-medida').value.trim();
   const subtipo= document.getElementById('re-subtipo').value.trim();
@@ -224,7 +305,7 @@ async function guardarEdicaoReboque() {
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('re-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return; }
 
   const updates = {
-    matricula: mat, mes_mont: mes, eixo,
+    matricula: mat, mes_mont: mes, eixo, posicao: pos || null,
     marca: marca || null, medida: medida || null, subtipo: subtipo || null, tipo: tipo || null,
     fornecedor: forn || null, custo_pneu: custoP, custo_mo: custoMO,
     custo_total: ((custoP || 0) + (custoMO || 0)) || null,
