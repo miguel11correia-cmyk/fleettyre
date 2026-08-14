@@ -2,11 +2,21 @@
 
 async function guardarRegisto() {
   const quantidade = parseInt(document.getElementById('r-quantidade')?.value) || 1;
+  const mat        = document.getElementById('r-mat').value.trim().toUpperCase();
+  const categoria  = document.getElementById('r-pos').value;
+
+  if (!mat) { showFeedback('r-feedback', 'Matrícula do camião é obrigatória.', true); return; }
+
+  const veiculo   = listaVeiculos.find(v => v.matricula === mat);
+  const resolucao = await resolverLugaresRegisto('pneus', mat, categoria, quantidade, veiculo?.num_eixos, SLOTS_VEICULO);
+  if (!resolucao.ok) { showFeedback('r-feedback', resolucao.erro, true); return; }
+  const posicoes = resolucao.posicoes;
+
   if (quantidade > 1) {
-    // Guardar múltiplos registos
+    // Guardar múltiplos registos, um por lugar calculado
     let erros = 0;
     for (let i = 0; i < quantidade; i++) {
-      const ok = await _guardarRegistoUnico();
+      const ok = await _guardarRegistoUnico(posicoes[i]);
       if (!ok) { erros++; }
     }
     if (erros === 0) {
@@ -18,15 +28,14 @@ async function guardarRegisto() {
     return;
   }
   // Guardar registo único
-  const ok = await _guardarRegistoUnico();
+  const ok = await _guardarRegistoUnico(posicoes[0]);
   if (ok) { showFeedback('r-feedback', 'Montagem guardada com sucesso.'); limparForm(); }
 }
 
-async function _guardarRegistoUnico() {
+async function _guardarRegistoUnico(pos) {
   const mat    = document.getElementById('r-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('r-mes').value.trim();
   const kmsStr = document.getElementById('r-kms').value;
-  const pos    = document.getElementById('r-pos').value;
   const marca  = document.getElementById('r-marca').value.trim().toUpperCase();
   const medida = document.getElementById('r-medida').value.trim();
   const subtipo= document.getElementById('r-subtipo').value;

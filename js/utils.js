@@ -82,6 +82,172 @@ function mesAtual() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
+// ── LUGARES FIXOS (posição/eixo) ─────────────────────────────────
+//
+// Lista fixa de lugares de pneu por configuração de eixos. Cada
+// veículo/reboque com uma configuração conhecida mostra sempre estas
+// linhas em "Por matrícula"/"Por reboque" — preenchidas ou vazias.
+// A ordem de cada lista é também a ordem em que a quantidade do
+// registo é distribuída pelos lugares livres dessa categoria.
+
+const SLOTS_VEICULO = {
+  '4x2': [
+    'Direção Esquerda', 'Direção Direita',
+    'Tração Esquerda Interior', 'Tração Esquerda Exterior',
+    'Tração Direita Interior', 'Tração Direita Exterior',
+  ],
+  '6x2 Pusher': [
+    'Direção Esquerda', 'Direção Direita',
+    'Pusher Esquerda Interior', 'Pusher Esquerda Exterior',
+    'Pusher Direita Interior', 'Pusher Direita Exterior',
+    'Tração Esquerda Interior', 'Tração Esquerda Exterior',
+    'Tração Direita Interior', 'Tração Direita Exterior',
+  ],
+  '6x2 Tag': [
+    'Direção Esquerda', 'Direção Direita',
+    'Tração Esquerda Interior', 'Tração Esquerda Exterior',
+    'Tração Direita Interior', 'Tração Direita Exterior',
+    'Tag Esquerda Interior', 'Tag Esquerda Exterior',
+    'Tag Direita Interior', 'Tag Direita Exterior',
+  ],
+};
+
+const SLOTS_REBOQUE = {
+  '2x2': [
+    'Eixo 1 Esquerda', 'Eixo 1 Direita',
+    'Eixo 2 Esquerda', 'Eixo 2 Direita',
+  ],
+  '2x2x2': [
+    'Eixo 1 Esquerda', 'Eixo 1 Direita',
+    'Eixo 2 Esquerda', 'Eixo 2 Direita',
+    'Eixo 3 Esquerda', 'Eixo 3 Direita',
+  ],
+  '2x2x2 (rodado duplo)': [
+    'Eixo 1 Esquerda Interior', 'Eixo 1 Esquerda Exterior',
+    'Eixo 1 Direita Interior', 'Eixo 1 Direita Exterior',
+    'Eixo 2 Esquerda Interior', 'Eixo 2 Esquerda Exterior',
+    'Eixo 2 Direita Interior', 'Eixo 2 Direita Exterior',
+    'Eixo 3 Esquerda Interior', 'Eixo 3 Esquerda Exterior',
+    'Eixo 3 Direita Interior', 'Eixo 3 Direita Exterior',
+  ],
+};
+
+// Família de um lugar granular ("Tração Esquerda Interior" → "Tração",
+// "Eixo 2 Esquerda" → "Eixo 2"). Usado para agrupar por eixo/categoria
+// em vez de por lugar exacto (registo, dashboard, taxa de desgaste).
+function categoriaPosicao(pos) {
+  if (!pos) return null;
+  const partes = pos.split(' ');
+  return partes[0] === 'Eixo' ? partes.slice(0, 2).join(' ') : partes[0];
+}
+
+// Categorias distintas de uma lista de lugares, pela ordem em que
+// aparecem (ex: SLOTS_VEICULO['6x2 Pusher'] → ['Direção','Pusher','Tração']).
+function categoriasDeConfig(lista) {
+  if (!lista) return [];
+  return [...new Set(lista.map(categoriaPosicao))];
+}
+
+// Lugares de uma categoria, pela ordem fixa da lista.
+function lugaresDaCategoria(lista, categoria) {
+  if (!lista) return [];
+  return lista.filter(p => categoriaPosicao(p) === categoria);
+}
+
+// Deriva o nº de eixo (inteiro) a partir de um lugar granular de
+// reboque, para continuar a alimentar LIMITES_EIXO sem alterações lá.
+function eixoDoLugar(pos) {
+  if (!pos) return null;
+  const m = /^Eixo (\d+)/.exec(pos);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// Popula um <select> de categoria (posição/eixo) consoante a
+// configuração do veículo/reboque escolhido noutro <select> de
+// matrícula. Guarda as opções originais do próprio <select> (definidas
+// no HTML) na primeira vez que corre, e usa-as como "fallback" quando
+// a matrícula não tem ficha ou a configuração é "Outro" — mantendo o
+// comportamento actual nesses casos.
+const _opcoesPosicaoFallback = {};
+function atualizarCategoriasPosicao(selMatId, selPosId, lista, slotsConfig) {
+  const selMat = document.getElementById(selMatId);
+  const selPos = document.getElementById(selPosId);
+  if (!selMat || !selPos) return;
+
+  if (!(selPosId in _opcoesPosicaoFallback)) {
+    _opcoesPosicaoFallback[selPosId] = selPos.innerHTML;
+  }
+
+  const item   = (lista || []).find(v => v.matricula === selMat.value);
+  const slots  = item ? slotsConfig[item.num_eixos] : null;
+  const val    = selPos.value;
+
+  selPos.innerHTML = slots
+    ? '<option value="">— selecionar —</option>' +
+      categoriasDeConfig(slots).map(c => `<option value="${c}">${c}</option>`).join('')
+    : _opcoesPosicaoFallback[selPosId];
+
+  if ([...selPos.options].some(o => o.value === val)) selPos.value = val;
+}
+
+// Popula o <select> de lugar do painel de edição (um pneu de cada
+// vez): mostra os lugares livres dessa categoria + o lugar actual do
+// próprio pneu (para poder ficar como está), pela ordem fixa da
+// configuração. Sem configuração conhecida, mantém as opções estáticas
+// já existentes no <select> (Direção/Tração ou Eixo 1/2/3) e só
+// selecciona o valor actual.
+async function atualizarLugaresEdicao(selPosId, tabela, matricula, posAtual, numEixos, slotsConfig, idExcluir) {
+  const sel = document.getElementById(selPosId);
+  if (!sel) return;
+
+  if (!(selPosId in _opcoesPosicaoFallback)) {
+    _opcoesPosicaoFallback[selPosId] = sel.innerHTML;
+  }
+
+  const slots = slotsConfig[numEixos];
+  if (!slots) {
+    sel.innerHTML = _opcoesPosicaoFallback[selPosId];
+    if (posAtual && [...sel.options].every(o => o.value !== posAtual)) {
+      sel.innerHTML += `<option value="${posAtual}">${posAtual}</option>`;
+    }
+    sel.value = posAtual || '';
+    return;
+  }
+
+  const { data } = await sb.from(tabela).select('id,posicao')
+    .eq('matricula', matricula).is('mes_desmont', null);
+  const ocupados = new Set((data || []).filter(r => r.id !== idExcluir).map(r => r.posicao));
+  const opcoes = slots.filter(p => !ocupados.has(p) || p === posAtual);
+
+  sel.innerHTML = '<option value="">— selecionar —</option>' +
+    opcoes.map(p => `<option value="${p}">${p}</option>`).join('');
+  sel.value = posAtual || '';
+}
+
+// Calcula os lugares a atribuir num registo em massa (categoria +
+// quantidade): se a configuração tiver lugares definidos para a
+// categoria escolhida, distribui a quantidade pelos lugares livres
+// dessa categoria (por ordem fixa); caso contrário devolve a
+// categoria repetida (comportamento actual, sem lugar granular).
+async function resolverLugaresRegisto(tabela, matricula, categoria, quantidade, numEixos, slotsConfig) {
+  const lista = slotsConfig[numEixos];
+  const lugaresCategoria = lista ? lugaresDaCategoria(lista, categoria) : [];
+
+  if (!categoria || lugaresCategoria.length === 0) {
+    return { ok: true, posicoes: Array(quantidade).fill(categoria || null) };
+  }
+
+  const { data } = await sb.from(tabela).select('posicao')
+    .eq('matricula', matricula).is('mes_desmont', null);
+  const ocupados = new Set((data || []).map(r => r.posicao));
+  const livres = lugaresCategoria.filter(p => !ocupados.has(p));
+
+  if (livres.length < quantidade) {
+    return { ok: false, erro: `Só há ${livres.length} lugar(es) livre(s) em "${categoria}" para ${matricula}.` };
+  }
+  return { ok: true, posicoes: livres.slice(0, quantidade) };
+}
+
 // ── UI HELPERS ────────────────────────────────────────────────────
 
 function loading(show) {

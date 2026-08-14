@@ -288,7 +288,7 @@
         <div class="ct">Veículo</div>
         <div class="g2">
           <div class="frow"><label>Matrícula do camião *</label>
-            <select id="r-mat"><option value="">— selecionar —</option></select>
+            <select id="r-mat" onchange="atualizarCategoriasPosicao('r-mat','r-pos',listaVeiculos,SLOTS_VEICULO)"><option value="">— selecionar —</option></select>
           </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="r-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>
@@ -494,8 +494,21 @@
           <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="fk5">—</div><div class="kpi-s">só com valor</div></div>
           <div class="kpi"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk6">—</div><div class="kpi-s">custo ÷ km médio</div></div>
         </div>
+        <div class="card hidden" id="frota-lugares-card">
+          <div class="ct">Lugares — clique em "Desmontar" para libertar, ou "+ Montar" para preencher</div>
+          <div class="table-wrap">
+            <table id="frota-lugares-table">
+              <thead><tr>
+                <th>Lugar</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th>
+                <th>KMs Mont.</th><th>Mês Mont.</th><th>KMs Efect.</th><th>Escultura</th>
+                <th>Custo €</th><th>M.Obra €</th><th>Ação</th>
+              </tr></thead>
+              <tbody id="frota-lugares-tbody"></tbody>
+            </table>
+          </div>
+        </div>
         <div class="card">
-          <div class="ct">Histórico de pneus — clique em "Desmontar" para registar saída</div>
+          <div class="ct" id="frota-historico-ct">Histórico de pneus — clique em "Desmontar" para registar saída</div>
           <div class="table-wrap">
             <table id="frota-table">
               <thead><tr>
@@ -871,16 +884,16 @@
         <div class="ct">Identificação</div>
         <div class="g2">
           <div class="frow"><label>Matrícula do reboque *</label>
-            <select id="rr-mat"><option value="">— selecionar —</option></select>
+            <select id="rr-mat" onchange="atualizarCategoriasPosicao('rr-mat','rr-eixo',listaReboquesFrota,SLOTS_REBOQUE)"><option value="">— selecionar —</option></select>
           </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="rr-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>
         <div class="g2">
           <div class="frow"><label>Eixo</label>
             <select id="rr-eixo">
-              <option value="1">Eixo 1 (dianteiro) — 12/14 meses</option>
-              <option value="2">Eixo 2 (meio) — 20/24 meses</option>
-              <option value="3">Eixo 3 (traseiro) — 12/14 meses</option>
+              <option value="Eixo 1">Eixo 1 (dianteiro) — 12/14 meses</option>
+              <option value="Eixo 2">Eixo 2 (meio) — 20/24 meses</option>
+              <option value="Eixo 3">Eixo 3 (traseiro) — 12/14 meses</option>
             </select>
           </div>
           <div class="frow"><label>Tipo</label><select id="rr-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
@@ -1097,8 +1110,15 @@
           <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="rfk5">—</div></div>
           <div class="kpi"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk6">—</div><div class="kpi-s">custo ÷ duração</div></div>
         </div>
+        <div class="card hidden" id="rfrota-lugares-card">
+          <div class="ct">Lugares — clique em "Desmontar" para libertar, ou "+ Montar" para preencher</div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Lugar</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th><th>Mês Mont.</th><th>Meses ativo</th><th>Escultura</th><th>Custo €</th><th>M.Obra €</th><th>Ação</th></tr></thead>
+            <tbody id="rfrota-lugares-tbody"></tbody>
+          </table></div>
+        </div>
         <div class="card">
-          <div class="ct">Histórico — clique em "Desmontar" para registar saída</div>
+          <div class="ct" id="rfrota-historico-ct">Histórico — clique em "Desmontar" para registar saída</div>
           <div class="table-wrap"><table>
             <thead><tr><th>Mês Mont.</th><th>Eixo</th><th>Marca</th><th>Fornecedor</th><th>Medida</th><th>Subtipo</th><th>Tipo</th><th>Meses ativo</th><th>Mês Desmont.</th><th>Escultura</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Ação</th></tr></thead>
             <tbody id="rfrota-tbody"></tbody>
@@ -1126,7 +1146,7 @@
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
-          <div class="frow"><label>Eixo</label><select id="re-eixo"><option value="1">Eixo 1</option><option value="2">Eixo 2</option><option value="3">Eixo 3</option></select></div>
+          <div class="frow"><label>Eixo / Lugar</label><select id="re-pos"><option value="Eixo 1">Eixo 1</option><option value="Eixo 2">Eixo 2</option><option value="Eixo 3">Eixo 3</option></select></div>
           <div class="frow"><label>Marca</label><select id="re-marca" onchange="popularSelectorSubtipo('re-marca','re-subtipo')"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
           <div class="frow"><label>Subtipo</label><select id="re-subtipo"><option value="">— nenhum —</option></select></div>

@@ -18,7 +18,11 @@ const MARCAS_VEICULO = [
 
 // Nº de pneus esperados (activos) consoante a configuração de eixos —
 // "Outro" fica de fora porque não há uma contagem fixa para comparar.
-const EIXOS_TYRES_VEICULO = { '4x2': 6, '6x2 Pusher': 10, '6x2 Tag': 10 };
+// Derivado de SLOTS_VEICULO (js/utils.js), que é a lista completa dos
+// lugares fixos por configuração.
+const EIXOS_TYRES_VEICULO = Object.fromEntries(
+  Object.entries(SLOTS_VEICULO).map(([k, v]) => [k, v.length])
+);
 
 function logoMarcaVeiculo(nome) {
   const m = MARCAS_VEICULO.find(x => x.nome === nome);

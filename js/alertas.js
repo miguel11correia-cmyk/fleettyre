@@ -23,7 +23,7 @@ function calcularTaxasPor(dados, chaveFn) {
 function taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas) {
   const marca = r.marca    || 'DESCONHECIDA';
   const tipo  = r.tipo     || 'Novo';
-  const posic = r.posicao  || 'DESCONHECIDA';
+  const posic = categoriaPosicao(r.posicao) || 'DESCONHECIDA';
 
   const chaveMTP = `${marca}|${tipo}|${posic}`;
   if (taxasPorMTP[chaveMTP] != null) return taxasPorMTP[chaveMTP];
@@ -111,7 +111,7 @@ async function loadAlertas() {
   const kmAtualPorMat = {};
   (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
 
-  const taxasPorMTP = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}|${r.posicao || 'DESCONHECIDA'}`);
+  const taxasPorMTP = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}|${categoriaPosicao(r.posicao) || 'DESCONHECIDA'}`);
   const taxasPorMT  = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}`);
   const taxasPorM   = calcularTaxasPor(data, r => r.marca || 'DESCONHECIDA');
   const todasTaxas  = data.map(r => taxaDesgaste(r)).filter(t => t !== null);
