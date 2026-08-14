@@ -6,7 +6,7 @@ let editReboqueFrotaId  = null;
 // Lista fixa de marcas de reboque — igual para todos os clientes, não é
 // gerida por empresa (ao contrário das marcas de pneus).
 const MARCAS_REBOQUE = [
-  { slug: 'lecitrailer', nome: 'Lecitrailer',        scale: 3, maxW: 140, maxH: 34 },
+  { slug: 'lecitrailer', nome: 'Lecitrailer',        scale: 2.3, maxW: 105, maxH: 34 },
   { slug: 'krone',       nome: 'Krone',    ext: 'jpg',  scale: 2.5, maxW: 120 },
   { slug: 'kogel',       nome: 'Kögel' },
   { slug: 'stas',        nome: 'Stas',     ext: 'webp', scale: 2.5, maxW: 120 },

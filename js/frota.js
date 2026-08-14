@@ -76,7 +76,7 @@ async function loadFrota() {
 
     document.getElementById('frota-lugares-tbody').innerHTML =
       slots.map(lugar => linhaLugar(lugar, porLugar[lugar], mat, kmAtual)).join('') +
-      semLugar.map(r => linhaLugar(r.posicao || '(sem lugar)', r, mat, kmAtual, true)).join('');
+      semLugar.map(r => linhaLugar(r.posicao || '(sem posição)', r, mat, kmAtual, true)).join('');
 
     document.getElementById('frota-tbody').innerHTML = historicoArr.map(r => linhaHistorico(r, kmAtual)).join('');
   } else {
@@ -105,7 +105,7 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
     : '—';
   const esc    = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
   const escCls = (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
-  const avisoIcon = aviso ? ` <span title="Lugar não reconhecido na configuração actual do veículo — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
+  const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do veículo — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
       <button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>
       <button class="btn btn-sm" onclick="abrirEdicao(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
