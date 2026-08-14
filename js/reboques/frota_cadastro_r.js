@@ -13,7 +13,7 @@ const MARCAS_REBOQUE = [
   { slug: 'montenegro',  nome: 'Montenegro' },
   { slug: 'trouillet',   nome: 'Trouillet',          scale: 1.6 },
   { slug: 'schmitz',     nome: 'Schmitz Cargobull',  scale: 1.7 },
-  { slug: 'spitzer',     nome: 'Spitzer',            scale: 1.7 },
+  { slug: 'spitzer',     nome: 'Spitzer',            scale: 2.1, maxW: 100 },
   { slug: 'lecinena',    nome: 'Lecinena',           scale: 1.6 },
   { slug: 'benalu',      nome: 'Benalu',             scale: 1.6 },
   { slug: 'guillen',     nome: 'Guillén',            scale: 2.5, maxW: 120 },
@@ -23,8 +23,8 @@ const MARCAS_REBOQUE = [
   { slug: 'invepe',      nome: 'Invepe',             scale: 1.6 },
   { slug: 'renders',     nome: 'Renders',  ext: 'svg', scale: 1.6 },
   { slug: 'lamberet',    nome: 'Lamberet', ext: 'webp', scale: 1.7 },
-  { slug: 'wielton',     nome: 'Wielton',  ext: 'jpg',  scale: 3, maxW: 140 },
-  { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 1.8 },
+  { slug: 'wielton',     nome: 'Wielton',  ext: 'jpg',  scale: 3.4, maxW: 155 },
+  { slug: 'kassbohrer',  nome: 'Kässbohrer',          scale: 2.2, maxW: 100 },
   { slug: 'pacton',      nome: 'Pacton',   ext: 'jpg', scale: 2, maxH: 34 },
   { slug: 'seka',        nome: 'Seka',                scale: 2, maxH: 34 },
 ];
@@ -64,15 +64,17 @@ function logoMaxHReboque(nome, base) {
   return (m && m.maxH) ? Math.round(m.maxH * (base / 28)) : base;
 }
 
-// HTML da marca com mini-logo à frente, para o cartão de "Por reboque"
+// HTML da marca para o cartão de "Por reboque" — só o logo (maior, já
+// que não precisa de partilhar a linha com o nome); sem logo conhecido,
+// mostra o nome em texto na mesma.
 function renderMarcaComLogoReboque(nome) {
   if (!nome) return '—';
   const src = logoMarcaReboque(nome);
   if (!src) return nome;
   const escala = logoScaleReboque(nome);
-  const h = Math.min(Math.round(16 * escala), logoMaxHReboque(nome, 20));
-  const mw = Math.min(Math.round(32 * escala), logoMaxWReboque(nome, 46));
-  return `<img src="${src}" alt="" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain;vertical-align:-3px;margin-right:5px">${nome}`;
+  const h = Math.min(Math.round(24 * escala), logoMaxHReboque(nome, 30));
+  const mw = Math.min(Math.round(48 * escala), logoMaxWReboque(nome, 70));
+  return `<img src="${src}" alt="${nome}" title="${nome}" style="height:${h}px;width:auto;max-width:${mw}px;object-fit:contain">`;
 }
 
 // Atualiza o mini-logo e mostra/esconde o campo "Outra" consoante a
