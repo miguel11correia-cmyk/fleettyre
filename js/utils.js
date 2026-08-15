@@ -250,8 +250,20 @@ async function resolverLugaresRegisto(tabela, matricula, categoria, quantidade, 
 
 // ── UI HELPERS ────────────────────────────────────────────────────
 
+// Só mostra o ecrã de carregar se a operação demorar mais do que isto —
+// a maioria das queries volta antes disso e nunca chega a aparecer nada,
+// o que evita o "piscar" em ações rápidas (trocar de aba, guardar, etc.).
+const LOADING_DELAY_MS = 200;
+let loadingTimer = null;
+
 function loading(show) {
-  document.getElementById('loading').classList.toggle('hidden', !show);
+  const el = document.getElementById('loading');
+  clearTimeout(loadingTimer);
+  if (show) {
+    loadingTimer = setTimeout(() => el.classList.remove('hidden'), LOADING_DELAY_MS);
+  } else {
+    el.classList.add('hidden');
+  }
 }
 
 function showFeedback(id, msg, isError = false) {
