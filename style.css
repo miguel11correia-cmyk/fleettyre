@@ -234,6 +234,7 @@ body {
   padding: 1px 7px;
   font-size: 10px;
   font-weight: 600;
+  letter-spacing: 0.1px;
 }
 .ni.active .badge-n {
   background: var(--brand-red-md);
@@ -326,8 +327,8 @@ body {
    pelo rótulo, não pela cor. Border-top uniforme para todos. */
 .kpi.blue, .kpi.green, .kpi.amber, .kpi.red { border-top-color: var(--border2); }
 .kpi-l { font-size: 11px; color: var(--text2); margin-bottom: 5px; }
-.kpi-v { font-size: 22px; font-weight: 500; line-height: 1.1; color: var(--text); }
-.kpi-s { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.kpi-v { font-size: 22px; font-weight: 500; line-height: 1.1; color: var(--text); letter-spacing: -0.01em; }
+.kpi-s { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 0.1px; }
 .kpi-v.blue, .kpi-v.green, .kpi-v.amber, .kpi-v.red { color: var(--text); }
 
 /* ── CARDS ────────────────────────────────────────────────────── */
@@ -444,6 +445,7 @@ th {
   border-bottom: 0.5px solid var(--border);
   font-weight: 500;
   font-size: 11px;
+  letter-spacing: 0.1px;
   white-space: nowrap;
   background: var(--bg);
 }
@@ -464,6 +466,7 @@ tbody tr:hover td { background: var(--bg); }
   border-radius: 20px;
   font-size: 11px;
   font-weight: 500;
+  letter-spacing: 0.1px;
 }
 /* Etiquetas de tipo/destino — cor distintiva, reaproveitando os acentos
    já definidos no :root para não fugir à identidade visual da app. */
@@ -495,18 +498,24 @@ tbody tr:hover td { background: var(--bg); }
 .sel-bar select { max-width: 200px; }
 
 /* ── PANEL ────────────────────────────────────────────────────── */
+/* Superfície flutuante translúcida — o conteúdo por trás transparece
+   ligeiramente, reforçando que o painel é uma camada por cima, não
+   uma nova página. Peso do material (blur+sombra) maior que os chips
+   pequenos, por ser a maior superfície flutuante da app. */
 .panel {
   position: fixed;
   top: 0; right: 0;
   width: 320px;
   height: 100vh;
-  background: var(--surface);
+  background: rgba(255,255,255,0.86);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border-left: 0.5px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   z-index: 20;
-  box-shadow: -4px 0 20px rgba(0,0,0,0.07);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.09);
   transform: translateX(100%);
   transition: transform 260ms var(--ease-out);
   pointer-events: none;
@@ -514,17 +523,38 @@ tbody tr:hover td { background: var(--bg); }
 .panel.open { transform: translateX(0); pointer-events: auto; }
 .panel-head {
   padding: 14px 16px;
-  border-bottom: 0.5px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 13px;
+  letter-spacing: -0.1px;
   position: sticky;
   top: 0;
-  background: var(--surface);
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  /* Fade de scroll em vez de linha rígida — só se nota quando há
+     conteúdo por baixo a passar debaixo do cabeçalho fixo. */
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06), 0 10px 14px -12px rgba(0,0,0,0.12);
   z-index: 1;
 }
+@supports not (backdrop-filter: blur(1px)) {
+  .panel, .panel-head { background: var(--surface); }
+}
+
+/* Scrim de foco: escurece o resto da app enquanto um painel de tarefa
+   está aberto, sem bloquear cliques (o painel fecha pelo botão ✕). */
+.app:has(.panel.open)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.12);
+  z-index: 19;
+  pointer-events: none;
+  animation: scrim-in 260ms var(--ease-out);
+}
+@keyframes scrim-in { from { opacity: 0; } }
 .btn-close {
   background: none;
   border: none;
@@ -576,8 +606,8 @@ tbody tr:hover td { background: var(--bg); }
 .alertas-stat:hover    { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .alertas-stat.selected { border-color: var(--border2); box-shadow: inset 0 0 0 1px var(--border2); }
 .alertas-stat-l { font-size: 11px; color: var(--text2); margin-bottom: 5px; }
-.alertas-stat-v { font-size: 22px; font-weight: 500; line-height: 1.1; color: var(--text); }
-.alertas-stat-s { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.alertas-stat-v { font-size: 22px; font-weight: 500; line-height: 1.1; color: var(--text); letter-spacing: -0.01em; }
+.alertas-stat-s { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 0.1px; }
 
 .alerta-veic {
   display: flex;
@@ -638,6 +668,8 @@ tbody tr:hover td { background: var(--bg); }
   position: fixed;
   inset: 0;
   background: rgba(247,246,244,0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -658,6 +690,17 @@ tbody tr:hover td { background: var(--bg); }
   .panel { transition: none; }
   .btn, .secao-btn, .btn-logout, .btn-close { transition: background .1s, color .1s; }
   .btn:active, .secao-btn:active, .btn-logout:active, .btn-close:active { transform: none; }
+  .app:has(.panel.open)::after { animation: none; }
+}
+
+/* ── REDUCED TRANSPARENCY / HIGH CONTRAST ─────────────────────── */
+@media (prefers-reduced-transparency: reduce) {
+  .panel, .panel-head { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .panel-head { box-shadow: none; border-bottom: 0.5px solid var(--border); }
+  .loading-overlay { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .panel, .panel-head { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: var(--text3); }
 }
 
 /* ── RESPONSIVE ───────────────────────────────────────────────── */
