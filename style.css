@@ -36,6 +36,7 @@
   --slate:     #475569;
 
   --radius: 8px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 body {
@@ -248,9 +249,10 @@ body {
   color: var(--text2);
   font-size: 12px;
   cursor: pointer;
-  transition: background .1s;
+  transition: background .1s, transform 120ms var(--ease-out);
 }
 .btn-logout:hover { background: var(--bg2); }
+.btn-logout:active { transform: scale(0.97); }
 
 /* ── SECÇÃO VEÍCULOS/REBOQUES ─────────────────────────────────── */
 .secao-btns {
@@ -275,11 +277,12 @@ body {
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
-  transition: background .1s, color .1s;
+  transition: background .1s, color .1s, transform 120ms var(--ease-out);
   text-align: center;
 }
 .secao-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 .secao-btn:hover { background: var(--bg2); color: var(--text); }
+.secao-btn:active { transform: scale(0.97); }
 .secao-btn.secao-active {
   background: #3f3f46;
   color: #fff;
@@ -396,9 +399,10 @@ input::placeholder { color: var(--text3); }
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
-  transition: background .1s;
+  transition: background .1s, transform 120ms var(--ease-out);
 }
 .btn:hover { background: var(--bg2); }
+.btn:active { transform: scale(0.97); }
 .btn-p {
   background: #f0ede8;
   color: var(--text);
@@ -498,13 +502,16 @@ tbody tr:hover td { background: var(--bg); }
   height: 100vh;
   background: var(--surface);
   border-left: 0.5px solid var(--border);
-  display: none;
+  display: flex;
   flex-direction: column;
   overflow-y: auto;
   z-index: 20;
   box-shadow: -4px 0 20px rgba(0,0,0,0.07);
+  transform: translateX(100%);
+  transition: transform 260ms var(--ease-out);
+  pointer-events: none;
 }
-.panel.open { display: flex; }
+.panel.open { transform: translateX(0); pointer-events: auto; }
 .panel-head {
   padding: 14px 16px;
   border-bottom: 0.5px solid var(--border);
@@ -527,8 +534,10 @@ tbody tr:hover td { background: var(--bg); }
   padding: 2px 6px;
   border-radius: 4px;
   line-height: 1;
+  transition: background .1s, transform 120ms var(--ease-out);
 }
 .btn-close:hover { background: var(--bg2); }
+.btn-close:active { transform: scale(0.9); }
 .panel-body { padding: 14px 16px; }
 .panel-info {
   background: var(--bg);
@@ -643,6 +652,13 @@ tbody tr:hover td { background: var(--bg); }
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── REDUCED MOTION ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .panel { transition: none; }
+  .btn, .secao-btn, .btn-logout, .btn-close { transition: background .1s, color .1s; }
+  .btn:active, .secao-btn:active, .btn-logout:active, .btn-close:active { transform: none; }
+}
 
 /* ── RESPONSIVE ───────────────────────────────────────────────── */
 @media (max-width: 768px) {
