@@ -409,7 +409,7 @@
             <label>Marca</label>
             <div style="display:flex;align-items:center;gap:8px">
               <img id="v-marca-logo" src="" alt="" style="height:22px;width:auto;max-width:38px;object-fit:contain;display:none;flex-shrink:0">
-              <select id="v-marca" onchange="atualizarMarcaVeiculo('v-marca')" style="flex:1">
+              <select id="v-marca" data-fancy onchange="atualizarMarcaVeiculo('v-marca')" style="flex:1">
                 <option value="">— selecionar —</option>
                 <option value="Volvo">Volvo</option>
                 <option value="Scania">Scania</option>
@@ -429,7 +429,7 @@
         <div class="g3">
           <div class="frow"><label>Ano</label><input type="number" id="v-ano" placeholder="ex: 2022" min="1980" max="2100"></div>
           <div class="frow"><label>Tipo</label>
-            <select id="v-tipo">
+            <select id="v-tipo" data-fancy>
               <option value="">— selecionar —</option>
               <option value="Trator">Trator</option>
               <option value="Rígido">Rígido</option>
@@ -437,7 +437,7 @@
             </select>
           </div>
           <div class="frow"><label>Configuração eixos</label>
-            <select id="v-eixos">
+            <select id="v-eixos" data-fancy>
               <option value="">— selecionar —</option>
               <option value="4x2">4x2</option>
               <option value="6x2 Pusher">6x2 Pusher</option>
@@ -481,7 +481,7 @@
             <label>Marca</label>
             <div style="display:flex;align-items:center;gap:8px">
               <img id="ev-marca-logo" src="" alt="" style="height:22px;width:auto;max-width:38px;object-fit:contain;display:none;flex-shrink:0">
-              <select id="ev-marca" onchange="atualizarMarcaVeiculo('ev-marca')" style="flex:1">
+              <select id="ev-marca" data-fancy onchange="atualizarMarcaVeiculo('ev-marca')" style="flex:1">
                 <option value="">— selecionar —</option>
                 <option value="Volvo">Volvo</option>
                 <option value="Scania">Scania</option>
@@ -499,7 +499,7 @@
           <div class="frow"><label>Modelo</label><input type="text" id="ev-modelo"></div>
           <div class="frow"><label>Ano</label><input type="number" id="ev-ano" min="1980" max="2100"></div>
           <div class="frow"><label>Tipo</label>
-            <select id="ev-tipo">
+            <select id="ev-tipo" data-fancy>
               <option value="">— selecionar —</option>
               <option value="Trator">Trator</option>
               <option value="Rígido">Rígido</option>
@@ -507,7 +507,7 @@
             </select>
           </div>
           <div class="frow"><label>Configuração eixos</label>
-            <select id="ev-eixos">
+            <select id="ev-eixos" data-fancy>
               <option value="">— selecionar —</option>
               <option value="4x2">4x2</option>
               <option value="6x2 Pusher">6x2 Pusher</option>
@@ -584,7 +584,7 @@
           <div class="frow"><label>KMs conta-quilómetros *</label><input type="number" id="d-kms" placeholder="ex: 785000" min="0"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="d-esc" placeholder="ex: 3" min="0" max="25" step="0.5"></div>
           <div class="frow"><label>Destino do pneu</label>
-            <select id="d-dest">
+            <select id="d-dest" data-fancy>
               <option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option>
               <option>Transferido</option><option>Abrir Piso</option>
             </select>
@@ -608,7 +608,7 @@
         <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="e-mes" maxlength="7"></div>
         <div class="frow"><label>KMs montagem *</label><input type="number" id="e-kms" min="0"></div>
         <div class="frow"><label>Posição</label>
-          <select id="e-pos">
+          <select id="e-pos" data-fancy>
             <option value="">— selecionar —</option>
             <option value="Direção">Direção</option>
             <option value="Tração">Tração</option>
@@ -618,7 +618,7 @@
         <div class="frow"><label>Medida</label><input type="text" id="e-medida"></div>
         <div class="frow"><label>Subtipo</label><select id="e-subtipo"><option value="">— nenhum —</option></select></div>
         <div class="frow"><label>Tipo</label>
-          <select id="e-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select>
+          <select id="e-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select>
         </div>
         <div class="frow"><label>Fornecedor</label><select id="e-forn"><option value="">— selecionar —</option></select></div>
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Custos</div>
@@ -629,7 +629,7 @@
         <div class="frow"><label>KMs desmontagem</label><input type="number" id="e-kms-d" min="0"></div>
         <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="e-esc" min="0" max="25" step="0.5"></div>
         <div class="frow"><label>Destino</label>
-          <select id="e-dest"><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
+          <select id="e-dest" data-fancy><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
         </div>
         <button class="btn btn-p w100" onclick="guardarEdicao()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
         <div id="e-feedback" class="feedback hidden"></div>
@@ -945,7 +945,7 @@
               <option value="Eixo 3">Eixo 3 (traseiro) — 12/14 meses</option>
             </select>
           </div>
-          <div class="frow"><label>Tipo</label><select id="rr-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
+          <div class="frow"><label>Tipo</label><select id="rr-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
         </div>
       </div>
       <div class="card">
@@ -995,7 +995,7 @@
             <label>Marca</label>
             <div style="display:flex;align-items:center;gap:8px">
               <img id="vr-marca-logo" src="" alt="" style="height:22px;width:auto;max-width:50px;object-fit:contain;display:none;flex-shrink:0">
-              <select id="vr-marca" onchange="atualizarMarcaReboque('vr-marca')" style="flex:1">
+              <select id="vr-marca" data-fancy onchange="atualizarMarcaReboque('vr-marca')" style="flex:1">
                 <option value="">— selecionar —</option>
                 <option value="Lecitrailer">Lecitrailer</option>
                 <option value="Krone">Krone</option>
@@ -1028,7 +1028,7 @@
         <div class="g3">
           <div class="frow"><label>Ano</label><input type="number" id="vr-ano" placeholder="ex: 2020" min="1980" max="2100"></div>
           <div class="frow"><label>Tipo de reboque</label>
-            <select id="vr-tipo">
+            <select id="vr-tipo" data-fancy>
               <option value="">— selecionar —</option>
               <option value="Semirreboque">Semirreboque</option>
               <option value="Reboque">Reboque</option>
@@ -1041,7 +1041,7 @@
             </select>
           </div>
           <div class="frow"><label>Configuração eixos</label>
-            <select id="vr-eixos">
+            <select id="vr-eixos" data-fancy>
               <option value="">— selecionar —</option>
               <option value="2x2">2x2</option>
               <option value="2x2x2">2x2x2</option>
@@ -1081,7 +1081,7 @@
             <label>Marca</label>
             <div style="display:flex;align-items:center;gap:8px">
               <img id="evr-marca-logo" src="" alt="" style="height:22px;width:auto;max-width:50px;object-fit:contain;display:none;flex-shrink:0">
-              <select id="evr-marca" onchange="atualizarMarcaReboque('evr-marca')" style="flex:1">
+              <select id="evr-marca" data-fancy onchange="atualizarMarcaReboque('evr-marca')" style="flex:1">
                 <option value="">— selecionar —</option>
                 <option value="Lecitrailer">Lecitrailer</option>
                 <option value="Krone">Krone</option>
@@ -1112,7 +1112,7 @@
           <div class="frow"><label>Modelo</label><input type="text" id="evr-modelo"></div>
           <div class="frow"><label>Ano</label><input type="number" id="evr-ano" min="1980" max="2100"></div>
           <div class="frow"><label>Tipo de reboque</label>
-            <select id="evr-tipo">
+            <select id="evr-tipo" data-fancy>
               <option value="">— selecionar —</option>
               <option value="Semirreboque">Semirreboque</option>
               <option value="Reboque">Reboque</option>
@@ -1125,7 +1125,7 @@
             </select>
           </div>
           <div class="frow"><label>Configuração eixos</label>
-            <select id="evr-eixos">
+            <select id="evr-eixos" data-fancy>
               <option value="">— selecionar —</option>
               <option value="2x2">2x2</option>
               <option value="2x2x2">2x2x2</option>
@@ -1182,7 +1182,7 @@
           <div class="panel-info" id="rpainel-info"></div>
           <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="rd-mes" placeholder="ex: 2026-07" maxlength="7"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="rd-esc" min="0" max="25" step="0.5"></div>
-          <div class="frow"><label>Destino</label><select id="rd-dest"><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
+          <div class="frow"><label>Destino</label><select id="rd-dest" data-fancy><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="rd-mo" min="0" step="0.01"></div>
           <button class="btn btn-p w100" onclick="guardarDesmontazemReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg> Guardar desmontagem</button>
           <div id="rd-feedback" class="feedback hidden"></div>
@@ -1195,17 +1195,17 @@
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
-          <div class="frow"><label>Posição</label><select id="re-pos"><option value="Eixo 1">Eixo 1</option><option value="Eixo 2">Eixo 2</option><option value="Eixo 3">Eixo 3</option></select></div>
+          <div class="frow"><label>Posição</label><select id="re-pos" data-fancy><option value="Eixo 1">Eixo 1</option><option value="Eixo 2">Eixo 2</option><option value="Eixo 3">Eixo 3</option></select></div>
           <div class="frow"><label>Marca</label><select id="re-marca" onchange="popularSelectorSubtipo('re-marca','re-subtipo')"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
           <div class="frow"><label>Subtipo</label><select id="re-subtipo"><option value="">— nenhum —</option></select></div>
-          <div class="frow"><label>Tipo</label><select id="re-tipo"><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
+          <div class="frow"><label>Tipo</label><select id="re-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
           <div class="frow"><label>Fornecedor</label><select id="re-forn"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
           <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="re-esc" min="0" max="25" step="0.5"></div>
-          <div class="frow"><label>Destino</label><select id="re-dest"><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
+          <div class="frow"><label>Destino</label><select id="re-dest" data-fancy><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
           <div id="re-feedback" class="feedback hidden"></div>
         </div>
@@ -1391,6 +1391,8 @@
 <script src="js/nav.js"></script>
 <!-- Autenticação (último — depende de tudo o resto) -->
 <script src="js/auth.js"></script>
+<!-- Listas customizadas (por último — enhance corre sobre o DOM já pronto) -->
+<script src="js/custom-select.js"></script>
 
 </body>
 </html>
