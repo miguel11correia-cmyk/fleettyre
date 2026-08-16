@@ -42,6 +42,7 @@
     const wrap = document.createElement('div');
     wrap.className = 'fsel';
     if (select.style.flex) wrap.style.flex = select.style.flex;
+    if (select.style.maxWidth) wrap.style.maxWidth = select.style.maxWidth;
 
     select.parentNode.insertBefore(wrap, select);
     wrap.appendChild(select);
@@ -50,6 +51,12 @@
 
     const trigger = document.createElement('button');
     trigger.type = 'button';
+    // Alguns selects nativos tinham dimensões próprias (linhas
+    // compactas, ex.: tabela do Stock) — herdar para o botão manter o
+    // alinhamento com os campos vizinhos.
+    ['height', 'fontSize', 'padding', 'margin'].forEach((prop) => {
+      if (select.style[prop]) trigger.style[prop] = select.style[prop];
+    });
     trigger.className = 'fsel-trigger';
     trigger.setAttribute('aria-haspopup', 'listbox');
     trigger.setAttribute('aria-expanded', 'false');
@@ -74,6 +81,18 @@
       set(v) { setValue(v, false); },
       configurable: true,
     });
+
+    // Algumas listas são repopuladas em runtime (ex.: Marca/Fornecedor
+    // de pneu, consoante os dados que o utilizador gere noutras
+    // páginas, ou Posição consoante o veículo escolhido). O
+    // MutationObserver apanha essas trocas de <option> e mantém o
+    // botão — e a lista, se estiver aberta nesse preciso momento —
+    // em sincronia sem que o código que popula o select precise de
+    // saber que existe uma versão customizada por cima.
+    new MutationObserver(() => {
+      syncTrigger();
+      if (openList && openList.trigger === trigger) closeOpen();
+    }).observe(select, { childList: true });
 
     let list = null, items = [], hlIndex = 0;
 
@@ -156,8 +175,24 @@
     if (e.target === trigger || trigger.contains(e.target) || list.contains(e.target)) return;
     closeOpen();
   });
-  document.addEventListener('scroll', () => { if (openList) closeOpen(); }, true);
+  // Scroll DENTRO da própria lista (a navegar pelas opções) não deve
+  // fechá-la — só um scroll fora dela (a página por trás, um painel)
+  // fecha, porque a lista é position:fixed e deixaria de acompanhar o
+  // botão que a abriu.
+  document.addEventListener('scroll', (e) => {
+    if (!openList) return;
+    if (openList.list.contains(e.target)) return;
+    closeOpen();
+  }, true);
   window.addEventListener('resize', () => { if (openList) closeOpen(); });
 
-  document.querySelectorAll('select[data-fancy]').forEach(enhanceSelect);
+  function enhanceFancySelects(root) {
+    (root || document).querySelectorAll('select[data-fancy]').forEach(enhanceSelect);
+  }
+
+  // Exposta para poder ser chamada depois de código que gera <select
+  // data-fancy> dinamicamente (ex.: linhas de fatura no Stock).
+  window.enhanceFancySelects = enhanceFancySelects;
+
+  enhanceFancySelects();
 })();
