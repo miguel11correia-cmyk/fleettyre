@@ -90,7 +90,7 @@ async function loadStock() {
     html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:10px">';
     html += '<span style="font-size:12px;font-weight:500;color:var(--amber)">' + fmtEur(totalFat) + ' em stock</span>';
-    html += '<button class="btn btn-sm btn-danger" onclick="apagarFatura(' + fId + ')">🗑 Apagar</button>';
+    html += '<button class="btn btn-sm btn-danger" onclick="apagarFatura(' + fId + ')"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg> Apagar</button>';
     html += '</div></div>';
     if (f.notas) html += '<p style="font-size:11px;color:var(--text3);margin-bottom:10px;font-style:italic">' + f.notas + '</p>';
     html += '<div class="table-wrap"><table>';
@@ -130,7 +130,7 @@ function renderStockDesmontados(pneus, tabela) {
       estadoHtml = '<span class="badge b-alert">Pendente</span> '
         + '<select id="forn-pronto-' + r.id + '" style="height:22px;font-size:10px;padding:0 2px;margin:0 4px 0 4px;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle;max-width:100px">' + optsForn + '</select>'
         + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:22px;font-size:10px;padding:0 4px;margin:0 4px 0 0;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle">'
-        + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:22px;padding:0 8px;font-size:10px">✓ Marcar pronto</button>';
+        + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:22px;padding:0 8px;font-size:10px"><svg viewBox="0 0 24 24" style="width:11px;height:11px"><use href="#icon-check"/></svg> Marcar pronto</button>';
     }
 
     html += '<tr>'
@@ -214,7 +214,7 @@ function renderLinhasFatura() {
     html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;background:var(--bg)">'
       + '<div style="display:flex;justify-content:space-between;margin-bottom:8px">'
       + '<span style="font-size:11px;font-weight:500;color:var(--text2)">Linha ' + (i+1) + '</span>'
-      + '<button class="btn-close" onclick="removerLinhaFatura(' + i + ')">✕</button>'
+      + '<button class="btn-close" onclick="removerLinhaFatura(' + i + ')"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>'
       + '</div>'
       + '<div class="g3" style="gap:8px;margin-bottom:8px">'
       + '<div class="frow" style="margin:0"><label>Marca</label><select id="f-linha-marca-' + i + '" onchange="mudarMarcaLinhaFatura(' + i + ',this.value)">' + optsMarca(l.marca) + '</select></div>'

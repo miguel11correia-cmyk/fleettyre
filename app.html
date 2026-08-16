@@ -30,6 +30,55 @@
   <symbol id="icon-trailer" viewBox="0 0 15 15">
     <path fill="currentColor" d="M2.68 8.57a2.68 2.68 0 1 1 0 5.36a2.68 2.68 0 0 1 0-5.36M15 2.14v8.57h-2.14v3.22h-1.07v-3.22H6.37C6.11 8.9 4.56 7.5 2.68 7.5c-1.05 0-2 .44-2.68 1.13V2.14zM2.68 9.64a1.609 1.609 0 1 0 0 3.22a1.609 1.609 0 1 0 0-3.22"/>
   </symbol>
+
+  <!-- Ícones de ação para botões de tabela (editar/apagar/desmontar/etc.),
+       mesmo estilo "line icon" dos ícones da barra lateral. -->
+  <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+  </symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+    <line x1="10" y1="11" x2="10" y2="17"/>
+    <line x1="14" y1="11" x2="14" y2="17"/>
+  </symbol>
+  <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </symbol>
+  <symbol id="icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+    <line x1="7" y1="7" x2="7.01" y2="7"/>
+  </symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </symbol>
+  <symbol id="icon-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="9 14 4 9 9 4"/>
+    <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+  </symbol>
+  <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="23 4 23 10 17 10"/>
+    <polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </symbol>
+  <symbol id="icon-save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+    <polyline points="17 21 17 13 7 13 7 21"/>
+    <polyline points="7 3 7 8 15 8"/>
+  </symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </symbol>
+  <symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+    <line x1="12" y1="22.08" x2="12" y2="12"/>
+  </symbol>
 </svg>
 
 <!-- LOGIN -->
@@ -221,7 +270,7 @@
     <div class="page active" id="page-dashboard">
       <div class="page-header">
         <h2>Dashboard</h2>
-        <button class="btn btn-sm" onclick="loadDashboard()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadDashboard()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="krow" id="dash-kpis">
         <div class="kpi blue"><div class="kpi-l">Pneus ativos</div><div class="kpi-v blue" id="k-activos">—</div><div class="kpi-s">sem desmontagem</div></div>
@@ -336,12 +385,12 @@
         </div>
       </div>
          <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn btn-p" onclick="guardarRegisto()">💾 Guardar montagem</button>
+        <button class="btn btn-p" onclick="guardarRegisto()"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar montagem</button>
         <div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:34px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
           <span style="font-size:11px;color:var(--text2)">Qtd.</span>
           <input type="number" id="r-quantidade" value="1" min="1" max="20" style="width:44px;height:24px;text-align:center;border:0.5px solid var(--border);border-radius:4px;font-size:13px;font-weight:500;padding:0 4px">
         </div>
-        <button class="btn" onclick="limparForm()">✕ Limpar</button>
+        <button class="btn" onclick="limparForm()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg> Limpar</button>
       </div>
       <div id="r-feedback" class="feedback hidden"></div>
     </div>
@@ -350,7 +399,7 @@
     <div class="page hidden" id="page-frota-cadastro" style="position:relative">
       <div class="page-header">
         <h2>Frota</h2>
-        <button class="btn btn-sm" onclick="loadFrotaCadastro()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadFrotaCadastro()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="card">
         <div class="ct">Adicionar veículo</div>
@@ -401,7 +450,7 @@
           <div class="frow"><label>Reboque habitual</label><input type="text" id="v-reboque" placeholder="ex: RC-12-34" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Observações</label><input type="text" id="v-obs" placeholder="opcional"></div>
         </div>
-        <button class="btn btn-p" onclick="adicionarVeiculo()">+ Adicionar veículo</button>
+        <button class="btn btn-p" onclick="adicionarVeiculo()"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg>Adicionar veículo</button>
         <div id="v-feedback" class="feedback hidden"></div>
       </div>
       <div class="card">
@@ -424,7 +473,7 @@
       <div class="panel" id="painel-editar-veiculo">
         <div class="panel-head">
           <span>Editar veículo</span>
-          <button class="btn-close" onclick="fecharEdicaoVeiculo()">✕</button>
+          <button class="btn-close" onclick="fecharEdicaoVeiculo()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
         </div>
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="ev-mat" oninput="this.value=this.value.toUpperCase()"></div>
@@ -468,7 +517,7 @@
           </div>
           <div class="frow"><label>Reboque habitual</label><input type="text" id="ev-reboque" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Observações</label><input type="text" id="ev-obs"></div>
-          <button class="btn btn-p w100" onclick="guardarEdicaoVeiculo()" style="margin-top:12px">💾 Guardar alterações</button>
+          <button class="btn btn-p w100" onclick="guardarEdicaoVeiculo()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
           <div id="ev-feedback" class="feedback hidden"></div>
         </div>
       </div>
@@ -479,7 +528,7 @@
       <div id="frota-inner">
         <div class="page-header">
           <h2>Por matrícula</h2>
-          <button class="btn btn-sm" onclick="loadFrota()">↻ Atualizar</button>
+          <button class="btn btn-sm" onclick="loadFrota()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
         </div>
         <div class="sel-bar">
           <label><svg viewBox="0 0 512.001 512.001" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><use href="#icon-truck"/></svg>Matrícula</label>
@@ -527,7 +576,7 @@
       <div class="panel" id="painel">
         <div class="panel-head">
           <span>Registar desmontagem</span>
-          <button class="btn-close" onclick="fecharPainel()">✕</button>
+          <button class="btn-close" onclick="fecharPainel()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
         </div>
         <div class="panel-body">
           <div class="panel-info" id="painel-info"></div>
@@ -541,7 +590,7 @@
             </select>
           </div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="d-mo" placeholder="ex: 45" min="0" step="0.01"></div>
-          <button class="btn btn-p w100" onclick="guardarDesmontagem()" style="margin-top:12px">✓ Guardar desmontagem</button>
+          <button class="btn btn-p w100" onclick="guardarDesmontagem()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg> Guardar desmontagem</button>
           <div id="d-feedback" class="feedback hidden"></div>
         </div>
       </div>
@@ -550,7 +599,7 @@
     <div class="panel" id="painel-editar">
       <div class="panel-head">
         <span>Editar registo</span>
-        <button class="btn-close" onclick="fecharEdicao()">✕</button>
+        <button class="btn-close" onclick="fecharEdicao()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
       </div>
       <div class="panel-body">
         <p style="font-size:11px;color:var(--text3);margin-bottom:12px">É possível editar qualquer campo. Os custos são os mais comuns de atualizar depois.</p>
@@ -582,7 +631,7 @@
         <div class="frow"><label>Destino</label>
           <select id="e-dest"><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
         </div>
-        <button class="btn btn-p w100" onclick="guardarEdicao()" style="margin-top:12px">💾 Guardar alterações</button>
+        <button class="btn btn-p w100" onclick="guardarEdicao()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
         <div id="e-feedback" class="feedback hidden"></div>
       </div>
     </div>
@@ -593,7 +642,7 @@
     <div class="page hidden" id="page-alertas">
       <div class="page-header">
         <h2>Alertas</h2>
-        <button class="btn btn-sm" onclick="loadAlertas()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadAlertas()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="alertas-stats">
         <div class="alertas-stat" data-nivel="critico" onclick="filtrarAlertas('critico')">
@@ -646,7 +695,7 @@
     <div class="page hidden" id="page-fornecedores">
       <div class="page-header">
         <h2>Fornecedores</h2>
-        <button class="btn btn-sm" onclick="loadFornecedores()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadFornecedores()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="card">
         <div class="ct">Resumo por fornecedor</div>
@@ -670,7 +719,7 @@
     <div class="page hidden" id="page-marcas">
       <div class="page-header">
         <h2>Marcas</h2>
-        <button class="btn btn-sm" onclick="loadMarcas()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadMarcas()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="card">
         <div class="ct">Desempenho por marca</div>
@@ -715,13 +764,13 @@
       <div class="panel" id="painel-subtipos">
         <div class="panel-head">
           <span>Subtipos — <span id="subtipos-marca-nome"></span></span>
-          <button class="btn-close" onclick="fecharPainelSubtipos()">✕</button>
+          <button class="btn-close" onclick="fecharPainelSubtipos()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
         </div>
         <div class="panel-body">
           <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Ex: XTRA LIFE, ENERGY, MULTIWAY — para detalhar o tipo de pneu no registo de montagem.</p>
           <div style="display:flex;gap:8px;margin-bottom:14px">
             <input type="text" id="novo-subtipo-nome" placeholder="ex: XTRA LIFE" oninput="this.value=this.value.toUpperCase()" style="flex:1">
-            <button class="btn btn-p" onclick="adicionarSubtipo()">+ Adicionar</button>
+            <button class="btn btn-p" onclick="adicionarSubtipo()"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg>Adicionar</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -738,7 +787,7 @@
     <div class="page hidden" id="page-analytics">
       <div class="page-header">
         <h2>Análise</h2>
-        <button class="btn btn-sm" onclick="loadAnalytics()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadAnalytics()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
 
       <div class="card">
@@ -789,7 +838,7 @@
     <div class="page hidden" id="page-stock">
       <div class="page-header">
         <h2>Stock de pneus</h2>
-        <button class="btn btn-p" onclick="abrirNovaFatura()">+ Nova fatura</button>
+        <button class="btn btn-p" onclick="abrirNovaFatura()"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg>Nova fatura</button>
       </div>
       <div class="krow">
         <div class="kpi blue"><div class="kpi-l">Faturas em aberto</div><div class="kpi-v blue" id="sk-faturas">—</div><div class="kpi-s">com stock disponível</div></div>
@@ -812,7 +861,7 @@
       <div class="panel" id="painel-fatura">
         <div class="panel-head">
           <span>Registar fatura de stock</span>
-          <button class="btn-close" onclick="fecharPainelFatura()">✕</button>
+          <button class="btn-close" onclick="fecharPainelFatura()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
         </div>
         <div class="panel-body">
           <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Dados da fatura</div>
@@ -822,10 +871,10 @@
           <div class="frow"><label>Notas</label><input type="text" id="f-notas" placeholder="opcional"></div>
           <div style="font-size:12px;font-weight:500;color:var(--text2);margin:14px 0 10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">
             Pneus na fatura
-            <button class="btn btn-sm" onclick="adicionarLinhaFatura()" style="float:right">+ Linha</button>
+            <button class="btn btn-sm" onclick="adicionarLinhaFatura()" style="float:right"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg>Linha</button>
           </div>
           <div id="f-linhas"></div>
-          <button class="btn btn-p w100" onclick="guardarFatura()" style="margin-top:14px">💾 Guardar fatura</button>
+          <button class="btn btn-p w100" onclick="guardarFatura()" style="margin-top:14px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar fatura</button>
           <div id="f-feedback" class="feedback hidden"></div>
         </div>
       </div>
@@ -837,7 +886,7 @@
     <div class="page hidden" id="page-dashboard-r">
       <div class="page-header">
         <h2>Dashboard — Reboques</h2>
-        <button class="btn btn-sm" onclick="loadDashboardReboques()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadDashboardReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="krow">
         <div class="kpi blue"><div class="kpi-l">Pneus ativos</div><div class="kpi-v blue" id="rk-activos">—</div><div class="kpi-s">sem desmontagem</div></div>
@@ -922,12 +971,12 @@
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn btn-p" onclick="guardarRegistoReboque()">💾 Guardar montagem</button>
+        <button class="btn btn-p" onclick="guardarRegistoReboque()"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar montagem</button>
         <div style="display:flex;align-items:center;gap:6px;padding:0 10px;height:34px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--surface)">
           <span style="font-size:11px;color:var(--text2)">Qtd.</span>
           <input type="number" id="rr-quantidade" value="1" min="1" max="20" style="width:44px;height:24px;text-align:center;border:0.5px solid var(--border);border-radius:4px;font-size:13px;font-weight:500;padding:0 4px">
         </div>
-        <button class="btn" onclick="limparFormReboque()">✕ Limpar</button>
+        <button class="btn" onclick="limparFormReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg> Limpar</button>
       </div>
       <div id="rr-feedback" class="feedback hidden"></div>
     </div>
@@ -936,7 +985,7 @@
     <div class="page hidden" id="page-frota-cadastro-r" style="position:relative">
       <div class="page-header">
         <h2>Frota — Reboques</h2>
-        <button class="btn btn-sm" onclick="loadFrotaCadastroReboques()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadFrotaCadastroReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="card">
         <div class="ct">Adicionar reboque</div>
@@ -1001,7 +1050,7 @@
           </div>
         </div>
         <div class="frow"><label>Observações</label><input type="text" id="vr-obs" placeholder="opcional"></div>
-        <button class="btn btn-p" onclick="adicionarReboqueFrota()">+ Adicionar reboque</button>
+        <button class="btn btn-p" onclick="adicionarReboqueFrota()"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg>Adicionar reboque</button>
         <div id="vr-feedback" class="feedback hidden"></div>
       </div>
       <div class="card">
@@ -1024,7 +1073,7 @@
       <div class="panel" id="painel-editar-veiculo-r">
         <div class="panel-head">
           <span>Editar reboque</span>
-          <button class="btn-close" onclick="fecharEdicaoReboqueFrota()">✕</button>
+          <button class="btn-close" onclick="fecharEdicaoReboqueFrota()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
         </div>
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="evr-mat" oninput="this.value=this.value.toUpperCase()"></div>
@@ -1084,7 +1133,7 @@
             </select>
           </div>
           <div class="frow"><label>Observações</label><input type="text" id="evr-obs"></div>
-          <button class="btn btn-p w100" onclick="guardarEdicaoReboqueFrota()" style="margin-top:12px">💾 Guardar alterações</button>
+          <button class="btn btn-p w100" onclick="guardarEdicaoReboqueFrota()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
           <div id="evr-feedback" class="feedback hidden"></div>
         </div>
       </div>
@@ -1095,7 +1144,7 @@
       <div id="rfrota-inner">
         <div class="page-header">
           <h2>Por reboque</h2>
-          <button class="btn btn-sm" onclick="loadFrotaReboques()">↻ Atualizar</button>
+          <button class="btn btn-sm" onclick="loadFrotaReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
         </div>
         <div class="sel-bar">
           <label><svg viewBox="0 0 15 15" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><use href="#icon-trailer"/></svg>Reboque</label>
@@ -1128,21 +1177,21 @@
 
       <!-- PAINEL DESMONTAGEM -->
       <div class="panel" id="rpainel-desmont">
-        <div class="panel-head"><span>Registar desmontagem — Reboque</span><button class="btn-close" onclick="fecharPainelReboque()">✕</button></div>
+        <div class="panel-head"><span>Registar desmontagem — Reboque</span><button class="btn-close" onclick="fecharPainelReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
         <div class="panel-body">
           <div class="panel-info" id="rpainel-info"></div>
           <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="rd-mes" placeholder="ex: 2026-07" maxlength="7"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="rd-esc" min="0" max="25" step="0.5"></div>
           <div class="frow"><label>Destino</label><select id="rd-dest"><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="rd-mo" min="0" step="0.01"></div>
-          <button class="btn btn-p w100" onclick="guardarDesmontazemReboque()" style="margin-top:12px">✓ Guardar desmontagem</button>
+          <button class="btn btn-p w100" onclick="guardarDesmontazemReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg> Guardar desmontagem</button>
           <div id="rd-feedback" class="feedback hidden"></div>
         </div>
       </div>
 
       <!-- PAINEL EDIÇÃO -->
       <div class="panel" id="rpainel-editar">
-        <div class="panel-head"><span>Editar registo — Reboque</span><button class="btn-close" onclick="fecharEdicaoReboque()">✕</button></div>
+        <div class="panel-head"><span>Editar registo — Reboque</span><button class="btn-close" onclick="fecharEdicaoReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
@@ -1157,7 +1206,7 @@
           <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" id="re-esc" min="0" max="25" step="0.5"></div>
           <div class="frow"><label>Destino</label><select id="re-dest"><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
-          <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px">💾 Guardar alterações</button>
+          <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
           <div id="re-feedback" class="feedback hidden"></div>
         </div>
       </div>
@@ -1165,7 +1214,7 @@
 
     <!-- REBOQUES — ALERTAS -->
     <div class="page hidden" id="page-alertas-r">
-      <div class="page-header"><h2>Alertas — Reboques</h2><button class="btn btn-sm" onclick="loadAlertasReboques()">↻ Atualizar</button></div>
+      <div class="page-header"><h2>Alertas — Reboques</h2><button class="btn btn-sm" onclick="loadAlertasReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
       <div class="card">
         <div class="ct">📐 Limites por eixo — Semirreboque 3 eixos c/ suspensão pneumática</div>
         <div class="info-box">
@@ -1218,7 +1267,7 @@
 
     <!-- REBOQUES — FORNECEDORES -->
     <div class="page hidden" id="page-fornecedores-r">
-      <div class="page-header"><h2>Fornecedores — Reboques</h2><button class="btn btn-sm" onclick="loadFornecedoresReboques()">↻ Atualizar</button></div>
+      <div class="page-header"><h2>Fornecedores — Reboques</h2><button class="btn btn-sm" onclick="loadFornecedoresReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
       <div class="card">
         <div class="ct">Resumo por fornecedor</div>
         <div class="table-wrap"><table>
@@ -1231,7 +1280,7 @@
 
     <!-- REBOQUES — MARCAS -->
     <div class="page hidden" id="page-marcas-r">
-      <div class="page-header"><h2>Marcas — Reboques</h2><button class="btn btn-sm" onclick="loadMarcasReboques()">↻ Atualizar</button></div>
+      <div class="page-header"><h2>Marcas — Reboques</h2><button class="btn btn-sm" onclick="loadMarcasReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
       <div class="card">
         <div class="ct">Desempenho por marca</div>
         <div class="table-wrap"><table>
@@ -1246,7 +1295,7 @@
     <div class="page hidden" id="page-analytics-r">
       <div class="page-header">
         <h2>Análise — Reboques</h2>
-        <button class="btn btn-sm" onclick="loadAnalyticsReboques()">↻ Atualizar</button>
+        <button class="btn btn-sm" onclick="loadAnalyticsReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
 
       <div class="card">
@@ -1302,8 +1351,8 @@
 <!-- PAINEL SELECIONAR DE STOCK — global, sempre por cima -->
 <div id="painel-stock-sel" style="display:none;position:fixed;top:0;right:0;width:340px;height:100vh;background:var(--surface);border-left:0.5px solid var(--border);flex-direction:column;overflow-y:auto;box-shadow:-4px 0 24px rgba(0,0,0,0.15);z-index:99">
   <div style="padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-weight:500;font-size:13px;position:sticky;top:0;background:var(--surface)">
-    <span>📦 Selecionar pneu de stock</span>
-    <button class="btn-close" onclick="fecharSelStock()">✕</button>
+    <span style="display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#icon-package"/></svg> Selecionar pneu de stock</span>
+    <button class="btn-close" onclick="fecharSelStock()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
   </div>
   <div style="padding:14px 16px;flex:1">
     <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Selecione o pneu. O custo, marca e fornecedor preenchem-se automaticamente no formulário.</p>

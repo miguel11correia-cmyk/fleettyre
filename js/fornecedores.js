@@ -100,7 +100,7 @@ async function renderGestaoFornecedores() {
         <label>Nome do fornecedor</label>
         <input type="text" id="novo-forn-nome" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()">
       </div>
-      <button class="btn btn-p" onclick="adicionarFornecedor()" style="flex-shrink:0">+ Adicionar</button>
+      <button class="btn btn-p" onclick="adicionarFornecedor()" style="flex-shrink:0"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Adicionar</button>
     </div>
     <div onclick="toggleGestaoFornecedores()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:6px 0;border-top:0.5px solid var(--border)">
       <span style="font-size:11px;color:var(--text2);font-weight:500">Lista de fornecedores (${(data || []).length})</span>
@@ -113,7 +113,7 @@ async function renderGestaoFornecedores() {
           ${(data || []).map(f => `<tr>
             <td><strong>${f.codigo}</strong></td>
             <td>${f.nome}</td>
-            <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar">🗑</button></td>
+            <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
           </tr>`).join('')}
         </tbody>
       </table>

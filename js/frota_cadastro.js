@@ -171,8 +171,8 @@ async function loadFrotaCadastro() {
     <td>${v.reboque_hab || '—'}</td>
     <td>
       <div style="display:flex;gap:4px">
-        <button class="btn btn-sm btn-icon" onclick="abrirEdicaoVeiculo(${v.id})" title="Editar">✏️</button>
-        <button class="btn btn-sm btn-icon btn-danger" onclick="apagarVeiculo(${v.id},'${v.matricula}')" title="Apagar">🗑</button>
+        <button class="btn btn-sm btn-icon" onclick="abrirEdicaoVeiculo(${v.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
+        <button class="btn btn-sm btn-icon btn-danger" onclick="apagarVeiculo(${v.id},'${v.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
       </div>
     </td>
   </tr>`;

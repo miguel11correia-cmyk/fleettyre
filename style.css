@@ -389,30 +389,40 @@ input::placeholder { color: var(--text3); }
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 6px;
   padding: 0 14px;
   height: 34px;
-  border: 0.5px solid var(--border2);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
-  transition: background .1s, transform 120ms var(--ease-out);
+  box-shadow: 0 1px 2px rgba(16,16,20,0.04);
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 120ms var(--ease-out);
 }
-.btn:hover { background: var(--bg2); }
-.btn:active { transform: scale(0.97); }
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: var(--bg2); border-color: var(--border2); box-shadow: 0 2px 6px rgba(16,16,20,0.07); transform: translateY(-1px); }
+}
+.btn:active { transform: scale(0.97); box-shadow: 0 1px 1px rgba(16,16,20,0.04); }
 .btn-p {
   background: #f0ede8;
   color: var(--text);
   border-color: var(--border2);
 }
-.btn-p:hover { background: #e6e2db; border-color: #c5c2bc; }
+@media (hover: hover) and (pointer: fine) {
+  .btn-p:hover { background: #e6e2db; border-color: #c5c2bc; }
+}
 /* Destaque próprio do ecrã de login — única exceção deliberada à paleta neutra */
-.btn-brand { background: var(--brand-red); color: #fff; border-color: var(--brand-red-dk); }
-.btn-brand:hover { background: var(--brand-red-dk); }
+.btn-brand { background: var(--brand-red); color: #fff; border-color: var(--brand-red-dk); box-shadow: 0 1px 2px rgba(220,38,38,0.25); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-brand:hover { background: var(--brand-red-dk); box-shadow: 0 4px 10px rgba(220,38,38,0.3); }
+}
 .btn-s {
   background: var(--green-bg);
   color: var(--green);
@@ -421,13 +431,18 @@ input::placeholder { color: var(--text3); }
   height: 28px;
   padding: 0 10px;
 }
-.btn-s:hover { background: #dcfce7; }
+@media (hover: hover) and (pointer: fine) {
+  .btn-s:hover { background: #dcfce7; }
+}
 .btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
+.btn-sm svg { width: 13px; height: 13px; }
 /* Ícone-só (editar, apagar em linhas de tabela) — compacto e quadrado */
 .btn-icon { width: 28px; padding: 0; justify-content: center; flex-shrink: 0; }
 /* Ação destrutiva (apagar) — mesma lógica visual do .btn-s, em vermelho */
 .btn-danger { color: var(--red); border-color: var(--brand-red-md); }
-.btn-danger:hover { background: var(--red-bg); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-danger:hover { background: var(--red-bg); }
+}
 .w100 { width: 100%; justify-content: center; }
 
 /* ── FEEDBACK ─────────────────────────────────────────────────── */
@@ -561,17 +576,23 @@ tbody tr:hover td { background: var(--bg); }
 }
 @keyframes scrim-in { from { opacity: 0; } }
 .btn-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 16px;
   cursor: pointer;
   color: var(--text2);
-  padding: 2px 6px;
-  border-radius: 4px;
-  line-height: 1;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
   transition: background .1s, transform 120ms var(--ease-out);
 }
-.btn-close:hover { background: var(--bg2); }
+.btn-close svg { width: 15px; height: 15px; }
+@media (hover: hover) and (pointer: fine) {
+  .btn-close:hover { background: var(--bg2); color: var(--text); }
+}
 .btn-close:active { transform: scale(0.9); }
 .panel-body { padding: 14px 16px; }
 .panel-info {
@@ -695,6 +716,7 @@ tbody tr:hover td { background: var(--bg); }
   .panel { transition: none; }
   .btn, .secao-btn, .btn-logout, .btn-close { transition: background .1s, color .1s; }
   .btn:active, .secao-btn:active, .btn-logout:active, .btn-close:active { transform: none; }
+  .btn:hover { transform: none; }
   .app:has(.panel.open)::after { animation: none; }
 }
 

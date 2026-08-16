@@ -86,7 +86,7 @@ async function renderGestaoMarcas() {
         <label>Nome da marca</label>
         <input type="text" id="nova-marc-nome" placeholder="ex: MICHELIN" oninput="this.value=this.value.toUpperCase()">
       </div>
-      <button class="btn btn-p" onclick="adicionarMarca()" style="flex-shrink:0">+ Adicionar</button>
+      <button class="btn btn-p" onclick="adicionarMarca()" style="flex-shrink:0"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Adicionar</button>
     </div>
     <div onclick="toggleGestaoMarcas()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:6px 0;border-top:0.5px solid var(--border)">
       <span style="font-size:11px;color:var(--text2);font-weight:500">Lista de marcas (${(data || []).length})</span>
@@ -101,8 +101,8 @@ async function renderGestaoMarcas() {
             <td>${m.nome}</td>
             <td>
               <div style="display:flex;gap:4px">
-                <button class="btn btn-sm" onclick="abrirSubtipos(${m.id},'${m.nome}')">🏷️ Subtipos</button>
-                <button class="btn btn-sm btn-icon btn-danger" onclick="apagarMarca(${m.id},'${m.nome}')" title="Apagar">🗑</button>
+                <button class="btn btn-sm" onclick="abrirSubtipos(${m.id},'${m.nome}')"><svg viewBox="0 0 24 24"><use href="#icon-tag"/></svg> Subtipos</button>
+                <button class="btn btn-sm btn-icon btn-danger" onclick="apagarMarca(${m.id},'${m.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
               </div>
             </td>
           </tr>`).join('')}
@@ -192,7 +192,7 @@ async function renderListaSubtipos() {
   tbody.innerHTML = (data && data.length > 0)
     ? data.map(s => `<tr>
         <td>${s.nome}</td>
-        <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarSubtipo(${s.id})" title="Apagar">🗑</button></td>
+        <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarSubtipo(${s.id})" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
       </tr>`).join('')
     : '<tr><td colspan="2" class="empty-msg" style="text-align:center;padding:10px">Ainda sem subtipos.</td></tr>';
 }
