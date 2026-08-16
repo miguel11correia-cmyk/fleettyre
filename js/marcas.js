@@ -101,8 +101,8 @@ async function renderGestaoMarcas() {
             <td>${m.nome}</td>
             <td>
               <div style="display:flex;gap:4px">
-                <button class="btn btn-sm" onclick="abrirSubtipos(${m.id},'${m.nome}')" style="font-size:11px;height:26px">🏷️ Subtipos</button>
-                <button class="btn btn-sm" onclick="apagarMarca(${m.id},'${m.nome}')" style="color:var(--red);border-color:#fecaca;font-size:11px;height:26px">🗑</button>
+                <button class="btn btn-sm" onclick="abrirSubtipos(${m.id},'${m.nome}')">🏷️ Subtipos</button>
+                <button class="btn btn-sm btn-icon btn-danger" onclick="apagarMarca(${m.id},'${m.nome}')" title="Apagar">🗑</button>
               </div>
             </td>
           </tr>`).join('')}
@@ -192,7 +192,7 @@ async function renderListaSubtipos() {
   tbody.innerHTML = (data && data.length > 0)
     ? data.map(s => `<tr>
         <td>${s.nome}</td>
-        <td><button class="btn btn-sm" onclick="apagarSubtipo(${s.id})" style="color:var(--red);border-color:#fecaca;font-size:11px;height:26px">🗑</button></td>
+        <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarSubtipo(${s.id})" title="Apagar">🗑</button></td>
       </tr>`).join('')
     : '<tr><td colspan="2" class="empty-msg" style="text-align:center;padding:10px">Ainda sem subtipos.</td></tr>';
 }

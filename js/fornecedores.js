@@ -113,7 +113,7 @@ async function renderGestaoFornecedores() {
           ${(data || []).map(f => `<tr>
             <td><strong>${f.codigo}</strong></td>
             <td>${f.nome}</td>
-            <td><button class="btn btn-sm" onclick="apagarFornecedor(${f.id},'${f.nome}')" style="color:var(--red);border-color:#fecaca;font-size:11px;height:26px">🗑</button></td>
+            <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar">🗑</button></td>
           </tr>`).join('')}
         </tbody>
       </table>

@@ -91,7 +91,7 @@ function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
     return `<tr style="color:var(--text3)">
       <td>${lugar}</td>
       <td colspan="10">— vazio —</td>
-      <td><button class="btn btn-sm" onclick="montarNoLugarReboque('${mat}','${lugar}')" style="height:28px;padding:0 8px;font-size:11px">+ Montar</button></td>
+      <td><button class="btn btn-sm" onclick="montarNoLugarReboque('${mat}','${lugar}')">+ Montar</button></td>
     </tr>`;
   }
   const mesesActivo = mesesEntre(r.mes_mont, hoje);
@@ -103,8 +103,8 @@ function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
   const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do reboque — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
       <button class="btn btn-s" onclick="abrirPainelReboque(${r.id})">🔧 Desmontar</button>
-      <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-      <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+      <button class="btn btn-sm btn-icon" onclick="abrirEdicaoReboque(${r.id})" title="Editar">✏️</button>
+      <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" title="Apagar">🗑</button>
     </div>`;
   return `<tr>
     <td>${lugar}${avisoIcon}</td>
@@ -134,13 +134,13 @@ function linhaHistoricoReboque(r, hoje) {
   const acBtn    = !r.mes_desmont
     ? `<div style="display:flex;gap:4px;flex-wrap:wrap">
          <button class="btn btn-s" onclick="abrirPainelReboque(${r.id})">🔧 Desmontar</button>
-         <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-         <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+         <button class="btn btn-sm btn-icon" onclick="abrirEdicaoReboque(${r.id})" title="Editar">✏️</button>
+         <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" title="Apagar">🗑</button>
        </div>`
     : `<div style="display:flex;gap:4px;flex-wrap:wrap">
          <span style="color:var(--text3);font-size:11px">✓</span>
-         <button class="btn btn-sm" onclick="abrirEdicaoReboque(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-         <button class="btn btn-sm" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+         <button class="btn btn-sm btn-icon" onclick="abrirEdicaoReboque(${r.id})" title="Editar">✏️</button>
+         <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" title="Apagar">🗑</button>
        </div>`;
   return `<tr>
     <td>${r.mes_mont || '—'}</td>

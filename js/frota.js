@@ -96,7 +96,7 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
     return `<tr style="color:var(--text3)">
       <td>${lugar}</td>
       <td colspan="11">— vazio —</td>
-      <td><button class="btn btn-sm" onclick="montarNoLugar('${mat}','${lugar}')" style="height:28px;padding:0 8px;font-size:11px">+ Montar</button></td>
+      <td><button class="btn btn-sm" onclick="montarNoLugar('${mat}','${lugar}')">+ Montar</button></td>
     </tr>`;
   }
   const kmsEfInfo = kmsEfectuados(r, kmAtual);
@@ -108,8 +108,8 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
   const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do veículo — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
       <button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>
-      <button class="btn btn-sm" onclick="abrirEdicao(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-      <button class="btn btn-sm" onclick="apagarRegisto(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+      <button class="btn btn-sm btn-icon" onclick="abrirEdicao(${r.id})" title="Editar">✏️</button>
+      <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar">🗑</button>
     </div>`;
   return `<tr>
     <td>${lugar}${avisoIcon}</td>
@@ -140,8 +140,8 @@ function linhaHistorico(r, kmAtual) {
   const custoTot = (r.custo_pneu || 0) + (r.custo_mo || 0);
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
       ${!r.mes_desmont ? `<button class="btn btn-s" onclick="abrirPainel(${r.id})">🔧 Desmontar</button>` : '<span style="color:var(--text3);font-size:11px">✓</span>'}
-      <button class="btn btn-sm" onclick="abrirEdicao(${r.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-      <button class="btn btn-sm" onclick="apagarRegisto(${r.id},'${r.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+      <button class="btn btn-sm btn-icon" onclick="abrirEdicao(${r.id})" title="Editar">✏️</button>
+      <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar">🗑</button>
     </div>`;
   return `<tr>
     <td>${r.mes_mont || '—'}</td>
