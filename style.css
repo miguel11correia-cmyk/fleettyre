@@ -39,6 +39,12 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+/* Trava o scroll/pan horizontal da página inteira — rede de segurança
+   contra qualquer elemento que acabe mais largo que o ecrã (sobretudo
+   em mobile, onde isso deixa arrastar a app toda de lado). Em desktop
+   não tem efeito nenhum, já que nada excede a largura do ecrã. */
+html, body { overflow-x: hidden; }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 13px;
@@ -352,6 +358,7 @@ body {
 .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .cw  { position: relative; width: 100%; height: 180px; }
 .cw-t{ position: relative; width: 100%; height: 220px; }
+.cw canvas, .cw-t canvas { max-width: 100%; }
 
 /* ── FORMS ────────────────────────────────────────────────────── */
 .frow { margin-bottom: 10px; }
