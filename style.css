@@ -3,8 +3,8 @@
 
 :root {
   /* Paleta da marca */
-  --brand-red:    #c0392b;
-  --brand-red-dk: #7a1515;
+  --brand-red:    #DC2626;
+  --brand-red-dk: #B91C1C;
   --brand-red-lt: #fdf2f2;
   --brand-red-md: #fecaca;
 
@@ -61,7 +61,7 @@ body {
   padding: 48px 24px;
 }
 .login-logo-top { text-align: center; }
-.login-logo-top img { height: 56px; }
+.login-logo-top img { height: 120px; }
 
 /* Uma só caixa (sombra + cantos arredondados), compacta, dividida com
    um corte diagonal — formulário à esquerda (mais de metade), imagem
