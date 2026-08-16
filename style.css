@@ -422,7 +422,12 @@ input::placeholder { color: var(--text3); }
   padding: 0 10px;
 }
 .btn-s:hover { background: #dcfce7; }
-.btn-sm { height: 30px; padding: 0 10px; font-size: 11px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
+/* Ícone-só (editar, apagar em linhas de tabela) — compacto e quadrado */
+.btn-icon { width: 28px; padding: 0; justify-content: center; flex-shrink: 0; }
+/* Ação destrutiva (apagar) — mesma lógica visual do .btn-s, em vermelho */
+.btn-danger { color: var(--red); border-color: var(--brand-red-md); }
+.btn-danger:hover { background: var(--red-bg); }
 .w100 { width: 100%; justify-content: center; }
 
 /* ── FEEDBACK ─────────────────────────────────────────────────── */

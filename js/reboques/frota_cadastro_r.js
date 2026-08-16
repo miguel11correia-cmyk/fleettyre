@@ -202,8 +202,8 @@ async function loadFrotaCadastroReboques() {
     <td style="text-align:center">${v.num_eixos || '—'}</td>
     <td>
       <div style="display:flex;gap:4px">
-        <button class="btn btn-sm" onclick="abrirEdicaoReboqueFrota(${v.id})" style="height:28px;padding:0 8px;font-size:11px">✏️</button>
-        <button class="btn btn-sm" onclick="apagarReboqueFrota(${v.id},'${v.matricula}')" style="height:28px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑</button>
+        <button class="btn btn-sm btn-icon" onclick="abrirEdicaoReboqueFrota(${v.id})" title="Editar">✏️</button>
+        <button class="btn btn-sm btn-icon btn-danger" onclick="apagarReboqueFrota(${v.id},'${v.matricula}')" title="Apagar">🗑</button>
       </div>
     </td>
   </tr>`;

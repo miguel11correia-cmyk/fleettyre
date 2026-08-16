@@ -90,7 +90,7 @@ async function loadStock() {
     html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:10px">';
     html += '<span style="font-size:12px;font-weight:500;color:var(--amber)">' + fmtEur(totalFat) + ' em stock</span>';
-    html += '<button class="btn btn-sm" onclick="apagarFatura(' + fId + ')" style="height:26px;padding:0 8px;font-size:11px;color:var(--red);border-color:#f5c6c6">🗑 Apagar</button>';
+    html += '<button class="btn btn-sm btn-danger" onclick="apagarFatura(' + fId + ')">🗑 Apagar</button>';
     html += '</div></div>';
     if (f.notas) html += '<p style="font-size:11px;color:var(--text3);margin-bottom:10px;font-style:italic">' + f.notas + '</p>';
     html += '<div class="table-wrap"><table>';
