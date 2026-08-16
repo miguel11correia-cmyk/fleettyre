@@ -42,8 +42,13 @@
 /* Trava o scroll/pan horizontal da página inteira — rede de segurança
    contra qualquer elemento que acabe mais largo que o ecrã (sobretudo
    em mobile, onde isso deixa arrastar a app toda de lado). Em desktop
-   não tem efeito nenhum, já que nada excede a largura do ecrã. */
-html, body { overflow-x: hidden; }
+   não tem efeito nenhum, já que nada excede a largura do ecrã.
+   overflow-x sozinho nem sempre chega no iOS Safari — o "elástico" ao
+   arrastar é o próprio gesto a ser reconhecido como pan horizontal
+   pelo sistema, independentemente de haver ou não conteúdo para
+   mostrar; touch-action diz ao browser para só reconhecer o gesto
+   vertical, cortando o arrasto lateral pela raiz. */
+html, body { overflow-x: hidden; touch-action: pan-y; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -587,7 +592,9 @@ input[type="number"] { -moz-appearance: textfield; }
 .feedback.error   { background: var(--red-bg); color: var(--red); }
 
 /* ── TABLE ────────────────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; }
+/* touch-action:pan-y na raiz bloquearia também este scroll horizontal
+   intencional — devolve-lho explicitamente. */
+.table-wrap { overflow-x: auto; touch-action: pan-x pan-y; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th {
   text-align: left;
@@ -665,7 +672,7 @@ tbody tr:hover td { background: var(--bg); }
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  z-index: 20;
+  z-index: 50;
   box-shadow: -4px 0 24px rgba(0,0,0,0.09);
   transform: translateX(100%);
   transition: transform 260ms var(--ease-out);
