@@ -849,17 +849,85 @@ tbody tr:hover td { background: var(--bg); }
   .panel, .panel-head { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .panel-head { box-shadow: none; border-bottom: 0.5px solid var(--border); }
   .loading-overlay { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .mobile-topbar { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 @media (prefers-contrast: more) {
   .panel, .panel-head { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: var(--text3); }
 }
 
 /* ── RESPONSIVE ───────────────────────────────────────────────── */
+/* Barra superior e overlay da sidebar só existem em mobile — força
+   escondido aqui para nunca aparecerem no desktop, seja qual for a
+   futura afinação dos breakpoints abaixo. */
+.mobile-topbar { display: none; }
+.sidebar-scrim { display: none; }
+
 @media (max-width: 768px) {
-  .sidebar { width: 56px; }
-  .logo p, .ni span:not(.ni-icon), .sidebar-footer .btn-logout,
-  .nav-section { display: none; }
-  .ni { justify-content: center; padding: 10px; }
+  .main { min-width: 0; }
+
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.86);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 0.5px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 25;
+  }
+  .hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: background .1s, transform 120ms var(--ease-out);
+  }
+  .hamburger-btn svg { width: 18px; height: 18px; }
+  .hamburger-btn:active { transform: scale(0.94); }
+
+  /* A sidebar passa de coluna permanente a painel deslizante, com o
+     mesmo conteúdo/rótulos do desktop — só muda a forma como aparece. */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    max-width: 82vw;
+    height: 100vh;
+    z-index: 45;
+    transform: translateX(-100%);
+    transition: transform 220ms var(--ease-out);
+    box-shadow: 0 0 40px rgba(0,0,0,0.18);
+  }
+  .sidebar.mobile-open { transform: translateX(0); }
+
+  .sidebar-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.32);
+    z-index: 44;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+  }
+  .sidebar-scrim.visible { opacity: 1; pointer-events: auto; }
+
   .g2, .g3 { grid-template-columns: 1fr; }
+  .page { padding: 16px 14px; }
   .panel { width: 100%; }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar-scrim { transition: none; }
 }

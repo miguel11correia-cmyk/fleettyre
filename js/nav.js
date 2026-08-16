@@ -2,6 +2,20 @@
 
 let secaoActiva = 'veiculos';
 
+// Sidebar em mobile (≤768px) passa a um painel deslizante em vez de
+// coluna permanente — ver .sidebar.mobile-open em style.css.
+function toggleMobileSidebar(force) {
+  const sidebar = document.querySelector('.sidebar');
+  const scrim = document.querySelector('.sidebar-scrim');
+  if (!sidebar) return;
+  const open = typeof force === 'boolean' ? force : !sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', open);
+  if (scrim) scrim.classList.toggle('visible', open);
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') toggleMobileSidebar(false);
+});
+
 function toggleSecao(secao) {
   secaoActiva = secao;
   document.getElementById('menu-registos').classList.toggle('hidden', secao !== 'registos');
@@ -25,6 +39,7 @@ function toggleSecao(secao) {
 function navReg(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  toggleMobileSidebar(false);
   const page = document.getElementById('page-' + id);
   if (!page) return;
   page.classList.remove('hidden');
@@ -39,6 +54,7 @@ function navReg(id, el) {
 function nav(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  toggleMobileSidebar(false);
   const page = document.getElementById('page-' + id);
   if (!page) return;
   page.classList.remove('hidden');
@@ -58,6 +74,7 @@ function nav(id, el) {
 function navR(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  toggleMobileSidebar(false);
 
   // Stock é partilhado — usa page-stock com contexto reboques
   const pageId = id === 'stock-r' ? 'stock' : id;
