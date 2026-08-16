@@ -385,6 +385,47 @@ input:focus, select:focus {
 }
 input::placeholder { color: var(--text3); }
 
+/* A caixa fechada da lista pode ser estilizada; a lista aberta é
+   desenhada pelo SO/browser e o CSS não a alcança de forma fiável
+   entre browsers — por isso troca-se só a seta nativa por uma custom. */
+select {
+  padding-right: 30px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2352525b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 15px 15px;
+  cursor: pointer;
+}
+select::-ms-expand { display: none; }
+
+/* Setas nativas do input number — visual de sistema operativo,
+   destoam do resto da app; removidas para um campo mais limpo. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Scrollbar fina e discreta em vez da barra grossa por omissão do SO,
+   em qualquer superfície com scroll (painéis, tabelas, listas). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: #b3b0aa; background-clip: padding-box; }
+
 /* ── BUTTONS ──────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
