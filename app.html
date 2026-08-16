@@ -96,7 +96,7 @@
         </div>
         <div id="login-step-empresa" class="hidden">
           <div class="frow"><label>Empresa</label>
-            <select id="l-empresa"></select>
+            <select id="l-empresa" data-fancy></select>
           </div>
           <button class="btn btn-brand w100" onclick="confirmarEmpresaLogin()">Continuar</button>
         </div>
@@ -337,14 +337,14 @@
         <div class="ct">Veículo</div>
         <div class="g2">
           <div class="frow"><label>Matrícula do camião *</label>
-            <select id="r-mat" onchange="atualizarCategoriasPosicao('r-mat','r-pos',listaVeiculos,SLOTS_VEICULO)"><option value="">— selecionar —</option></select>
+            <select id="r-mat" data-fancy onchange="atualizarCategoriasPosicao('r-mat','r-pos',listaVeiculos,SLOTS_VEICULO)"><option value="">— selecionar —</option></select>
           </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="r-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>
         <div class="g2">
           <div class="frow"><label>KMs no conta-quilómetros *</label><input type="number" id="r-kms" placeholder="ex: 638591" min="0"></div>
           <div class="frow"><label>Posição do pneu</label>
-            <select id="r-pos">
+            <select id="r-pos" data-fancy>
               <option value="">— selecionar —</option>
               <option value="Direção">Direção</option>
               <option value="Tração">Tração</option>
@@ -355,13 +355,13 @@
       <div class="card">
         <div class="ct">Pneu</div>
         <div class="g2">
-          <div class="frow"><label>Marca</label><select id="r-marca" onchange="popularSelectorSubtipo('r-marca','r-subtipo')"><option value="">— selecionar —</option></select></div>
+          <div class="frow"><label>Marca</label><select id="r-marca" data-fancy onchange="popularSelectorSubtipo('r-marca','r-subtipo')"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="r-medida" placeholder="ex: 315/80"></div>
         </div>
         <div class="g2">
-          <div class="frow"><label>Subtipo</label><select id="r-subtipo"><option value="">— nenhum —</option></select></div>
+          <div class="frow"><label>Subtipo</label><select id="r-subtipo" data-fancy><option value="">— nenhum —</option></select></div>
           <div class="frow"><label>Tipo</label>
-            <select id="r-tipo">
+            <select id="r-tipo" data-fancy>
               <option value="Novo">Novo</option>
               <option value="Remix">Remix</option>
               <option value="Rechapado">Rechapado</option>
@@ -370,7 +370,7 @@
           </div>
         </div>
         <div class="g2">
-          <div class="frow"><label>Fornecedor</label><select id="r-forn"><option value="">— selecionar —</option></select></div>
+          <div class="frow"><label>Fornecedor</label><select id="r-forn" data-fancy><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Matrícula do pneu (opcional)</label><input type="text" id="r-matpneu" placeholder="ex: HLZ22889B" oninput="this.value=this.value.toUpperCase()"></div>
         </div>
         <div style="margin-bottom:12px">
@@ -532,7 +532,7 @@
         </div>
         <div class="sel-bar">
           <label><svg viewBox="0 0 512.001 512.001" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><use href="#icon-truck"/></svg>Matrícula</label>
-          <select id="sel-mat" onchange="loadFrota()"></select>
+          <select id="sel-mat" data-fancy onchange="loadFrota()"></select>
         </div>
         <div class="card" id="frota-info-veiculo"></div>
         <div class="krow">
@@ -614,13 +614,13 @@
             <option value="Tração">Tração</option>
           </select>
         </div>
-        <div class="frow"><label>Marca</label><select id="e-marca" onchange="popularSelectorSubtipo('e-marca','e-subtipo')"><option value="">— selecionar —</option></select></div>
+        <div class="frow"><label>Marca</label><select id="e-marca" data-fancy onchange="popularSelectorSubtipo('e-marca','e-subtipo')"><option value="">— selecionar —</option></select></div>
         <div class="frow"><label>Medida</label><input type="text" id="e-medida"></div>
-        <div class="frow"><label>Subtipo</label><select id="e-subtipo"><option value="">— nenhum —</option></select></div>
+        <div class="frow"><label>Subtipo</label><select id="e-subtipo" data-fancy><option value="">— nenhum —</option></select></div>
         <div class="frow"><label>Tipo</label>
           <select id="e-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select>
         </div>
-        <div class="frow"><label>Fornecedor</label><select id="e-forn"><option value="">— selecionar —</option></select></div>
+        <div class="frow"><label>Fornecedor</label><select id="e-forn" data-fancy><option value="">— selecionar —</option></select></div>
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Custos</div>
         <div class="frow"><label>Custo pneu (€)</label><input type="number" id="e-custo" min="0" step="0.01"></div>
         <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="e-mo" min="0" step="0.01"></div>
@@ -866,7 +866,7 @@
         <div class="panel-body">
           <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Dados da fatura</div>
           <div class="frow"><label>Nº Fatura *</label><input type="text" id="f-num" placeholder="ex: FT2026/1234" oninput="this.value=this.value.toUpperCase()"></div>
-          <div class="frow"><label>Fornecedor *</label><select id="f-forn"><option value="">— selecionar —</option></select></div>
+          <div class="frow"><label>Fornecedor *</label><select id="f-forn" data-fancy><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Data da fatura (AAAA-MM)</label><input type="text" id="f-data" placeholder="ex: 2026-07" maxlength="7"></div>
           <div class="frow"><label>Notas</label><input type="text" id="f-notas" placeholder="opcional"></div>
           <div style="font-size:12px;font-weight:500;color:var(--text2);margin:14px 0 10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">
@@ -933,13 +933,13 @@
         <div class="ct">Identificação</div>
         <div class="g2">
           <div class="frow"><label>Matrícula do reboque *</label>
-            <select id="rr-mat" onchange="atualizarCategoriasPosicao('rr-mat','rr-eixo',listaReboquesFrota,SLOTS_REBOQUE)"><option value="">— selecionar —</option></select>
+            <select id="rr-mat" data-fancy onchange="atualizarCategoriasPosicao('rr-mat','rr-eixo',listaReboquesFrota,SLOTS_REBOQUE)"><option value="">— selecionar —</option></select>
           </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="rr-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>
         <div class="g2">
           <div class="frow"><label>Eixo</label>
-            <select id="rr-eixo">
+            <select id="rr-eixo" data-fancy>
               <option value="Eixo 1">Eixo 1 (dianteiro) — 12/14 meses</option>
               <option value="Eixo 2">Eixo 2 (meio) — 20/24 meses</option>
               <option value="Eixo 3">Eixo 3 (traseiro) — 12/14 meses</option>
@@ -951,12 +951,12 @@
       <div class="card">
         <div class="ct">Pneu</div>
         <div class="g3">
-          <div class="frow"><label>Marca</label><select id="rr-marca" onchange="popularSelectorSubtipo('rr-marca','rr-subtipo')"><option value="">— selecionar —</option></select></div>
+          <div class="frow"><label>Marca</label><select id="rr-marca" data-fancy onchange="popularSelectorSubtipo('rr-marca','rr-subtipo')"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="rr-medida" placeholder="ex: 385/65"></div>
-          <div class="frow"><label>Subtipo</label><select id="rr-subtipo"><option value="">— nenhum —</option></select></div>
+          <div class="frow"><label>Subtipo</label><select id="rr-subtipo" data-fancy><option value="">— nenhum —</option></select></div>
         </div>
         <div class="g2">
-          <div class="frow"><label>Fornecedor</label><select id="rr-forn"><option value="">— selecionar —</option></select></div>
+          <div class="frow"><label>Fornecedor</label><select id="rr-forn" data-fancy><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Matrícula do pneu (opcional)</label><input type="text" id="rr-matpneu" oninput="this.value=this.value.toUpperCase()"></div>
         </div>
         <div style="margin-bottom:12px">
@@ -1148,7 +1148,7 @@
         </div>
         <div class="sel-bar">
           <label><svg viewBox="0 0 15 15" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><use href="#icon-trailer"/></svg>Reboque</label>
-          <select id="sel-mat-r" onchange="loadFrotaReboques()"></select>
+          <select id="sel-mat-r" data-fancy onchange="loadFrotaReboques()"></select>
         </div>
         <div class="card" id="frota-info-reboque"></div>
         <div class="krow">
@@ -1196,11 +1196,11 @@
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
           <div class="frow"><label>Posição</label><select id="re-pos" data-fancy><option value="Eixo 1">Eixo 1</option><option value="Eixo 2">Eixo 2</option><option value="Eixo 3">Eixo 3</option></select></div>
-          <div class="frow"><label>Marca</label><select id="re-marca" onchange="popularSelectorSubtipo('re-marca','re-subtipo')"><option value="">— selecionar —</option></select></div>
+          <div class="frow"><label>Marca</label><select id="re-marca" data-fancy onchange="popularSelectorSubtipo('re-marca','re-subtipo')"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="re-medida"></div>
-          <div class="frow"><label>Subtipo</label><select id="re-subtipo"><option value="">— nenhum —</option></select></div>
+          <div class="frow"><label>Subtipo</label><select id="re-subtipo" data-fancy><option value="">— nenhum —</option></select></div>
           <div class="frow"><label>Tipo</label><select id="re-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
-          <div class="frow"><label>Fornecedor</label><select id="re-forn"><option value="">— selecionar —</option></select></div>
+          <div class="frow"><label>Fornecedor</label><select id="re-forn" data-fancy><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
           <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7"></div>

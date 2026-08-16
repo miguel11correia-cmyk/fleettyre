@@ -217,17 +217,18 @@ function renderLinhasFatura() {
       + '<button class="btn-close" onclick="removerLinhaFatura(' + i + ')"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>'
       + '</div>'
       + '<div class="g3" style="gap:8px;margin-bottom:8px">'
-      + '<div class="frow" style="margin:0"><label>Marca</label><select id="f-linha-marca-' + i + '" onchange="mudarMarcaLinhaFatura(' + i + ',this.value)">' + optsMarca(l.marca) + '</select></div>'
-      + '<div class="frow" style="margin:0"><label>Subtipo</label><select id="f-linha-subtipo-' + i + '" onchange="linhasFatura[' + i + '].subtipo=this.value"><option value="">— nenhum —</option></select></div>'
+      + '<div class="frow" style="margin:0"><label>Marca</label><select id="f-linha-marca-' + i + '" data-fancy onchange="mudarMarcaLinhaFatura(' + i + ',this.value)">' + optsMarca(l.marca) + '</select></div>'
+      + '<div class="frow" style="margin:0"><label>Subtipo</label><select id="f-linha-subtipo-' + i + '" data-fancy onchange="linhasFatura[' + i + '].subtipo=this.value"><option value="">— nenhum —</option></select></div>'
       + '<div class="frow" style="margin:0"><label>Medida</label><input type="text" value="' + l.medida + '" oninput="linhasFatura[' + i + '].medida=this.value" placeholder="315/80"></div>'
       + '</div>'
       + '<div class="g3" style="gap:8px">'
-      + '<div class="frow" style="margin:0"><label>Tipo</label><select onchange="linhasFatura[' + i + '].tipo=this.value"><option ' + (l.tipo==='Novo'?'selected':'') + '>Novo</option><option ' + (l.tipo==='Remix'?'selected':'') + '>Remix</option><option ' + (l.tipo==='Rechapado'?'selected':'') + '>Rechapado</option><option ' + (l.tipo==='Piso Aberto'?'selected':'') + '>Piso Aberto</option></select></div>'
+      + '<div class="frow" style="margin:0"><label>Tipo</label><select data-fancy onchange="linhasFatura[' + i + '].tipo=this.value"><option ' + (l.tipo==='Novo'?'selected':'') + '>Novo</option><option ' + (l.tipo==='Remix'?'selected':'') + '>Remix</option><option ' + (l.tipo==='Rechapado'?'selected':'') + '>Rechapado</option><option ' + (l.tipo==='Piso Aberto'?'selected':'') + '>Piso Aberto</option></select></div>'
       + '<div class="frow" style="margin:0"><label>Quantidade *</label><input type="number" value="' + l.quantidade + '" oninput="linhasFatura[' + i + '].quantidade=this.value" placeholder="ex: 4" min="1"></div>'
       + '<div class="frow" style="margin:0"><label>Preço unit. (€)</label><input type="number" value="' + l.preco + '" oninput="linhasFatura[' + i + '].preco=this.value" placeholder="ex: 320" min="0" step="0.01"></div>'
       + '</div></div>';
   });
   container.innerHTML = html;
+  if (window.enhanceFancySelects) window.enhanceFancySelects(container);
   linhasFatura.forEach((l, i) => {
     popularSelectorSubtipo('f-linha-marca-' + i, 'f-linha-subtipo-' + i);
     const selSub = document.getElementById('f-linha-subtipo-' + i);
