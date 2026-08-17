@@ -390,6 +390,17 @@ async function abrirSelStock() {
 let alocResultados = [];
 let alocSelecionados = new Set();
 
+function cancelarAlocacao() {
+  ['alo-marca', 'alo-medida', 'alo-forn', 'alo-mes-de', 'alo-mes-ate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  alocResultados = [];
+  alocSelecionados = new Set();
+  document.getElementById('alo-resultados').innerHTML = '';
+  document.getElementById('alo-feedback').classList.add('hidden');
+}
+
 async function procurarPneusAlocar() {
   const marca  = document.getElementById('alo-marca').value.trim();
   const medida = document.getElementById('alo-medida').value.trim();

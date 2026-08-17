@@ -65,6 +65,10 @@
     <line x1="3" y1="12" x2="21" y2="12"/>
     <line x1="3" y1="18" x2="21" y2="18"/>
   </symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </symbol>
   <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="23 4 23 10 17 10"/>
     <polyline points="1 20 1 14 7 14"/>
@@ -860,8 +864,10 @@
       </div>
       <!-- APLICAR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS -->
       <div class="card" style="margin-bottom:14px">
-        <div class="ct">Aplicar preço de fatura antiga</div>
-        <p style="font-size:11.5px;color:var(--text3);margin-bottom:12px">Tens uma fatura em papel (ex: 10 pneus Michelin 385/55, 2025-01, de um fornecedor)? Procura os pneus que foram montados nessas condições e aplica o preço a todos de uma vez.</p>
+        <div class="alo-searchbar">
+          <svg viewBox="0 0 24 24"><use href="#icon-search"/></svg>
+          <span>Procurar pneus montados para aplicar preço de uma fatura antiga</span>
+        </div>
         <div class="g3">
           <div class="frow"><label>Marca</label><select id="alo-marca" data-fancy><option value="">— todas —</option></select></div>
           <div class="frow"><label>Medida</label><input type="text" id="alo-medida" placeholder="ex: 385/55"></div>
@@ -869,9 +875,12 @@
         </div>
         <div class="g2">
           <div class="frow"><label>Mês de montagem (de)</label><input type="text" id="alo-mes-de" placeholder="ex: 2025-01" maxlength="7"></div>
-          <div class="frow"><label>Mês de montagem (até, opcional)</label><input type="text" id="alo-mes-ate" placeholder="ex: 2025-03" maxlength="7"></div>
+          <div class="frow"><label>Mês de montagem (até)</label><input type="text" id="alo-mes-ate" placeholder="ex: 2025-03" maxlength="7"></div>
         </div>
-        <button class="btn btn-p" onclick="procurarPneusAlocar()"><svg viewBox="0 0 24 24"><use href="#icon-tag"/></svg> Procurar</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-p" onclick="procurarPneusAlocar()"><svg viewBox="0 0 24 24"><use href="#icon-search"/></svg> Procurar</button>
+          <button class="btn btn-sm btn-icon" onclick="cancelarAlocacao()" title="Cancelar pesquisa"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
+        </div>
         <div id="alo-feedback" class="feedback hidden"></div>
         <div id="alo-resultados" style="margin-top:12px"></div>
       </div>
