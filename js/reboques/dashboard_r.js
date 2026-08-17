@@ -60,6 +60,12 @@ async function loadDashboardReboques() {
   document.getElementById('rleg-forn').innerHTML = makeLegend(fKeys, COLORS);
   mkChart('rc-forn', 'doughnut', fKeys, fKeys.map(k => forns[k]), COLORS.slice(0, fKeys.length));
 
+  // ── Gráfico marca (só pneus ativos) ──
+  const marcs = countBy(activos.filter(r => r.marca), 'marca');
+  const mKeys = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
+  document.getElementById('rleg-marc').innerHTML = makeLegend(mKeys, COLORS);
+  mkChart('rc-marc', 'doughnut', mKeys, mKeys.map(k => marcs[k]), COLORS.slice(0, mKeys.length));
+
   // ── Gráfico evolução mensal (linha) ──
   renderGraficoMensalReboques(data);
 
@@ -83,23 +89,6 @@ function renderDuracaoPorEixo(data) {
 
   const keys = ['Eixo 1', 'Eixo 2', 'Eixo 3', ...Object.keys(agg).filter(k => !['Eixo 1', 'Eixo 2', 'Eixo 3'].includes(k))]
     .filter(k => agg[k]);
-
-  const tbody = document.getElementById('duracao-eixo-tbody');
-  if (tbody) {
-    if (keys.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="empty-msg" style="text-align:center;padding:12px">Sem desmontagens registadas ainda.</td></tr>';
-    } else {
-      tbody.innerHTML = keys.map(k => {
-        const arr = agg[k];
-        const med = Math.round(arr.reduce((s, v) => s + v, 0) / arr.length);
-        return `<tr>
-          <td>${k}</td>
-          <td style="text-align:right">${med} meses</td>
-          <td style="text-align:center">${arr.length}</td>
-        </tr>`;
-      }).join('');
-    }
-  }
 
   if (keys.length > 0) {
     const vals = keys.map(k => Math.round(agg[k].reduce((s, v) => s + v, 0) / agg[k].length));

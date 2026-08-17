@@ -421,6 +421,14 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 input[type="number"] { -moz-appearance: textfield; }
+/* Exceção: o campo de quantidade no registo de pneus mantém as setas —
+   aqui incrementar/decrementar é o uso principal do campo. */
+input[type="number"].qty-spin { -moz-appearance: number-input; }
+input[type="number"].qty-spin::-webkit-inner-spin-button,
+input[type="number"].qty-spin::-webkit-outer-spin-button {
+  -webkit-appearance: auto;
+  margin: 0 0 0 2px;
+}
 
 /* Scrollbar fina e discreta em vez da barra grossa por omissão do SO,
    em qualquer superfície com scroll (painéis, tabelas, listas). */
