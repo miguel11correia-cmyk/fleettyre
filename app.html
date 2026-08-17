@@ -858,6 +858,24 @@
         <div class="kpi amber"><div class="kpi-l">Valor em stock (€)</div><div class="kpi-v amber" id="sk-valor">—</div><div class="kpi-s">só faturas com preço</div></div>
         <div class="kpi"><div class="kpi-l">Aguardam oficina</div><div class="kpi-v" id="sk-desmont">—</div><div class="kpi-s">Remix / Rechapar / Abrir Piso / Stock</div></div>
       </div>
+      <!-- APLICAR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">Aplicar preço de fatura antiga</div>
+        <p style="font-size:11.5px;color:var(--text3);margin-bottom:12px">Tens uma fatura em papel (ex: 10 pneus Michelin 385/55, 2025-01, de um fornecedor)? Procura os pneus que foram montados nessas condições e aplica o preço a todos de uma vez.</p>
+        <div class="g3">
+          <div class="frow"><label>Marca</label><select id="alo-marca" data-fancy><option value="">— todas —</option></select></div>
+          <div class="frow"><label>Medida</label><input type="text" id="alo-medida" placeholder="ex: 385/55"></div>
+          <div class="frow"><label>Fornecedor</label><select id="alo-forn" data-fancy><option value="">— todos —</option></select></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Mês de montagem (de)</label><input type="text" id="alo-mes-de" placeholder="ex: 2025-01" maxlength="7"></div>
+          <div class="frow"><label>Mês de montagem (até, opcional)</label><input type="text" id="alo-mes-ate" placeholder="ex: 2025-03" maxlength="7"></div>
+        </div>
+        <button class="btn btn-p" onclick="procurarPneusAlocar()"><svg viewBox="0 0 24 24"><use href="#icon-tag"/></svg> Procurar</button>
+        <div id="alo-feedback" class="feedback hidden"></div>
+        <div id="alo-resultados" style="margin-top:12px"></div>
+      </div>
+
       <!-- PNEUS DESMONTADOS EM ARMAZÉM -->
       <div class="card" style="margin-bottom:14px">
         <div class="ct">🔧 Pneus desmontados em armazém — Remix / Rechapar / Abrir Piso / Stock</div>
@@ -1261,18 +1279,6 @@
       <div class="card">
         <div class="ct" id="alertas-r-lista-titulo">🔴 Reboques com pneus críticos</div>
         <div id="alertas-r-lista"><p class="empty-msg">A carregar...</p></div>
-      </div>
-      <div class="card">
-        <div onclick="toggleTabelaAlertasR()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer">
-          <div class="ct" style="margin:0">Todos os pneus ativos (tabela completa)</div>
-          <span style="font-size:11px;color:var(--text3)" id="tabela-alertas-r-toggle">▸ Expandir</span>
-        </div>
-        <div class="table-wrap hidden" id="tabela-alertas-r-wrap" style="margin-top:8px">
-          <table>
-            <thead><tr><th>Matrícula</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Mês mont.</th><th>Meses ativo</th><th>Limite</th></tr></thead>
-            <tbody id="r-alertas-tbody"></tbody>
-          </table>
-        </div>
       </div>
       <div class="card">
         <div class="ct">📁 Histórico de durações</div>

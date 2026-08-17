@@ -17,19 +17,21 @@ async function carregarListasFornMarca() {
 
 function preencherSelectores() {
   // Selectores de veículos e da fatura de stock
-  ['r-forn', 'rr-forn', 'f-forn', 'e-forn', 're-forn'].forEach(id => {
+  ['r-forn', 'rr-forn', 'f-forn', 'e-forn', 're-forn', 'alo-forn'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    el.innerHTML = '<option value="">— selecionar —</option>' +
+    const placeholder = id === 'alo-forn' ? '— todos —' : '— selecionar —';
+    el.innerHTML = `<option value="">${placeholder}</option>` +
       listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} — ${f.nome}</option>`).join('');
   });
 
-  ['r-marca', 'rr-marca', 'e-marca', 're-marca'].forEach(id => {
+  ['r-marca', 'rr-marca', 'e-marca', 're-marca', 'alo-marca'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    el.innerHTML = '<option value="">— selecionar —</option>' +
+    const placeholder = id === 'alo-marca' ? '— todas —' : '— selecionar —';
+    el.innerHTML = `<option value="">${placeholder}</option>` +
       listaMarcas.map(m => `<option value="${m.nome}" ${m.nome === val ? 'selected' : ''}>${m.codigo} — ${m.nome}</option>`).join('');
   });
 }

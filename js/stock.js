@@ -380,6 +380,125 @@ async function abrirSelStock() {
   document.getElementById('stock-overlay').style.display = 'block';
 }
 
+// ── APLICAR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS ──────────────
+// Fluxo: o utilizador tem uma fatura em papel (marca/medida/fornecedor/
+// mês) sem veículo associado, porque foi comprada avulso. Em vez de
+// procurar manualmente em "Por matrícula" pneu a pneu, pesquisa aqui
+// os registos de montagem que batem com essas condições e aplica o
+// preço da fatura a todos os selecionados de uma só vez.
+
+let alocResultados = [];
+let alocSelecionados = new Set();
+
+async function procurarPneusAlocar() {
+  const marca  = document.getElementById('alo-marca').value.trim();
+  const medida = document.getElementById('alo-medida').value.trim();
+  const forn   = document.getElementById('alo-forn').value.trim();
+  const mesDe  = document.getElementById('alo-mes-de').value.trim();
+  const mesAte = document.getElementById('alo-mes-ate').value.trim();
+
+  if (!marca && !medida && !forn && !mesDe) {
+    showFeedback('alo-feedback', 'Preenche pelo menos um critério de pesquisa.', true);
+    return;
+  }
+  if (mesDe && !/^\d{4}-\d{2}$/.test(mesDe)) {
+    showFeedback('alo-feedback', 'Mês (de) inválido. Usa o formato AAAA-MM.', true);
+    return;
+  }
+  if (mesAte && !/^\d{4}-\d{2}$/.test(mesAte)) {
+    showFeedback('alo-feedback', 'Mês (até) inválido. Usa o formato AAAA-MM.', true);
+    return;
+  }
+
+  const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
+  let query = sb.from(tabela).select('*');
+  if (marca)  query = query.ilike('marca', marca);
+  if (medida) query = query.ilike('medida', '%' + medida + '%');
+  if (forn)   query = query.ilike('fornecedor', forn);
+  if (mesDe)  query = query.gte('mes_mont', mesDe);
+  query = query.lte('mes_mont', mesAte || mesDe || '9999-12');
+
+  loading(true);
+  const { data, error } = await query.order('mes_mont', { ascending: false }).limit(300);
+  loading(false);
+
+  if (error) { showFeedback('alo-feedback', 'Erro na pesquisa.', true); return; }
+
+  alocResultados = data || [];
+  alocSelecionados = new Set();
+  renderAlocResultados();
+}
+
+function renderAlocResultados() {
+  const container = document.getElementById('alo-resultados');
+  if (alocResultados.length === 0) {
+    container.innerHTML = '<p class="empty-msg">Nenhum pneu montado corresponde a estes critérios.</p>';
+    return;
+  }
+
+  const count = alocSelecionados.size;
+  let html = '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ' — seleciona os que correspondem à fatura</div>';
+  html += '<div class="alo-list">';
+  alocResultados.forEach(r => {
+    const sel = alocSelecionados.has(r.id);
+    const pos = r.posicao || (r.eixo ? 'Eixo ' + r.eixo : '—');
+    const custoTxt = r.custo_pneu > 0
+      ? '<span class="alo-custo alo-custo-atual">' + fmtEur(r.custo_pneu) + '</span>'
+      : '<span class="alo-custo alo-custo-vazio">sem custo</span>';
+    html += '<div class="alo-row' + (sel ? ' selected' : '') + '" data-id="' + r.id + '" onclick="toggleAlocSel(' + r.id + ')">'
+      + '<span class="alo-check"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></span>'
+      + '<span class="alo-info"><strong>' + r.matricula + '</strong> · ' + pos + ' · ' + (r.marca || '—') + ' ' + (r.medida || '') + ' · ' + tipoBadge(r.tipo) + ' · ' + (r.mes_mont || '—') + (r.fornecedor ? ' · ' + r.fornecedor : '') + '</span>'
+      + custoTxt
+      + '</div>';
+  });
+  html += '</div>';
+  html += '<div class="alo-apply">'
+    + '<div class="frow" style="margin:0"><label>Preço unitário do pneu (€)</label><input type="number" id="alo-preco" min="0" step="0.01" placeholder="ex: 320"></div>'
+    + '<div class="frow" style="margin:0"><label>Custo mão de obra (€, opcional)</label><input type="number" id="alo-mo" min="0" step="0.01" placeholder="ex: 15"></div>'
+    + '<button class="btn btn-p" id="alo-btn-aplicar" onclick="aplicarPrecoAosSelecionados()"' + (count === 0 ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg> Aplicar a <span id="alo-count">' + count + '</span> selecionados</button>'
+    + '</div>';
+  container.innerHTML = html;
+}
+
+function toggleAlocSel(id) {
+  const row = document.querySelector('.alo-row[data-id="' + id + '"]');
+  if (alocSelecionados.has(id)) { alocSelecionados.delete(id); row.classList.remove('selected'); }
+  else { alocSelecionados.add(id); row.classList.add('selected'); }
+  const count = alocSelecionados.size;
+  document.getElementById('alo-count').textContent = count;
+  document.getElementById('alo-btn-aplicar').disabled = count === 0;
+}
+
+async function aplicarPrecoAosSelecionados() {
+  const preco = parseFloat(document.getElementById('alo-preco').value);
+  const mo = parseFloat(document.getElementById('alo-mo').value) || 0;
+
+  if (!Number.isFinite(preco) || preco <= 0) {
+    showFeedback('alo-feedback', 'Indica um preço unitário válido.', true);
+    return;
+  }
+  if (alocSelecionados.size === 0) return;
+
+  const ids = Array.from(alocSelecionados);
+  const aviso = 'Aplicar ' + fmtEur(preco) + (mo > 0 ? ' + ' + fmtEur(mo) + ' de mão de obra' : '') + ' a ' + ids.length + ' pneu' + (ids.length === 1 ? '' : 's') + '? Isto substitui o custo atual, se já existir algum.';
+  if (!confirm(aviso)) return;
+
+  const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
+  const updates = { custo_pneu: preco };
+  if (mo > 0) updates.custo_mo = mo;
+
+  loading(true);
+  const { error } = await sb.from(tabela).update(updates).in('id', ids);
+  loading(false);
+
+  if (error) { showFeedback('alo-feedback', 'Erro ao aplicar o preço.', true); return; }
+
+  alocResultados.forEach(r => { if (alocSelecionados.has(r.id)) { r.custo_pneu = preco; if (mo > 0) r.custo_mo = mo; } });
+  alocSelecionados = new Set();
+  showFeedback('alo-feedback', 'Preço aplicado a ' + ids.length + ' pneu' + (ids.length === 1 ? '' : 's') + '.');
+  renderAlocResultados();
+}
+
 function fecharSelStock() {
   document.getElementById('painel-stock-sel').style.display = 'none';
   document.getElementById('stock-overlay').style.display = 'none';

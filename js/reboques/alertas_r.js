@@ -72,23 +72,6 @@ async function loadAlertasReboques() {
 
   renderAlertasRVeiculos();
 
-  // ── Tabela completa pneus ativos ──
-  const tbody = document.getElementById('r-alertas-tbody');
-  if (tbody) {
-    tbody.innerHTML = comMeses.map(r => {
-      const cls = 'badge ' + ALERTASR_NIVEL_INFO[r.nivel].badgeCls;
-      return `<tr>
-        <td>${r.matricula}</td>
-        <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
-        <td>${r.marca || '—'}</td>
-        <td>${tipoBadge(r.tipo)}</td>
-        <td>${r.mes_mont}</td>
-        <td><span class="${cls}">${r.mesesActivo} meses</span></td>
-        <td>${r.lim.aviso}m / ${r.lim.critico}m</td>
-      </tr>`;
-    }).join('');
-  }
-
   // ── Histórico de duração ──
   const comHist = data.filter(r => r.mes_desmont && r.mes_mont);
   const tbodyH  = document.getElementById('r-hist-tbody');
@@ -163,11 +146,4 @@ async function irParaReboque(mat) {
   await initFrotaSelectReboques();
   const sel = document.getElementById('sel-mat-r');
   if (sel) { sel.value = mat; await loadFrotaReboques(); }
-}
-
-function toggleTabelaAlertasR() {
-  const wrap  = document.getElementById('tabela-alertas-r-wrap');
-  const label = document.getElementById('tabela-alertas-r-toggle');
-  wrap.classList.toggle('hidden');
-  label.textContent = wrap.classList.contains('hidden') ? '▸ Expandir' : '▾ Recolher';
 }
