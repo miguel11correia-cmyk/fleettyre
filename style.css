@@ -850,6 +850,36 @@ tbody tr:hover td { background: var(--bg); }
   margin-bottom: 14px;
 }
 .alo-searchbar svg { width: 15px; height: 15px; flex-shrink: 0; }
+/* Um único campo visual para o intervalo de meses — dois inputs sem
+   borda própria dentro de um invólucro comum, para não parecerem
+   dois campos separados. */
+.alo-daterange {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text3);
+  transition: border-color .15s, box-shadow .15s;
+}
+.alo-daterange:focus-within {
+  border-color: #71717a;
+  box-shadow: 0 0 0 3px rgba(113,113,122,0.10);
+}
+.alo-daterange svg { width: 15px; height: 15px; flex-shrink: 0; }
+.alo-daterange input {
+  border: none;
+  padding: 0;
+  height: auto;
+  width: 68px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.alo-daterange input:focus { outline: none; box-shadow: none; border-color: transparent; }
+.alo-daterange-sep { font-size: 11px; flex-shrink: 0; }
 .alo-summary { font-size: 11.5px; color: var(--text2); margin-bottom: 8px; }
 .alo-list {
   display: flex;
