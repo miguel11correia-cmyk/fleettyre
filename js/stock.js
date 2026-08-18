@@ -408,7 +408,7 @@ async function procurarPneusAlocar() {
   const mesDe  = document.getElementById('alo-mes-de').value.trim();
   const mesAte = document.getElementById('alo-mes-ate').value.trim();
 
-  if (!marca && !medida && !forn && !mesDe) {
+  if (!marca && !medida && !forn && !mesDe && !mesAte) {
     showFeedback('alo-feedback', 'Preenche pelo menos um critério de pesquisa.', true);
     return;
   }
@@ -426,8 +426,13 @@ async function procurarPneusAlocar() {
   if (marca)  query = query.ilike('marca', marca);
   if (medida) query = query.ilike('medida', '%' + medida + '%');
   if (forn)   query = query.ilike('fornecedor', forn);
-  if (mesDe)  query = query.gte('mes_mont', mesDe);
-  query = query.lte('mes_mont', mesAte || mesDe || '9999-12');
+  // Intervalo inclusivo [de, até]. Sem "até", vai até ao mês atual em
+  // vez de ficar preso ao mês "de" (era esse o bug: sem data final,
+  // aplicava-se gte(de) E lte(de), o que só devolvia esse mês exato).
+  if (mesDe || mesAte) {
+    query = query.gte('mes_mont', mesDe || '0000-01');
+    query = query.lte('mes_mont', mesAte || mesAtual());
+  }
 
   loading(true);
   const { data, error } = await query.order('mes_mont', { ascending: false }).limit(300);
