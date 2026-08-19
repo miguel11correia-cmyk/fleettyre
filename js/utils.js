@@ -70,6 +70,18 @@ function kmsEfectuados(r, kmAtualVeiculo) {
   return null;
 }
 
+// Ao selecionar a matrícula num formulário de montagem, sugere o KM
+// atual do veículo (Cartrack ou o último KM conhecido) no campo de
+// KMs, só se este ainda estiver vazio — nunca substitui o que o
+// utilizador já tenha escrito.
+function autoPreencherKms(matSelectId, kmsInputId) {
+  const selMat = document.getElementById(matSelectId);
+  const inpKms = document.getElementById(kmsInputId);
+  if (!selMat || !inpKms || inpKms.value) return;
+  const veiculo = (listaVeiculos || []).find(v => v.matricula === selMat.value);
+  if (veiculo && veiculo.km_atual != null) inpKms.value = veiculo.km_atual;
+}
+
 function mesesEntre(mesInicio, mesFim) {
   if (!mesInicio || !mesFim) return 0;
   const [aI, mI] = mesInicio.split('-').map(Number);
