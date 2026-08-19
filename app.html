@@ -369,7 +369,7 @@
         <div class="ct">Veículo</div>
         <div class="g2">
           <div class="frow"><label>Matrícula do camião *</label>
-            <select id="r-mat" data-fancy onchange="atualizarCategoriasPosicao('r-mat','r-pos',listaVeiculos,SLOTS_VEICULO)"><option value="">— selecionar —</option></select>
+            <select id="r-mat" data-fancy onchange="atualizarCategoriasPosicao('r-mat','r-pos',listaVeiculos,SLOTS_VEICULO); autoPreencherKms('r-mat','r-kms')"><option value="">— selecionar —</option></select>
           </div>
           <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="r-mes" placeholder="ex: 2026-07" maxlength="7"></div>
         </div>

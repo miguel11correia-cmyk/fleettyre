@@ -227,6 +227,13 @@ async function abrirPainel(id) {
   ['d-mes','d-kms','d-esc','d-mo'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('d-dest').value = 'Remix';
   document.getElementById('d-feedback').classList.add('hidden');
+
+  // Sugerir o KM atual do veículo (se for maior que o KM de montagem — não faz sentido sugerir um valor mais baixo)
+  const veiculo = (listaVeiculos || []).find(v => v.matricula === data.matricula);
+  if (veiculo && veiculo.km_atual != null && veiculo.km_atual > data.kms_mont) {
+    document.getElementById('d-kms').value = veiculo.km_atual;
+  }
+
   document.getElementById('painel').classList.add('open');
 }
 
