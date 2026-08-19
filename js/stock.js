@@ -90,6 +90,7 @@ async function loadStock() {
     html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:10px">';
     html += '<span style="font-size:12px;font-weight:500;color:var(--amber)">' + fmtEur(totalFat) + ' em stock</span>';
+    html += pdfAnexoBtnHtml('stock_faturas', fId, f.pdf_path, 'loadStock');
     html += '<button class="btn btn-sm btn-danger" onclick="apagarFatura(' + fId + ')"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg> Apagar</button>';
     html += '</div></div>';
     if (f.notas) html += '<p style="font-size:11px;color:var(--text3);margin-bottom:10px;font-style:italic">' + f.notas + '</p>';
@@ -132,6 +133,7 @@ function renderStockDesmontados(pneus, tabela) {
         + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:22px;font-size:10px;padding:0 4px;margin:0 4px 0 0;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle">'
         + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:22px;padding:0 8px;font-size:10px"><svg viewBox="0 0 24 24" style="width:11px;height:11px"><use href="#icon-check"/></svg> Marcar pronto</button>';
     }
+    estadoHtml += ' ' + pdfAnexoBtnHtml(tabela, r.id, r.pdf_path, 'loadStock', 'width:22px;height:22px;vertical-align:middle');
 
     html += '<tr>'
       + '<td><strong>' + r.matricula + '</strong></td>'
