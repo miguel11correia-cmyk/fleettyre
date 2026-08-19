@@ -109,6 +109,7 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
       <button class="btn btn-s" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
       <button class="btn btn-sm btn-icon" onclick="abrirEdicao(${r.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
+      ${pdfAnexoBtnHtml('pneus', r.id, r.pdf_path, 'loadFrota')}
       <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
     </div>`;
   return `<tr>
@@ -141,6 +142,7 @@ function linhaHistorico(r, kmAtual) {
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
       ${!r.mes_desmont ? `<button class="btn btn-s" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>` : '<span style="color:var(--text3)" title="Desmontado"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#icon-check"/></svg></span>'}
       <button class="btn btn-sm btn-icon" onclick="abrirEdicao(${r.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
+      ${pdfAnexoBtnHtml('pneus', r.id, r.pdf_path, 'loadFrota')}
       <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
     </div>`;
   return `<tr>
