@@ -72,14 +72,28 @@ function kmsEfectuados(r, kmAtualVeiculo) {
 
 // Ao selecionar a matrícula num formulário de montagem, sugere o KM
 // atual do veículo (Cartrack ou o último KM conhecido) no campo de
-// KMs, só se este ainda estiver vazio — nunca substitui o que o
-// utilizador já tenha escrito.
+// KMs. Ao trocar de matrícula o valor sugerido atualiza-se — mas
+// assim que o utilizador escreve algo à mão no campo, deixa de ser
+// substituído (marcado via data-auto, limpo no primeiro input manual).
 function autoPreencherKms(matSelectId, kmsInputId) {
   const selMat = document.getElementById(matSelectId);
   const inpKms = document.getElementById(kmsInputId);
-  if (!selMat || !inpKms || inpKms.value) return;
+  if (!selMat || !inpKms) return;
+  if (inpKms.value && inpKms.dataset.auto !== '1') return;
+
+  if (!inpKms.dataset.autoBind) {
+    inpKms.dataset.autoBind = '1';
+    inpKms.addEventListener('input', () => { delete inpKms.dataset.auto; });
+  }
+
   const veiculo = (listaVeiculos || []).find(v => v.matricula === selMat.value);
-  if (veiculo && veiculo.km_atual != null) inpKms.value = veiculo.km_atual;
+  if (veiculo && veiculo.km_atual != null) {
+    inpKms.value = veiculo.km_atual;
+    inpKms.dataset.auto = '1';
+  } else {
+    inpKms.value = '';
+    delete inpKms.dataset.auto;
+  }
 }
 
 function mesesEntre(mesInicio, mesFim) {
