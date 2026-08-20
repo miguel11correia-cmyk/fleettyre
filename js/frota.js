@@ -2,6 +2,14 @@
 
 const ICON_VEICULO = '<svg viewBox="0 0 512.001 512.001" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><use href="#icon-truck"/></svg>';
 
+let frotaHistoricoExpandido = false;
+
+function toggleFrotaHistorico() {
+  frotaHistoricoExpandido = !frotaHistoricoExpandido;
+  document.getElementById('frota-historico-wrap').classList.toggle('hidden', !frotaHistoricoExpandido);
+  document.getElementById('frota-historico-seta').textContent = frotaHistoricoExpandido ? '▾ Recolher' : '▸ Expandir';
+}
+
 async function initFrotaSelect() {
   loading(true);
   const { data, error } = await sb
@@ -64,7 +72,7 @@ async function loadFrota() {
   const activosArr    = data.filter(r => !r.mes_desmont);
   const historicoArr  = data.filter(r => r.mes_desmont);
   const lugaresCard   = document.getElementById('frota-lugares-card');
-  const historicoCt   = document.getElementById('frota-historico-ct');
+  const historicoCt   = document.getElementById('frota-historico-label');
 
   if (slots) {
     lugaresCard.classList.remove('hidden');

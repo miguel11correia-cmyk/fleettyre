@@ -4,6 +4,13 @@ const ICON_REBOQUE = '<svg viewBox="0 0 15 15" width="14" height="14" style="ver
 
 let painelRId = null;
 let editRId   = null;
+let rfrotaHistoricoExpandido = false;
+
+function toggleRfrotaHistorico() {
+  rfrotaHistoricoExpandido = !rfrotaHistoricoExpandido;
+  document.getElementById('rfrota-historico-wrap').classList.toggle('hidden', !rfrotaHistoricoExpandido);
+  document.getElementById('rfrota-historico-seta').textContent = rfrotaHistoricoExpandido ? '▾ Recolher' : '▸ Expandir';
+}
 
 async function initFrotaSelectReboques() {
   loading(true);
@@ -59,7 +66,7 @@ async function loadFrotaReboques() {
   const activosArr    = data.filter(r => !r.mes_desmont);
   const historicoArr  = data.filter(r => r.mes_desmont);
   const lugaresCard   = document.getElementById('rfrota-lugares-card');
-  const historicoCt   = document.getElementById('rfrota-historico-ct');
+  const historicoCt   = document.getElementById('rfrota-historico-label');
 
   if (slots) {
     lugaresCard.classList.remove('hidden');
