@@ -90,6 +90,46 @@ function mostrarApp() {
   loadDashboard();
 }
 
+// ── MUDAR PASSWORD ────────────────────────────────────────────────
+
+function abrirPainelPassword() {
+  document.getElementById('pw-nova').value = '';
+  document.getElementById('pw-confirmar').value = '';
+  document.getElementById('pw-feedback').classList.add('hidden');
+  document.getElementById('painel-password').classList.add('open');
+}
+
+function fecharPainelPassword() {
+  document.getElementById('painel-password').classList.remove('open');
+}
+
+async function guardarNovaPassword() {
+  const nova      = document.getElementById('pw-nova').value;
+  const confirmar = document.getElementById('pw-confirmar').value;
+
+  if (!nova || nova.length < 6) {
+    showFeedback('pw-feedback', 'A password tem de ter pelo menos 6 caracteres.', true);
+    return;
+  }
+  if (nova !== confirmar) {
+    showFeedback('pw-feedback', 'As passwords não coincidem.', true);
+    return;
+  }
+
+  loading(true);
+  const { error } = await sb.auth.updateUser({ password: nova });
+  loading(false);
+
+  if (error) {
+    showFeedback('pw-feedback', 'Erro: ' + error.message, true);
+    return;
+  }
+  showFeedback('pw-feedback', 'Password alterada com sucesso.');
+  document.getElementById('pw-nova').value = '';
+  document.getElementById('pw-confirmar').value = '';
+  setTimeout(fecharPainelPassword, 1200);
+}
+
 // Verificar sessão ao carregar
 window.addEventListener('load', async () => {
   const { data } = await sb.auth.getSession();

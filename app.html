@@ -283,12 +283,24 @@
         </div>
       </div>
     </div>
-    <div class="sidebar-footer">
+    <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn-logout" onclick="abrirPainelPassword()">🔒 Mudar password</button>
       <button class="btn-logout" onclick="logout()">Sair</button>
     </div>
   </nav>
   <div class="sidebar-scrim" onclick="toggleMobileSidebar(false)"></div>
   <input type="file" id="pdf-anexo-input" accept="application/pdf" class="hidden" onchange="onPdfAnexoSelecionado(event)">
+
+  <!-- PAINEL MUDAR PASSWORD -->
+  <div class="panel" id="painel-password">
+    <div class="panel-head"><span>Mudar password</span><button class="btn-close" onclick="fecharPainelPassword()">✕</button></div>
+    <div class="panel-body">
+      <div class="frow"><label>Nova password</label><input type="password" id="pw-nova" autocomplete="new-password"></div>
+      <div class="frow"><label>Confirmar nova password</label><input type="password" id="pw-confirmar" autocomplete="new-password"></div>
+      <button class="btn btn-p w100" onclick="guardarNovaPassword()" style="margin-top:12px">🔒 Guardar nova password</button>
+      <div id="pw-feedback" class="feedback hidden"></div>
+    </div>
+  </div>
 
   <main class="main">
     <div class="mobile-topbar">
