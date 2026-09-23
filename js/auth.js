@@ -130,8 +130,82 @@ async function guardarNovaPassword() {
   setTimeout(fecharPainelPassword, 1200);
 }
 
+// ── ESQUECI-ME DA PASSWORD ───────────────────────────────────────
+
+function mostrarRecuperarPassword() {
+  document.getElementById('login-step-cred').classList.add('hidden');
+  document.getElementById('login-step-recuperar').classList.remove('hidden');
+  document.getElementById('lr-email').value = document.getElementById('l-email').value;
+  const err = document.getElementById('l-err');
+  err.style.color = '';
+  err.textContent = '';
+}
+
+function voltarLogin() {
+  document.getElementById('login-step-recuperar').classList.add('hidden');
+  document.getElementById('login-step-nova-password').classList.add('hidden');
+  document.getElementById('login-step-cred').classList.remove('hidden');
+  const err = document.getElementById('l-err');
+  err.style.color = '';
+  err.textContent = '';
+}
+
+async function enviarLinkRecuperacao() {
+  const email = document.getElementById('lr-email').value.trim();
+  const err   = document.getElementById('l-err');
+  err.style.color = '';
+
+  if (!email) { err.textContent = 'Preencha o email.'; return; }
+
+  loading(true);
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://fleet-tyre.com/app.html'
+  });
+  loading(false);
+
+  if (error) { err.textContent = 'Erro: ' + error.message; return; }
+  err.style.color = 'var(--green)';
+  err.textContent = 'Se esse email existir, foi enviado um link de recuperação.';
+}
+
+async function guardarPasswordRecuperada() {
+  const nova      = document.getElementById('lnp-nova').value;
+  const confirmar = document.getElementById('lnp-confirmar').value;
+  const err       = document.getElementById('l-err');
+  err.style.color = '';
+
+  if (!nova || nova.length < 6) { err.textContent = 'A password tem de ter pelo menos 6 caracteres.'; return; }
+  if (nova !== confirmar) { err.textContent = 'As passwords não coincidem.'; return; }
+
+  loading(true);
+  const { error } = await sb.auth.updateUser({ password: nova });
+  loading(false);
+
+  if (error) { err.textContent = 'Erro: ' + error.message; return; }
+
+  document.getElementById('login-step-nova-password').classList.add('hidden');
+  await prosseguirAposAutenticacao();
+}
+
+// Link de recuperação: o Supabase cria uma sessão temporária e dispara este
+// evento em vez de um login normal — mostra o formulário de nova password
+// em vez de avançar logo para a app.
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    currentUser = session.user;
+    document.getElementById('login-step-cred').classList.add('hidden');
+    document.getElementById('login-step-empresa').classList.add('hidden');
+    document.getElementById('login-step-recuperar').classList.add('hidden');
+    document.getElementById('login-step-nova-password').classList.remove('hidden');
+    document.getElementById('l-err').textContent = '';
+  }
+});
+
 // Verificar sessão ao carregar
 window.addEventListener('load', async () => {
+  // Link de recuperação — deixa o evento PASSWORD_RECOVERY acima tratar disto.
+  if (window.location.hash.includes('type=recovery')) return;
+
   const { data } = await sb.auth.getSession();
   if (data.session) {
     currentUser = data.session.user;
