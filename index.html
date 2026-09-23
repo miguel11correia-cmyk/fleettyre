@@ -169,9 +169,20 @@
     border: 0.5px solid var(--border); border-radius: 20px; padding: 8px 16px;
   }
 
+  html { scroll-behavior: smooth; }
+
   .lp-cta { text-align: center; padding: 64px 24px; }
   .lp-cta h2 { font-size: 26px; font-weight: 500; margin-bottom: 10px; }
   .lp-cta p { color: var(--text2); margin-bottom: 24px; }
+  .lp-contact-form { max-width: 420px; margin: 0 auto; text-align: left; }
+  .lp-contact-form textarea {
+    width: 100%; padding: 10px; border: 0.5px solid var(--border2); border-radius: var(--radius);
+    background: var(--surface); color: var(--text); font-size: 12px; font-family: inherit; resize: vertical;
+  }
+  .lp-contact-form textarea:focus { outline: none; border-color: #71717a; box-shadow: 0 0 0 3px rgba(113,113,122,0.10); }
+  .lp-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .lp-contact-feedback.success { color: var(--green); }
+  .lp-contact-feedback.error   { color: var(--red); }
 
   .lp-footer {
     display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
@@ -204,7 +215,7 @@
   </a>
   <div class="lp-header-actions">
     <a class="link" href="app.html">Entrar</a>
-    <a class="btn" href="mailto:miguel.dscorreia@outlook.pt?subject=Contacto%20FleetTyre">Contactar</a>
+    <a class="btn" href="#contacto">Contactar</a>
   </div>
 </header>
 
@@ -306,11 +317,19 @@
   </div>
 </section>
 
-<section class="lp-cta">
+<section class="lp-cta" id="contacto">
   <div class="wrap">
     <h2>Tem perguntas sobre a FleetTyre?</h2>
     <p>Escreva-nos para saber mais sobre a gestão de pneus de frotas pesadas com a FleetTyre.</p>
-    <a class="btn btn-brand" href="mailto:miguel.dscorreia@outlook.pt?subject=Contacto%20FleetTyre" style="padding:12px 24px;font-size:14px">Contactar</a>
+    <form class="lp-contact-form" id="contacto-form" onsubmit="return enviarContacto(event)">
+      <input type="text" name="website" id="c-website" class="lp-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="frow"><label>Nome *</label><input type="text" id="c-nome" required></div>
+      <div class="frow"><label>Empresa</label><input type="text" id="c-empresa"></div>
+      <div class="frow"><label>Email *</label><input type="email" id="c-email" required></div>
+      <div class="frow"><label>Mensagem *</label><textarea id="c-mensagem" rows="4" required></textarea></div>
+      <button type="submit" class="btn btn-brand w100" id="c-submit" style="padding:12px 24px;font-size:14px">Enviar mensagem</button>
+      <p id="c-feedback" class="lp-contact-feedback" style="margin-top:12px;font-size:13px;text-align:center"></p>
+    </form>
   </div>
 </section>
 
@@ -345,6 +364,51 @@
 
   setInterval(function () { irPara((i + 1) % slides.length); }, 5000);
 })();
+
+async function enviarContacto(event) {
+  event.preventDefault();
+
+  var btn      = document.getElementById('c-submit');
+  var feedback = document.getElementById('c-feedback');
+  feedback.className = 'lp-contact-feedback';
+  feedback.textContent = '';
+
+  var dados = {
+    nome:     document.getElementById('c-nome').value.trim(),
+    empresa:  document.getElementById('c-empresa').value.trim(),
+    email:    document.getElementById('c-email').value.trim(),
+    mensagem: document.getElementById('c-mensagem').value.trim(),
+    website:  document.getElementById('c-website').value.trim(),
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'A enviar…';
+
+  try {
+    var resp = await fetch('/api/contacto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    });
+    var resultado = await resp.json();
+
+    if (resultado.ok) {
+      feedback.className = 'lp-contact-feedback success';
+      feedback.textContent = 'Mensagem enviada! Entraremos em contacto brevemente.';
+      document.getElementById('contacto-form').reset();
+    } else {
+      feedback.className = 'lp-contact-feedback error';
+      feedback.textContent = resultado.erro || 'Erro ao enviar. Tenta novamente.';
+    }
+  } catch (e) {
+    feedback.className = 'lp-contact-feedback error';
+    feedback.textContent = 'Erro de ligação. Tenta novamente.';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Enviar mensagem';
+  return false;
+}
 </script>
 
 </body>
