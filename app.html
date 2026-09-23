@@ -117,12 +117,23 @@
           <div class="frow"><label>Email</label><input type="email" id="l-email" placeholder="email@empresa.pt"></div>
           <div class="frow"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
           <button class="btn btn-brand w100" onclick="login()">Entrar</button>
+          <p style="text-align:center;margin-top:10px"><a href="#" onclick="mostrarRecuperarPassword();return false" style="font-size:12px;color:var(--text3)">Esqueci-me da password</a></p>
         </div>
         <div id="login-step-empresa" class="hidden">
           <div class="frow"><label>Empresa</label>
             <select id="l-empresa" data-fancy></select>
           </div>
           <button class="btn btn-brand w100" onclick="confirmarEmpresaLogin()">Continuar</button>
+        </div>
+        <div id="login-step-recuperar" class="hidden">
+          <div class="frow"><label>Email</label><input type="email" id="lr-email" placeholder="email@empresa.pt"></div>
+          <button class="btn btn-brand w100" onclick="enviarLinkRecuperacao()">Enviar link de recuperação</button>
+          <p style="text-align:center;margin-top:10px"><a href="#" onclick="voltarLogin();return false" style="font-size:12px;color:var(--text3)">Voltar</a></p>
+        </div>
+        <div id="login-step-nova-password" class="hidden">
+          <div class="frow"><label>Nova password</label><input type="password" id="lnp-nova" placeholder="••••••••"></div>
+          <div class="frow"><label>Confirmar nova password</label><input type="password" id="lnp-confirmar" placeholder="••••••••"></div>
+          <button class="btn btn-brand w100" onclick="guardarPasswordRecuperada()">Guardar nova password</button>
         </div>
         <p id="l-err" class="err-msg"></p>
       </div>
@@ -283,12 +294,24 @@
         </div>
       </div>
     </div>
-    <div class="sidebar-footer">
+    <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn-logout" onclick="abrirPainelPassword()">🔒 Mudar password</button>
       <button class="btn-logout" onclick="logout()">Sair</button>
     </div>
   </nav>
   <div class="sidebar-scrim" onclick="toggleMobileSidebar(false)"></div>
   <input type="file" id="pdf-anexo-input" accept="application/pdf" class="hidden" onchange="onPdfAnexoSelecionado(event)">
+
+  <!-- PAINEL MUDAR PASSWORD -->
+  <div class="panel" id="painel-password">
+    <div class="panel-head"><span>Mudar password</span><button class="btn-close" onclick="fecharPainelPassword()">✕</button></div>
+    <div class="panel-body">
+      <div class="frow"><label>Nova password</label><input type="password" id="pw-nova" autocomplete="new-password"></div>
+      <div class="frow"><label>Confirmar nova password</label><input type="password" id="pw-confirmar" autocomplete="new-password"></div>
+      <button class="btn btn-p w100" onclick="guardarNovaPassword()" style="margin-top:12px">🔒 Guardar nova password</button>
+      <div id="pw-feedback" class="feedback hidden"></div>
+    </div>
+  </div>
 
   <main class="main">
     <div class="mobile-topbar">
