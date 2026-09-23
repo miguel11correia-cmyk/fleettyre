@@ -102,10 +102,16 @@ function handleContacto(req, res) {
       await enviarEmailResend({
         to: email,
         subject: 'Recebemos o teu contacto — FleetTyre',
-        html: `<h2>Obrigado pelo teu interesse na FleetTyre</h2>
-               <p>Olá ${escapeHtml(nome)},</p>
-               <p>Recebemos a tua mensagem e entraremos em contacto brevemente.</p>
-               <p>Equipa FleetTyre</p>`,
+        html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#18181b">
+                 <img src="https://fleet-tyre.com/assets/logo-horizontal.png" alt="FleetTyre" style="height:32px;display:block;margin-bottom:28px">
+                 <h2 style="font-size:19px;font-weight:500;margin:0 0 14px">Obrigado pelo teu interesse na FleetTyre</h2>
+                 <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 10px">Olá ${escapeHtml(nome)},</p>
+                 <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 24px">Recebemos a tua mensagem e entraremos em contacto brevemente.</p>
+                 <hr style="border:none;border-top:1px solid #e4e2dd;margin:0 0 20px">
+                 <p style="font-size:13px;font-weight:600;color:#18181b;margin:0">FleetTyre</p>
+                 <p style="font-size:12px;color:#71717a;margin:4px 0 0">Gestão de pneus para frotas pesadas</p>
+                 <p style="font-size:12px;margin:8px 0 0"><a href="https://fleet-tyre.com" style="color:#c0392b;text-decoration:none">fleet-tyre.com</a></p>
+               </div>`,
       });
 
       res.writeHead(200, jsonHeaders);
