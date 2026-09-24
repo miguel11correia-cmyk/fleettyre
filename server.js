@@ -103,7 +103,6 @@ function handleContacto(req, res) {
         to: email,
         subject: 'Recebemos o teu contacto — FleetTyre',
         html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#18181b">
-                 <img src="https://fleet-tyre.com/assets/logo-horizontal.png" alt="FleetTyre" style="height:32px;display:block;margin-bottom:28px">
                  <h2 style="font-size:19px;font-weight:500;margin:0 0 14px">Obrigado pelo teu interesse na FleetTyre</h2>
                  <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 10px">Olá ${escapeHtml(nome)},</p>
                  <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 28px">Recebemos a tua mensagem e entraremos em contacto brevemente.</p>
