@@ -102,6 +102,10 @@ async function renderGestaoFornecedores() {
         <label>Nome do fornecedor</label>
         <input type="text" id="novo-forn-nome" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()">
       </div>
+      <div class="frow" style="margin:0;flex:1">
+        <label>Domínio de email (opcional)</label>
+        <input type="text" id="novo-forn-dominio" placeholder="ex: fornecedor.pt">
+      </div>
       <button class="btn btn-p" onclick="adicionarFornecedor()" style="flex-shrink:0"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Adicionar</button>
     </div>
     <div onclick="toggleGestaoFornecedores()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:6px 0;border-top:0.5px solid var(--border)">
@@ -110,11 +114,12 @@ async function renderGestaoFornecedores() {
     </div>
     <div class="table-wrap${fornGestaoExpandida ? '' : ' hidden'}" style="margin-top:8px">
       <table>
-        <thead><tr><th>Código</th><th>Nome</th><th>Ação</th></tr></thead>
+        <thead><tr><th>Código</th><th>Nome</th><th>Domínio de email</th><th>Ação</th></tr></thead>
         <tbody>
           ${(data || []).map(f => `<tr>
             <td><strong>${f.codigo}</strong></td>
             <td>${f.nome}</td>
+            <td><input type="text" value="${f.dominio_email || ''}" placeholder="ex: fornecedor.pt" style="height:26px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:140px" onchange="atualizarDominioFornecedor(${f.id}, this.value)"></td>
             <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
           </tr>`).join('')}
         </tbody>
@@ -129,18 +134,24 @@ function toggleGestaoFornecedores() {
 }
 
 async function adicionarFornecedor() {
-  const cod  = document.getElementById('novo-forn-cod').value.trim();
-  const nome = document.getElementById('novo-forn-nome').value.trim().toUpperCase();
+  const cod     = document.getElementById('novo-forn-cod').value.trim();
+  const nome    = document.getElementById('novo-forn-nome').value.trim().toUpperCase();
+  const dominio = document.getElementById('novo-forn-dominio').value.trim().toLowerCase();
   if (!cod || !nome) { showFeedback('forn-gestao-feedback', 'Preencha o código e o nome.', true); return; }
 
   loading(true);
-  const { error } = await sb.from('fornecedores').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome }]);
+  const { error } = await sb.from('fornecedores').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome, dominio_email: dominio || null }]);
   loading(false);
 
   if (error) { showFeedback('forn-gestao-feedback', 'Erro: ' + error.message, true); return; }
   showFeedback('forn-gestao-feedback', 'Fornecedor adicionado.');
   await carregarListasFornMarca();
   await renderGestaoFornecedores();
+}
+
+async function atualizarDominioFornecedor(id, valor) {
+  const dominio = valor.trim().toLowerCase();
+  await sb.from('fornecedores').update({ dominio_email: dominio || null }).eq('id', id);
 }
 
 async function apagarFornecedor(id, nome) {
