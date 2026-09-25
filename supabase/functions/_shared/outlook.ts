@@ -105,7 +105,7 @@ export const outlook: AdaptadorEmail = {
     });
   },
 
-  async listarMensagensRecentes(tokens, desde): Promise<MensagemEmailCandidata[]> {
+  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<MensagemEmailCandidata[]> {
     const select = "id,internetMessageId,subject,from,receivedDateTime,hasAttachments";
     const filtro = `hasAttachments eq true and receivedDateTime ge ${paraOData(desde)}`;
     let caminho: string | null =

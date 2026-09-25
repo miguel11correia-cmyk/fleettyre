@@ -25,11 +25,13 @@ async function initEmailsFornecedores() {
   await carregarEmailsPendentes();
 }
 
+const NOME_FORNECEDOR = { outlook: 'Outlook', imap: 'IMAP' };
+
 async function carregarStatusEmail() {
   const el = document.getElementById('email-forn-status');
   el.innerHTML = '<p class="empty-msg">A carregar...</p>';
 
-  const status = await chamarFuncaoEmail('email-status?fornecedor=outlook');
+  const status = await chamarFuncaoEmail('email-status');
 
   if (status.erro) {
     el.innerHTML = `<p style="color:var(--red)">${status.erro}</p><button class="btn btn-sm" onclick="carregarStatusEmail()">Tentar novamente</button>`;
@@ -37,19 +39,35 @@ async function carregarStatusEmail() {
   }
 
   if (!status.ligado) {
-    el.innerHTML = `<button class="btn btn-brand" onclick="ligarOutlook()">Ligar Outlook</button>`;
+    el.innerHTML = `
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="btn btn-brand" onclick="ligarOutlook()">Ligar Outlook</button>
+      </div>
+      <div style="border-top:0.5px solid var(--border);padding-top:14px">
+        <p style="font-size:11px;color:var(--text2);margin-bottom:8px">Ou liga directamente por IMAP (email de alojamento normal, sem ser Microsoft 365/Google Workspace):</p>
+        <div class="g2">
+          <div class="frow"><label>Servidor IMAP</label><input type="text" id="imap-host" placeholder="ex: mail.aempresa.pt"></div>
+          <div class="frow"><label>Porta</label><input type="number" id="imap-port" value="993"></div>
+        </div>
+        <div class="g2">
+          <div class="frow"><label>Email</label><input type="email" id="imap-usuario" placeholder="geral@aempresa.pt"></div>
+          <div class="frow"><label>Password</label><input type="password" id="imap-password"></div>
+        </div>
+        <button class="btn btn-p" onclick="ligarImap()">Ligar por IMAP</button>
+      </div>`;
     return;
   }
 
   const ultima = status.ultima_sincronizacao
     ? new Date(status.ultima_sincronizacao).toLocaleString('pt-PT')
     : 'ainda não sincronizado';
+  const nomeFornecedor = NOME_FORNECEDOR[status.fornecedor] || status.fornecedor;
 
   el.innerHTML = `
-    <p style="margin-bottom:10px">Ligado a <strong>${status.conta_email || '—'}</strong> · última sincronização: ${ultima}</p>
+    <p style="margin-bottom:10px">Ligado via <strong>${nomeFornecedor}</strong> a <strong>${status.conta_email || '—'}</strong> · última sincronização: ${ultima}</p>
     <div style="display:flex;gap:8px">
       <button class="btn btn-p" onclick="sincronizarEmailAgora()">↻ Sincronizar agora</button>
-      <button class="btn" onclick="desligarOutlook()">Desligar</button>
+      <button class="btn" onclick="desligarEmail()">Desligar</button>
     </div>`;
 }
 
@@ -62,15 +80,42 @@ async function ligarOutlook() {
   }
 }
 
-async function desligarOutlook() {
+async function ligarImap() {
+  const dados = {
+    host: document.getElementById('imap-host').value.trim(),
+    port: document.getElementById('imap-port').value.trim(),
+    usuario: document.getElementById('imap-usuario').value.trim(),
+    password: document.getElementById('imap-password').value,
+  };
+  if (!dados.host || !dados.usuario || !dados.password) {
+    showFeedback('email-forn-feedback', 'Preenche o servidor, o email e a password.', true);
+    return;
+  }
+
+  showFeedback('email-forn-feedback', 'A testar a ligação...', false);
+  const resultado = await chamarFuncaoEmail('email-imap-ligar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dados),
+  });
+
+  if (resultado.ok) {
+    showFeedback('email-forn-feedback', 'Ligado com sucesso.', false);
+  } else {
+    showFeedback('email-forn-feedback', resultado.erro || 'Erro ao ligar.', true);
+  }
+  await carregarStatusEmail();
+}
+
+async function desligarEmail() {
   if (!confirm('Desligar a conta de email? A sincronização automática pára (os emails já apanhados continuam na lista).')) return;
-  await chamarFuncaoEmail('email-oauth-desligar?fornecedor=outlook', { method: 'POST' });
+  await chamarFuncaoEmail('email-oauth-desligar', { method: 'POST' });
   await carregarStatusEmail();
 }
 
 async function sincronizarEmailAgora() {
   showFeedback('email-forn-feedback', 'A sincronizar...', false);
-  const resultado = await chamarFuncaoEmail('email-sync-manual?fornecedor=outlook', { method: 'POST' });
+  const resultado = await chamarFuncaoEmail('email-sync-manual', { method: 'POST' });
 
   if (resultado.ok) {
     showFeedback('email-forn-feedback', `Sincronizado — ${resultado.novos ?? 0} novo(s) email(s).`, false);

@@ -1,7 +1,9 @@
-// ── EMAIL OAUTH — DESLIGAR ───────────────────────────────────────────
-// Autenticado. Desliga a integração da PRÓPRIA empresa do utilizador
-// (nunca de um empresa_id vindo do pedido) — pára a sincronização, não
-// apaga os emails já apanhados.
+// ── EMAIL — DESLIGAR ─────────────────────────────────────────────────
+// Autenticado. Desliga a integração ACTIVA da PRÓPRIA empresa do
+// utilizador (nunca de um empresa_id vindo do pedido), seja ela
+// Outlook ou IMAP — pára a sincronização, não apaga os emails já
+// apanhados. Aceita ?fornecedor= opcional para desligar um fornecedor
+// específico; sem isso, desliga o que estiver activo.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { obterEmpresaId } from "../_shared/auth.ts";
@@ -20,14 +22,14 @@ Deno.serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  const fornecedor = url.searchParams.get("fornecedor") ?? "outlook";
+  const fornecedor = url.searchParams.get("fornecedor");
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const { error } = await sb
-    .from("integracoes_email")
-    .update({ ativo: false })
-    .eq("empresa_id", empresaId)
-    .eq("fornecedor", fornecedor);
+  let query = sb.from("integracoes_email").update({ ativo: false }).eq("empresa_id", empresaId);
+  if (fornecedor) query = query.eq("fornecedor", fornecedor);
+  else query = query.eq("ativo", true);
+
+  const { error } = await query;
 
   if (error) {
     return new Response(JSON.stringify({ ok: false, erro: error.message }), { status: 500, headers: CORS_HEADERS });
