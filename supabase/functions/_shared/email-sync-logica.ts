@@ -6,30 +6,13 @@
 
 import type { AdaptadorEmail, TokensEmail } from "./email-tipos.ts";
 import { outlook } from "./outlook.ts";
+import { imap } from "./imap.ts";
+import { pareceFatura } from "./filtro-email.ts";
 
 export const ADAPTADORES_EMAIL: Record<string, AdaptadorEmail> = {
   outlook,
+  imap,
 };
-
-// Palavras-chave no assunto que sugerem factura de pneus — usado quando
-// o fornecedor não tem dominio_email configurado (ou como reforço,
-// mesmo quando tem).
-const PALAVRAS_CHAVE = [
-  "fatura", "factura", "invoice",
-  "pneu", "pneus", "tyre", "tire",
-  "rechapagem", "recauchutagem",
-];
-
-function assuntoParecevFatura(assunto: string): boolean {
-  const s = assunto.toLowerCase();
-  return PALAVRAS_CHAVE.some(p => s.includes(p));
-}
-
-function remetenteBateComFornecedor(remetente: string, dominios: string[]): boolean {
-  const dominioRemetente = remetente.split("@")[1]?.toLowerCase();
-  if (!dominioRemetente) return false;
-  return dominios.some(d => d && dominioRemetente === d.toLowerCase());
-}
 
 const JANELA_PRIMEIRA_SINCRONIZACAO_DIAS = 30;
 const SOBREPOSICAO_HORAS = 1;
@@ -49,18 +32,21 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: false, erro: `fornecedor "${integ.fornecedor}" sem adaptador registado` };
   }
 
-  // Renovar o token se estiver perto de expirar (ou já expirado).
+  // Renovar o token se estiver perto de expirar (só se aplica a
+  // adaptadores OAuth — credenciais directas como IMAP não têm expires_at).
   let tokens = integ.tokens;
-  const expiraEm = new Date(tokens.expires_at).getTime();
-  if (expiraEm - Date.now() < 5 * 60 * 1000) {
-    try {
-      tokens = await adaptador.atualizarToken(tokens);
-      await sb.from("integracoes_email").update({ tokens }).eq("id", integ.id);
-    } catch (e) {
-      // Token de refresh inválido/revogado — marcar a integração como
-      // precisando de reconexão em vez de continuar a falhar em silêncio.
-      await sb.from("integracoes_email").update({ ativo: false }).eq("id", integ.id);
-      return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: false, erro: `token inválido, integração desligada: ${String(e)}` };
+  if (tokens.expires_at) {
+    const expiraEm = new Date(tokens.expires_at).getTime();
+    if (expiraEm - Date.now() < 5 * 60 * 1000) {
+      try {
+        tokens = await adaptador.atualizarToken(tokens);
+        await sb.from("integracoes_email").update({ tokens }).eq("id", integ.id);
+      } catch (e) {
+        // Token de refresh inválido/revogado — marcar a integração como
+        // precisando de reconexão em vez de continuar a falhar em silêncio.
+        await sb.from("integracoes_email").update({ ativo: false }).eq("id", integ.id);
+        return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: false, erro: `token inválido, integração desligada: ${String(e)}` };
+      }
     }
   }
 
@@ -75,11 +61,11 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     .not("dominio_email", "is", null);
   const dominiosConhecidos: string[] = (fornecedores ?? []).map((f: any) => f.dominio_email);
 
-  const mensagens = await adaptador.listarMensagensRecentes(tokens, desde);
+  const mensagens = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
 
-  const candidatas = mensagens.filter(m =>
-    remetenteBateComFornecedor(m.remetente, dominiosConhecidos) || assuntoParecevFatura(m.assunto)
-  );
+  // Para o Outlook o filtro ainda não foi aplicado (a lista vem "crua");
+  // para o IMAP já vem pré-filtrada, e isto só confirma sem custo extra.
+  const candidatas = mensagens.filter(m => pareceFatura(m.remetente, m.assunto, dominiosConhecidos));
 
   if (candidatas.length === 0) {
     await sb.from("integracoes_email").update({ ultima_sincronizacao: new Date().toISOString() }).eq("id", integ.id);
