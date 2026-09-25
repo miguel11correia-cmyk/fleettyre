@@ -9,11 +9,15 @@ const FUNCOES_URL = SUPABASE_URL + '/functions/v1';
 async function chamarFuncaoEmail(nomeComQuery, opcoes = {}) {
   const { data: sessao } = await sb.auth.getSession();
   const token = sessao?.session?.access_token;
-  const resp = await fetch(`${FUNCOES_URL}/${nomeComQuery}`, {
-    ...opcoes,
-    headers: { ...(opcoes.headers || {}), Authorization: `Bearer ${token}` },
-  });
-  return resp.json();
+  try {
+    const resp = await fetch(`${FUNCOES_URL}/${nomeComQuery}`, {
+      ...opcoes,
+      headers: { ...(opcoes.headers || {}), Authorization: `Bearer ${token}` },
+    });
+    return await resp.json();
+  } catch (e) {
+    return { ok: false, erro: 'Erro de ligação: ' + e.message };
+  }
 }
 
 async function initEmailsFornecedores() {
@@ -26,6 +30,11 @@ async function carregarStatusEmail() {
   el.innerHTML = '<p class="empty-msg">A carregar...</p>';
 
   const status = await chamarFuncaoEmail('email-status?fornecedor=outlook');
+
+  if (status.erro) {
+    el.innerHTML = `<p style="color:var(--red)">${status.erro}</p><button class="btn btn-sm" onclick="carregarStatusEmail()">Tentar novamente</button>`;
+    return;
+  }
 
   if (!status.ligado) {
     el.innerHTML = `<button class="btn btn-brand" onclick="ligarOutlook()">Ligar Outlook</button>`;

@@ -14,6 +14,9 @@ desktop.ini
 .vscode/
 .idea/
 
+# Supabase CLI (estado local de "supabase link", não é para partilhar)
+supabase/.temp/
+
 # Logs
 *.log
 npm-debug.log*
