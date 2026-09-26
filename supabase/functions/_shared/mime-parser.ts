@@ -1,8 +1,9 @@
 // ── PARSER MIME MÍNIMO ───────────────────────────────────────────────
-// Extrai cabeçalhos e o primeiro anexo PDF de uma mensagem RFC822 em
-// bruto. Trabalha a nível de bytes (não texto) porque o corpo pode ser
-// binário — só os cabeçalhos e os boundaries multipart são tratados
-// como texto ASCII/Latin-1, nunca o conteúdo dos anexos.
+// Extrai cabeçalhos, o primeiro anexo PDF, e um resumo do texto do
+// corpo de uma mensagem RFC822 em bruto. Trabalha a nível de bytes (não
+// texto) porque o corpo pode ser binário — só os cabeçalhos e os
+// boundaries multipart são tratados como texto ASCII/Latin-1, nunca o
+// conteúdo dos anexos.
 
 const CRLFCRLF = new Uint8Array([13, 10, 13, 10]);
 
@@ -79,7 +80,8 @@ function descodificarCorpo(bytes: Uint8Array, transferEncoding: string): Uint8Ar
     for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
     return out;
   }
-  // 7bit/8bit/binary/quoted-printable (raro em PDFs) — devolve tal como está.
+  // 7bit/8bit/binary — devolve tal como está. Quoted-printable só é
+  // descodificado no texto (ver extrairResumoTexto), não é preciso aqui.
   return bytes;
 }
 
@@ -87,19 +89,20 @@ function nomeDoAnexo(cabecalhos: Record<string, string>): string {
   const disposicao = cabecalhos["content-disposition"] || "";
   const tipo = cabecalhos["content-type"] || "";
   const m = /filename\*?=("?)([^";]+)\1/i.exec(disposicao) || /name\*?=("?)([^";]+)\1/i.exec(tipo);
-  return m ? descodificarTextoCabecalho(m[2]) : "anexo.pdf";
+  return m ? descodificarTextoCabecalho(m[2]) : "";
 }
 
-interface AnexoPdf {
-  nome: string;
-  bytes: Uint8Array;
+interface ParteFolha {
+  cabecalhos: Record<string, string>;
+  tipoConteudo: string; // já em minúsculas
+  bytes: Uint8Array; // corpo desta parte, JÁ descodificado (base64, etc.)
 }
 
-// Percorre (recursivamente) as partes multipart à procura da primeira com
-// Content-Type application/pdf (ou nome a acabar em .pdf).
-function procurarPdfEmParte(bytes: Uint8Array): AnexoPdf | null {
+// Percorre (recursivamente) a árvore multipart e devolve todas as
+// partes "folha" (não multipart), cada uma já com o corpo descodificado.
+function percorrerPartesFolha(bytes: Uint8Array): ParteFolha[] {
   const fimCabecalhos = encontrarSequencia(bytes, CRLFCRLF);
-  if (fimCabecalhos === -1) return null;
+  if (fimCabecalhos === -1) return [];
 
   const textoCabecalhos = new TextDecoder("latin1").decode(bytes.slice(0, fimCabecalhos));
   const corpo = bytes.slice(fimCabecalhos + 4);
@@ -108,35 +111,78 @@ function procurarPdfEmParte(bytes: Uint8Array): AnexoPdf | null {
 
   if (tipoConteudo.startsWith("multipart/")) {
     const m = /boundary="?([^";]+)"?/i.exec(cabecalhos["content-type"] || "");
-    if (!m) return null;
+    if (!m) return [];
     const boundary = new TextEncoder().encode(`--${m[1]}`);
 
     let pos = 0;
-    const partes: Uint8Array[] = [];
+    const partesCruas: Uint8Array[] = [];
     while (true) {
       const inicio = encontrarSequencia(corpo, boundary, pos);
       if (inicio === -1) break;
       const proximo = encontrarSequencia(corpo, boundary, inicio + boundary.length);
       if (proximo === -1) break;
       // +2 para saltar o \r\n a seguir ao boundary
-      partes.push(corpo.slice(inicio + boundary.length + 2, proximo));
+      partesCruas.push(corpo.slice(inicio + boundary.length + 2, proximo));
       pos = proximo;
     }
 
-    for (const parte of partes) {
-      const encontrado = procurarPdfEmParte(parte);
-      if (encontrado) return encontrado;
-    }
-    return null;
+    return partesCruas.flatMap(percorrerPartesFolha);
   }
 
-  const ehPdf = tipoConteudo.startsWith("application/pdf") || /\.pdf/i.test(nomeDoAnexo(cabecalhos));
-  if (!ehPdf) return null;
-
   const transferEncoding = cabecalhos["content-transfer-encoding"] || "7bit";
-  return { nome: nomeDoAnexo(cabecalhos), bytes: descodificarCorpo(corpo, transferEncoding) };
+  return [{ cabecalhos, tipoConteudo, bytes: descodificarCorpo(corpo, transferEncoding) }];
+}
+
+interface AnexoPdf {
+  nome: string;
+  bytes: Uint8Array;
 }
 
 export function extrairPrimeiroPdf(mensagemCompleta: Uint8Array): AnexoPdf | null {
-  return procurarPdfEmParte(mensagemCompleta);
+  const partes = percorrerPartesFolha(mensagemCompleta);
+  for (const parte of partes) {
+    const nome = nomeDoAnexo(parte.cabecalhos);
+    const ehPdf = parte.tipoConteudo.startsWith("application/pdf") || /\.pdf$/i.test(nome);
+    if (ehPdf) return { nome: nome || "anexo.pdf", bytes: parte.bytes };
+  }
+  return null;
+}
+
+function removerTags(html: string): string {
+  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function descodificarQuotedPrintable(texto: string): string {
+  return texto
+    .replace(/=\r?\n/g, "") // "soft line break"
+    .replace(/=([0-9A-Fa-f]{2})/g, (_m, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+// Resumo do corpo (texto simples, ou HTML sem tags), truncado — só para
+// o filtro de palavras-chave apanhar facturas com assunto vago.
+const TAMANHO_RESUMO = 800;
+
+export function extrairResumoTexto(mensagemCompleta: Uint8Array): string {
+  const partes = percorrerPartesFolha(mensagemCompleta);
+
+  const parteTexto = partes.find(p => p.tipoConteudo.startsWith("text/plain"))
+    ?? partes.find(p => p.tipoConteudo.startsWith("text/html"));
+  if (!parteTexto) return "";
+
+  const charsetMatch = /charset="?([^";]+)"?/i.exec(parteTexto.cabecalhos["content-type"] || "");
+  let texto: string;
+  try {
+    texto = new TextDecoder(charsetMatch?.[1] || "utf-8").decode(parteTexto.bytes);
+  } catch {
+    texto = new TextDecoder("latin1").decode(parteTexto.bytes);
+  }
+
+  if ((parteTexto.cabecalhos["content-transfer-encoding"] || "").toLowerCase() === "quoted-printable") {
+    texto = descodificarQuotedPrintable(texto);
+  }
+  if (parteTexto.tipoConteudo.startsWith("text/html")) {
+    texto = removerTags(texto);
+  }
+
+  return texto.slice(0, TAMANHO_RESUMO);
 }

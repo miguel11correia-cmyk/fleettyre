@@ -143,16 +143,7 @@ export class ClienteIMAP {
     return linhaResultado.replace("* SEARCH", "").trim().split(/\s+/).filter(Boolean);
   }
 
-  // Campos de cabeçalho só (leve) — para decidir se vale a pena descarregar
-  // a mensagem inteira.
-  async obterCabecalhos(uid: string): Promise<string> {
-    const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE MESSAGE-ID)])`);
-    if (!resp.ok || resp.literais.length === 0) return "";
-    return this.#decoder.decode(resp.literais[0]);
-  }
-
-  // Mensagem completa em bruto (cabeçalhos + corpo) — só para as que já
-  // passaram o filtro de cabeçalhos, evita descarregar tudo à toa.
+  // Mensagem completa em bruto (cabeçalhos + corpo).
   async obterMensagemCompleta(uid: string): Promise<Uint8Array> {
     const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[])`);
     if (!resp.ok || resp.literais.length === 0) throw new Error("Não foi possível obter a mensagem completa.");

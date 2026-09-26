@@ -8,16 +8,17 @@
 // de OAuth deste adaptador nunca são chamados — lançam erro se o forem,
 // só para apanhar um eventual erro de programação cedo.
 //
-// Diferença de custo importante face ao Graph: aqui não há forma barata
-// de saber se uma mensagem tem anexo PDF sem a descarregar por inteiro,
-// por isso o filtro por palavra-chave/domínio é aplicado ANTES de
-// descarregar cada mensagem candidata (usando só os cabeçalhos, que são
-// leves), em vez de depois como no resto da app.
+// Ao contrário do Graph, aqui não há forma barata de saber se uma
+// mensagem tem anexo PDF sem a descarregar por inteiro — por isso,
+// ao contrário do Outlook, descarrega-se sempre a mensagem completa
+// de cada candidato dentro da janela de datas (troca desempenho por
+// não deixar escapar nenhuma factura, decisão explícita do utilizador).
+// O filtro de palavra-chave/domínio corre depois, fora daqui, em
+// email-sync-logica.ts — aqui só se garante que há um PDF anexado.
 
 import type { AdaptadorEmail, MensagemEmailCandidata, TokensEmail } from "./email-tipos.ts";
 import { ClienteIMAP } from "./imap-cliente.ts";
-import { descodificarTextoCabecalho, extrairPrimeiroPdf, parsearCabecalhos } from "./mime-parser.ts";
-import { pareceFatura } from "./filtro-email.ts";
+import { descodificarTextoCabecalho, extrairPrimeiroPdf, extrairResumoTexto, parsearCabecalhos } from "./mime-parser.ts";
 
 // Os PDFs já extraídos ficam aqui durante a sincronização, para
 // obterAnexoPdf não ter de descarregar a mensagem outra vez — válido só
@@ -41,7 +42,7 @@ export const imap: AdaptadorEmail = {
     return tokens; // credenciais directas não "expiram" no sentido OAuth
   },
 
-  async listarMensagensRecentes(tokens, desde, dominiosConhecidos): Promise<MensagemEmailCandidata[]> {
+  async listarMensagensRecentes(tokens, desde): Promise<MensagemEmailCandidata[]> {
     const host = String(tokens.host ?? "");
     const port = Number(tokens.port ?? 993);
     const usuario = String(tokens.usuario ?? "");
@@ -57,19 +58,6 @@ export const imap: AdaptadorEmail = {
       const mensagens: MensagemEmailCandidata[] = [];
 
       for (const uid of uids) {
-        const cabecalhosTexto = await cliente.obterCabecalhos(uid);
-        if (!cabecalhosTexto) continue;
-
-        const cabecalhos = parsearCabecalhos(cabecalhosTexto);
-        const remetente = extrairEndereco(cabecalhos["from"] || "");
-        const assunto = descodificarTextoCabecalho(cabecalhos["subject"] || "");
-        const messageId = (cabecalhos["message-id"] || "").trim();
-        if (!messageId) continue;
-
-        // Filtra ANTES de descarregar a mensagem inteira — descarregar
-        // tudo seria caro e desnecessário para a maioria dos emails.
-        if (!pareceFatura(remetente, assunto, dominiosConhecidos)) continue;
-
         let mensagemCompleta: Uint8Array;
         try {
           mensagemCompleta = await cliente.obterMensagemCompleta(uid);
@@ -80,6 +68,14 @@ export const imap: AdaptadorEmail = {
         const anexo = extrairPrimeiroPdf(mensagemCompleta);
         if (!anexo) continue; // sem PDF, não interessa guardar
 
+        const textoCompleto = new TextDecoder("latin1").decode(mensagemCompleta);
+        const cabecalhos = parsearCabecalhos(textoCompleto.split(/\r\n\r\n/)[0]);
+
+        const remetente = extrairEndereco(cabecalhos["from"] || "");
+        const assunto = descodificarTextoCabecalho(cabecalhos["subject"] || "");
+        const messageId = (cabecalhos["message-id"] || "").trim();
+        if (!messageId) continue;
+
         cachePdfs.set(messageId, anexo.bytes);
 
         mensagens.push({
@@ -87,6 +83,7 @@ export const imap: AdaptadorEmail = {
           idInterno: uid,
           remetente,
           assunto,
+          resumoCorpo: extrairResumoTexto(mensagemCompleta),
           dataRecebido: cabecalhos["date"] ? new Date(cabecalhos["date"]).toISOString() : new Date().toISOString(),
           anexosPdf: [{ id: messageId, nome: anexo.nome }],
         });

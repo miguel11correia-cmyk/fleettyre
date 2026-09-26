@@ -63,9 +63,11 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
 
   const mensagens = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
 
-  // Para o Outlook o filtro ainda não foi aplicado (a lista vem "crua");
-  // para o IMAP já vem pré-filtrada, e isto só confirma sem custo extra.
-  const candidatas = mensagens.filter(m => pareceFatura(m.remetente, m.assunto, dominiosConhecidos));
+  // Verifica assunto, resumo do corpo e nomes dos anexos — não só o
+  // assunto — para não deixar escapar facturas com assunto vago.
+  const candidatas = mensagens.filter(m =>
+    pareceFatura(m.remetente, [m.assunto, m.resumoCorpo, ...m.anexosPdf.map(a => a.nome)], dominiosConhecidos)
+  );
 
   if (candidatas.length === 0) {
     await sb.from("integracoes_email").update({ ultima_sincronizacao: new Date().toISOString() }).eq("id", integ.id);
