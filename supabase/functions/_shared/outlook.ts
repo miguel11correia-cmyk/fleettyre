@@ -106,7 +106,9 @@ export const outlook: AdaptadorEmail = {
   },
 
   async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<MensagemEmailCandidata[]> {
-    const select = "id,internetMessageId,subject,from,receivedDateTime,hasAttachments";
+    // bodyPreview vem "de borla" no mesmo pedido — usado no filtro além
+    // do assunto, para não deixar escapar facturas com assunto vago.
+    const select = "id,internetMessageId,subject,from,receivedDateTime,hasAttachments,bodyPreview";
     const filtro = `hasAttachments eq true and receivedDateTime ge ${paraOData(desde)}`;
     let caminho: string | null =
       `/me/messages?$select=${select}&$filter=${encodeURIComponent(filtro)}&$top=50`;
@@ -144,6 +146,7 @@ export const outlook: AdaptadorEmail = {
           idInterno: m.id,
           remetente: m.from?.emailAddress?.address || "",
           assunto: m.subject || "",
+          resumoCorpo: m.bodyPreview || "",
           dataRecebido: m.receivedDateTime,
           anexosPdf,
         });

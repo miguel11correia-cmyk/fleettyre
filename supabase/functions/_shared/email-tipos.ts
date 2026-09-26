@@ -30,6 +30,7 @@ export interface MensagemEmailCandidata {
                       // pedidos seguintes (ex: obterAnexoPdf), pode não ser o mesmo que `id`
   remetente: string;
   assunto: string;
+  resumoCorpo: string; // resumo/preview do corpo — usado no filtro além do assunto
   dataRecebido: string; // ISO timestamp
   anexosPdf: AnexoPdfCandidato[];
 }
