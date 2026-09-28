@@ -119,7 +119,7 @@ async function renderGestaoFornecedores() {
           ${(data || []).map(f => `<tr>
             <td><strong>${f.codigo}</strong></td>
             <td>${f.nome}</td>
-            <td><input type="text" value="${f.dominio_email || ''}" placeholder="ex: fornecedor.pt" style="height:26px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:140px" onchange="atualizarDominioFornecedor(${f.id}, this.value)"></td>
+            <td><input type="text" value="${f.dominio_email || ''}" placeholder="ex: fornecedor.pt" style="height:26px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:140px" onchange="atualizarDominioFornecedor(${f.id}, this.value, this)"></td>
             <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
           </tr>`).join('')}
         </tbody>
@@ -149,9 +149,20 @@ async function adicionarFornecedor() {
   await renderGestaoFornecedores();
 }
 
-async function atualizarDominioFornecedor(id, valor) {
+async function atualizarDominioFornecedor(id, valor, input) {
   const dominio = valor.trim().toLowerCase();
-  await sb.from('fornecedores').update({ dominio_email: dominio || null }).eq('id', id);
+  const { error } = await sb.from('fornecedores').update({ dominio_email: dominio || null }).eq('id', id);
+
+  if (!input) return;
+  input.style.transition = 'border-color 0.15s var(--ease-out), background 0.15s var(--ease-out)';
+  input.style.borderColor = error ? 'var(--red)' : 'var(--green)';
+  input.style.background = error ? '#fef2f2' : 'var(--green-bg)';
+  setTimeout(() => {
+    input.style.borderColor = '';
+    input.style.background = '';
+  }, 900);
+
+  if (error) alert('Erro ao guardar o domínio: ' + error.message);
 }
 
 async function apagarFornecedor(id, nome) {

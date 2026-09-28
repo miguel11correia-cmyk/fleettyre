@@ -146,7 +146,7 @@ async function carregarEmailsPendentes() {
     .order('data_recebido', { ascending: false });
 
   if (error || !data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-msg" style="text-align:center;padding:12px">Sem emails por processar.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-msg" style="text-align:center;padding:12px">Sem emails por processar.</td></tr>';
     return;
   }
 
@@ -155,9 +155,21 @@ async function carregarEmailsPendentes() {
       <td>${e.data_recebido ? new Date(e.data_recebido).toLocaleDateString('pt-PT') : '—'}</td>
       <td>${e.remetente || '—'}</td>
       <td>${e.assunto || '—'}</td>
+      <td><button class="btn btn-sm" onclick="verMensagemEmailFornecedor(${e.id})">Ver mensagem</button></td>
       <td>${e.pdf_path ? `<button class="btn btn-sm" onclick="abrirPdfEmailFornecedor(${e.id})">Ver PDF</button>` : '—'}</td>
       <td><button class="btn btn-sm" onclick="arquivarEmailFornecedor(${e.id})">Arquivar</button></td>
     </tr>`).join('');
+}
+
+async function verMensagemEmailFornecedor(id) {
+  const { data, error } = await sb
+    .from('emails_fornecedores_pendentes')
+    .select('remetente, assunto, resumo_corpo')
+    .eq('id', id)
+    .single();
+  if (error || !data) return;
+
+  alert(`De: ${data.remetente || '—'}\nAssunto: ${data.assunto || '—'}\n\n${data.resumo_corpo || '(sem excerto do corpo disponível)'}`);
 }
 
 async function abrirPdfEmailFornecedor(id) {
