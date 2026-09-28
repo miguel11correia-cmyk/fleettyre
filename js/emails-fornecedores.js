@@ -136,6 +136,15 @@ async function sincronizarEmailAgora() {
   await carregarEmailsPendentes();
 }
 
+// Remetente/assunto vêm de emails de fora, não são dados de confiança
+// (ao contrário do resto da app, onde quem escreve é sempre um
+// utilizador autenticado) — por isso nunca vão directos para innerHTML.
+function escaparHtml(texto) {
+  const div = document.createElement('div');
+  div.textContent = texto ?? '';
+  return div.innerHTML;
+}
+
 async function carregarEmailsPendentes() {
   const tbody = document.getElementById('email-forn-tbody');
 
@@ -153,8 +162,8 @@ async function carregarEmailsPendentes() {
   tbody.innerHTML = data.map(e => `
     <tr>
       <td>${e.data_recebido ? new Date(e.data_recebido).toLocaleDateString('pt-PT') : '—'}</td>
-      <td>${e.remetente || '—'}</td>
-      <td>${e.assunto || '—'}</td>
+      <td>${escaparHtml(e.remetente) || '—'}</td>
+      <td>${escaparHtml(e.assunto) || '—'}</td>
       <td><button class="btn btn-sm" onclick="verMensagemEmailFornecedor(${e.id})">Ver mensagem</button></td>
       <td>${e.pdf_path ? `<button class="btn btn-sm" onclick="abrirPdfEmailFornecedor(${e.id})">Ver PDF</button>` : '—'}</td>
       <td><button class="btn btn-sm" onclick="arquivarEmailFornecedor(${e.id})">Arquivar</button></td>
@@ -169,7 +178,17 @@ async function verMensagemEmailFornecedor(id) {
     .single();
   if (error || !data) return;
 
-  alert(`De: ${data.remetente || '—'}\nAssunto: ${data.assunto || '—'}\n\n${data.resumo_corpo || '(sem excerto do corpo disponível)'}`);
+  const meta = document.getElementById('msg-email-meta');
+  meta.innerHTML = '<strong>De:</strong> <span></span><br><strong>Assunto:</strong> <span></span>';
+  const spans = meta.querySelectorAll('span');
+  spans[0].textContent = data.remetente || '—';
+  spans[1].textContent = data.assunto || '—';
+  document.getElementById('msg-email-corpo').textContent = data.resumo_corpo || '(sem excerto do corpo disponível)';
+  document.getElementById('painel-msg-email').classList.add('open');
+}
+
+function fecharPainelMsgEmail() {
+  document.getElementById('painel-msg-email').classList.remove('open');
 }
 
 async function abrirPdfEmailFornecedor(id) {
