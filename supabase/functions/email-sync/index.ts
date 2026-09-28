@@ -6,17 +6,25 @@
 // empresas de uma vez):
 //   ?empresa_id=<uuid>   só sincroniza essa empresa
 //
-// Nota: isto usa a service role key e não verifica quem chamou — só é
-// invocada pelo pg_cron. O botão "Sincronizar agora" da app chama
-// email-sync-manual, que deriva a empresa do JWT do utilizador.
+// Nota: isto usa a service role key. A chave anon/publishable sozinha
+// NÃO chega para autorizar isto (é pública, vem embutida no HTML) —
+// por isso exige-se também o cabeçalho x-cron-secret, um segredo
+// conhecido só pelo agendamento do pg_cron. O botão "Sincronizar
+// agora" da app chama email-sync-manual, que deriva a empresa do JWT
+// do utilizador.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sincronizarIntegracao } from "../_shared/email-sync-logica.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const CRON_SECRET          = Deno.env.get("CRON_SECRET") ?? "";
 
 Deno.serve(async (req) => {
+  if (!CRON_SECRET || req.headers.get("x-cron-secret") !== CRON_SECRET) {
+    return new Response(JSON.stringify({ erro: "Não autorizado." }), { status: 401 });
+  }
+
   const url       = new URL(req.url);
   const empresaId = url.searchParams.get("empresa_id");
 
