@@ -30,10 +30,12 @@ manifest.json                     — PWA (start_url aponta para app.html)
 
 js/                                — lógica da secção "Veículos" + partilhada
   config.js                        — cria o cliente Supabase (sb)
-  auth.js                          — login, logout, mudar password, esqueci-me da password
+  auth.js                          — login, logout, mudar password (2 passos), esqueci-me da
+                                     password
   nav.js                           — troca de página dentro da app (nav/navR/navReg)
   utils.js                         — helpers partilhados: formatação, cálculos de desgaste,
                                      SLOTS_VEICULO/SLOTS_REBOQUE (lugares fixos), loading()
+                                     (com atraso de 200ms, para não "piscar" em operações rápidas)
   frota_cadastro.js                — ficha de veículos (marca/modelo/nº eixos), lista de marcas
   frota.js                         — "Por matrícula": lugares fixos + histórico de um veículo
   registar.js                      — formulário de registo de montagem
@@ -44,6 +46,11 @@ js/                                — lógica da secção "Veículos" + partilh
                                      mantendo o <select> original escondido como fonte da verdade
   pdf-anexo.js                     — anexar/ver PDF em registos, faturas e pneus em oficina
                                      (mecanismo único partilhado pelos três contextos)
+  emails-fornecedores.js           — página "Faturas por email": ligar/desligar a caixa de email
+                                     da empresa, sincronizar manualmente, listar/abrir/arquivar
+                                     os emails de fornecedores encontrados (ver secção própria)
+  telemetria.js                    — página "Telemetria (KMs)": ligar/desligar/sincronizar a
+                                     integração de telemetria da própria empresa (self-service)
 
 js/reboques/                       — equivalentes dos ficheiros acima, para a secção "Reboques"
                                      (frota_cadastro_r.js, frota_r.js, registar_r.js, …) — não é
@@ -57,10 +64,25 @@ migrations/                        — alterações à base de dados, ficheiros 
                                      sempre o próximo número)
 
 supabase/functions/                — Edge Functions (Deno), deploy manual via Supabase CLI
-  _shared/                          — código partilhado entre funções (ex: adaptadores de
-                                     telemetria — ver secção própria abaixo)
-  telemetria-sync/                 — sincroniza o km actual dos veículos com o(s) fornecedor(es)
-                                     de telemetria configurados, uma vez por dia (pg_cron)
+  _shared/                          — código partilhado entre funções:
+                                     auth.ts (obterEmpresaId — deriva a empresa sempre do JWT do
+                                     chamador), cors.ts (CORS_HEADERS/tratarPreflight, obrigatório
+                                     em qualquer função chamada via fetch() do browser),
+                                     adaptadores de telemetria e de email (ver secções próprias)
+  telemetria-sync/                 — cron (pg_cron, diário): percorre todas as integrações de
+                                     telemetria activas de todas as empresas
+  telemetria-ligar/,
+  telemetria-status/,
+  telemetria-desligar/,
+  telemetria-sync-manual/          — autenticadas, uma por acção do botão em "Telemetria (KMs)";
+                                     empresa sempre derivada do JWT, nunca de um parâmetro
+  email-oauth-iniciar/,
+  email-oauth-callback/,
+  email-oauth-desligar/,
+  email-imap-ligar/,
+  email-status/,
+  email-sync/,
+  email-sync-manual/               — equivalentes para "Faturas por email" (OAuth Outlook + IMAP)
 
 assets/                            — logos (app, marcas de veículos e reboques), imagens da
                                      landing page e do ecrã de login
@@ -81,9 +103,11 @@ Multi-tenancy: quase todas as tabelas têm `empresa_id`, e o acesso é controlad
 | `reboques_frota` | Ficha de cada reboque — equivalente a `veiculos`, sem `reboque_hab` |
 | `pneus` | Um registo por montagem/desmontagem de pneu num **veículo** — `posicao` é o lugar fixo (ver abaixo) |
 | `reboques` | Um registo por montagem/desmontagem de pneu num **reboque** — nome confuso de propósito histórico: é a tabela de *pneus de reboques*, não a ficha de reboques (essa é `reboques_frota`) |
-| `marcas`, `fornecedores` | Listas geridas por empresa, usadas nos selects de marca/fornecedor em toda a app |
+| `marcas`, `fornecedores` | Listas geridas por empresa, usadas nos selects de marca/fornecedor em toda a app (`fornecedores.dominio_email` é opcional, usado pelo filtro de "Faturas por email") |
 | `stock_faturas`, `stock_linhas` | Faturas de compra de pneus e as suas linhas, para controlo de stock |
-| `integracoes_telemetria` | Credenciais por empresa + fornecedor de telemetria (ver abaixo) |
+| `integracoes_telemetria` | Credenciais por empresa + fornecedor de telemetria (ver abaixo) — só-admin |
+| `integracoes_email` | Tokens/credenciais por empresa + fornecedor de email (ver abaixo) — só-admin |
+| `emails_fornecedores_pendentes` | Emails de fornecedores encontrados automaticamente, com o PDF já descarregado, à espera de o utilizador introduzir o valor manualmente num registo |
 
 ---
 
@@ -101,9 +125,36 @@ Cada veículo/reboque com uma configuração de eixos conhecida (`num_eixos` nã
 
 `veiculos.km_atual`/`km_atual_em` é preenchido automaticamente (quando configurado) a partir do sistema de GPS/telemetria de cada empresa, e usado como fallback para estimar KMs percorridos quando um pneu ainda não foi desmontado. É só informativo — nunca substitui os KMs manuais dos registos de pneus.
 
-- `integracoes_telemetria`: uma linha por empresa + fornecedor (`fornecedor` = `'cartrack'`, etc.), com `credenciais` em `jsonb` (forma livre, específica de cada fornecedor).
-- `supabase/functions/telemetria-sync`: Edge Function agendada (via `pg_cron`, diariamente às 05:00 UTC) que percorre todas as integrações activas e despacha para o adaptador certo.
-- Cada fornecedor é um adaptador em `supabase/functions/_shared/<fornecedor>.ts`, cumprindo o contrato `AdaptadorTelemetria` (`obterOdometro(matricula, credenciais) → { km, em } | null`). Hoje só existe `cartrack.ts`. **Adicionar um fornecedor novo = escrever um adaptador desse tamanho + inserir uma linha em `integracoes_telemetria` — não é preciso tocar em mais nada.**
+**Self-service**: página "Telemetria (KMs)" (Registos), `js/telemetria.js` — qualquer empresa introduz as suas próprias credenciais do fornecedor e liga a integração sem intervenção manual na base de dados. `integracoes_telemetria` é só-admin (RLS), por isso a página nunca lê a tabela directamente — só chama as Edge Functions autenticadas abaixo, que derivam sempre a `empresa_id` do JWT de quem chama:
+
+- `telemetria-ligar` — valida as credenciais com uma chamada leve à API do fornecedor (`testarCredenciais`) antes de gravar.
+- `telemetria-status` — devolve só `{ligado, fornecedor, ultima_sincronizacao}`, nunca as credenciais.
+- `telemetria-desligar` — desactiva a integração da própria empresa.
+- `telemetria-sync-manual` — botão "Sincronizar agora"; separada da função de cron para um utilizador nunca poder forçar a sincronização de outra empresa.
+
+`supabase/functions/telemetria-sync` é a função de cron (`pg_cron`, diariamente às 05:00 UTC) que percorre todas as integrações activas de todas as empresas. A lógica de sincronizar uma integração está partilhada em `_shared/telemetria-sync-logica.ts`, usada tanto pelo cron como pelo `-sync-manual`.
+
+Cada fornecedor é um adaptador em `supabase/functions/_shared/<fornecedor>.ts`, cumprindo o contrato `AdaptadorTelemetria` (`obterOdometro`, `testarCredenciais`). Hoje só existe `cartrack.ts`. **Adicionar um fornecedor novo = escrever um adaptador desse tamanho — não é preciso tocar no resto da arquitectura.**
+
+---
+
+## Faturas por email ("Faturas por email")
+
+Problema real que resolve: a oficina regista montagens/desmontagens em papel; o valor em € só chega semanas depois, por email, da parte do fornecedor — e encontrar essa factura no meio de centenas de emails não relacionados é o trabalho manual. Esta funcionalidade liga-se à caixa de email da empresa, filtra os emails que parecem facturas de pneus e deixa-os prontos (com o PDF já descarregado) para o utilizador consultar. **Não extrai valores automaticamente** — o utilizador continua a introduzir o custo manualmente no "Editar" de sempre, usando o PDF só como referência.
+
+Página "Faturas por email" (Registos), `js/emails-fornecedores.js`. `integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
+
+- `email-status` — `{ligado, conta_email, ultima_sincronizacao}`, nunca os tokens.
+- `email-oauth-iniciar` / `email-oauth-callback` / `email-oauth-desligar` — fluxo OAuth (Microsoft Graph) para contas Microsoft 365 reais: "Ligar Outlook" chama `-iniciar` (autenticado, gera um `state` assinado por HMAC com `empresa_id`+`fornecedor`+expiração curta) e o browser é redireccionado para a Microsoft; `-callback` (pública, sem verificação de JWT — é a Microsoft que a chama) valida o `state`, troca o código pelos tokens e grava a integração.
+- `email-imap-ligar` — alternativa para contas de email que não são Microsoft 365 (ex.: email de hosting normal, visto através de uma conta Outlook.com/Live.com pessoal como conta agregada). Guarda as credenciais IMAP directamente; usa um cliente IMAP e um parser MIME escritos de raiz em `_shared/imap-cliente.ts`/`_shared/mime-parser.ts`, porque não existe biblioteca IMAP fiável para o runtime Deno das Edge Functions.
+- `email-sync` (cron, de 6 em 6h) / `email-sync-manual` (botão "Sincronizar agora") — ambas chamam `_shared/email-sync-logica.ts`, que por cada integração activa: renova o token OAuth se necessário, lista mensagens recentes, aplica o filtro de relevância, descarrega o PDF para o bucket `faturas-pdf` (subcaminho `{empresa_id}/emails/{mensagem_id}.pdf`) e insere em `emails_fornecedores_pendentes`.
+
+Cada fornecedor de email (Outlook, IMAP, …) é um adaptador cumprindo o contrato `AdaptadorEmail` em `_shared/email-tipos.ts` — o mesmo padrão da telemetria, para um fornecedor novo (ex.: Gmail) não obrigar a tocar na orquestração de sync/OAuth.
+
+**Filtro de relevância** (`_shared/filtro-email.ts`), pensado em camadas para não deixar escapar facturas (lê assunto, corpo e nome do PDF anexado, não só o remetente) nem apanhar facturas de fornecedores não relacionados com pneus (a palavra genérica "fatura"/"invoice" sozinha não é suficiente):
+
+1. Tem de ter um PDF anexado (condição obrigatória).
+2. E depois: o remetente bate com o `dominio_email` de algum fornecedor da empresa **ou** aparece uma palavra específica de pneus (pneu, pneus, pneumático(s), tyre(s), tire(s), rechapagem, recauchutagem) no assunto, no corpo ou no nome do PDF.
 
 ---
 
@@ -121,7 +172,7 @@ Variável de ambiente necessária no Railway: `RESEND_API_KEY`.
 ## Autenticação
 
 - Login por email/password (Supabase Auth). Depois de autenticar, se o utilizador tiver acesso a mais do que uma empresa (só acontece para admins), escolhe qual quer usar; a escolha fica em `localStorage`.
-- **Mudar password**: painel lateral acessível a partir do menu, para um utilizador já autenticado (`sb.auth.updateUser`).
+- **Mudar password**: painel lateral acessível a partir do menu, a dois passos — primeiro confirma a password actual (`sb.auth.signInWithPassword`, que também satisfaz o requisito de sessão recente do Supabase para alterar a password), só depois revela os campos de nova password/confirmar (`sb.auth.updateUser`).
 - **Esqueci-me da password**: link no login → email com link de recuperação (`resetPasswordForEmail`) → o link traz o utilizador de volta a `app.html` com uma sessão temporária (evento `PASSWORD_RECOVERY`), que mostra um formulário de nova password antes de entrar normalmente.
 
 ---
@@ -154,8 +205,18 @@ SUPABASE_KEY=...       (chave anon public)
 RESEND_API_KEY=...     (para emails — reset de password e formulário de contacto)
 ```
 
-### 5. Publicar
-Railway → New Project → Deploy from GitHub repo → adicionar as variáveis acima. Deploy automático a cada push para `main`.
+### 5. Segredos das Edge Functions (Supabase Dashboard → Edge Functions → Secrets)
+Só necessários para "Faturas por email" via Outlook (o adaptador IMAP não precisa de nada disto — as credenciais vêm do próprio utilizador em runtime):
+```
+MS_CLIENT_ID=...        (App Registration no Azure/Entra ID, tipo "Web", multi-tenant)
+MS_CLIENT_SECRET=...
+MS_TENANT=organizations
+OAUTH_STATE_SECRET=...  (string aleatória longa, só para assinar o `state` do OAuth)
+```
+Na função `email-oauth-callback`, desligar manualmente "Verify JWT" nas definições da função no Dashboard (é a Microsoft que chama este endpoint, não traz JWT do Supabase).
+
+### 6. Publicar
+Railway → New Project → Deploy from GitHub repo → adicionar as variáveis do passo 4. Deploy automático a cada push para `main`. Edge Functions e migrações continuam manuais (ver "Fluxo de trabalho" acima).
 
 ---
 
@@ -185,9 +246,21 @@ Escultura inicial assumida: 16mm (Novo), 14mm (Remix/Rechapado), 12mm (Piso Aber
 
 ---
 
+## Interações e animações
+
+Segue o guia próprio `SKILL_design.md` (na raiz do repo). Pontos concretos já aplicados em `style.css`/`js/utils.js`:
+
+- Painéis laterais (ex. mudar password, lugares) deslizam (`transform: translateX`) em vez de aparecer/desaparecer instantaneamente.
+- Botões têm feedback de pressão (`:active { transform: scale(0.97) }`), excepto os itens de navegação da sidebar (clicados dezenas de vezes por dia — animá-los seria ruído, não feedback).
+- `prefers-reduced-motion` desliga estas transformações.
+- `loading()` só mostra o overlay se a operação ainda estiver pendente passados 200ms (`LOADING_DELAY_MS`), para não "piscar" em cliques/trocas de página rápidas.
+
+---
+
 ## Segurança
 
-- Login obrigatório (email/password), com opção de recuperação por email.
-- Row Level Security em todas as tabelas — acesso sempre filtrado por `empresa_id` via `membros`, ou global para `admins`.
-- Credenciais de integrações (Supabase, Resend, telemetria) só em variáveis de ambiente/segredos — nunca no código.
+- Login obrigatório (email/password, com mudança a 2 passos e recuperação por email).
+- Row Level Security em todas as tabelas — acesso sempre filtrado por `empresa_id` via `membros`, ou global para `admins`. Tabelas com credenciais/tokens (`integracoes_telemetria`, `integracoes_email`) são só-admin; o frontend nunca as lê directamente, só através de Edge Functions autenticadas que derivam a `empresa_id` sempre do JWT de quem chama, nunca de um parâmetro do pedido.
+- Credenciais de integrações (Supabase, Resend, telemetria, Microsoft Graph, IMAP) só em variáveis de ambiente/segredos — nunca no código.
+- Funções chamadas pelo browser com cabeçalho `Authorization` custom exigem tratamento explícito de CORS/preflight (`_shared/cors.ts`) — o Supabase não adiciona isto automaticamente.
 - HTTPS em todos os pedidos.
