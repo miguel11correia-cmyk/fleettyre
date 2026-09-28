@@ -145,11 +145,11 @@ Problema real que resolve: a oficina regista montagens/desmontagens em papel; o 
 Página "Faturas por email" (Registos), `js/emails-fornecedores.js`. `integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
 
 - `email-status` — `{ligado, conta_email, ultima_sincronizacao}`, nunca os tokens.
-- `email-oauth-iniciar` / `email-oauth-callback` / `email-oauth-desligar` — fluxo OAuth (Microsoft Graph) para contas Microsoft 365 reais: "Ligar Outlook" chama `-iniciar` (autenticado, gera um `state` assinado por HMAC com `empresa_id`+`fornecedor`+expiração curta) e o browser é redireccionado para a Microsoft; `-callback` (pública, sem verificação de JWT — é a Microsoft que a chama) valida o `state`, troca o código pelos tokens e grava a integração.
-- `email-imap-ligar` — alternativa para contas de email que não são Microsoft 365 (ex.: email de hosting normal, visto através de uma conta Outlook.com/Live.com pessoal como conta agregada). Guarda as credenciais IMAP directamente; usa um cliente IMAP e um parser MIME escritos de raiz em `_shared/imap-cliente.ts`/`_shared/mime-parser.ts`, porque não existe biblioteca IMAP fiável para o runtime Deno das Edge Functions.
+- `email-oauth-iniciar` / `email-oauth-callback` / `email-oauth-desligar` — fluxo OAuth partilhado por qualquer fornecedor OAuth (`?fornecedor=outlook` ou `?fornecedor=google`): "Ligar Outlook"/"Ligar Google" chama `-iniciar` (autenticado, gera um `state` assinado por HMAC com `empresa_id`+`fornecedor`+expiração curta) e o browser é redireccionado para o fornecedor; `-callback` (pública, sem verificação de JWT — é o fornecedor que a chama, nunca o utilizador directamente) lê o `fornecedor` do `state`, valida-o, troca o código pelos tokens através do adaptador certo e grava a integração — mesma função para os dois fornecedores, nunca precisou de ramificação por fornecedor.
+- `email-imap-ligar` — alternativa para contas de email que não são Microsoft 365/Google Workspace (ex.: email de hosting normal). Guarda as credenciais IMAP directamente; usa um cliente IMAP e um parser MIME escritos de raiz em `_shared/imap-cliente.ts`/`_shared/mime-parser.ts`, porque não existe biblioteca IMAP fiável para o runtime Deno das Edge Functions.
 - `email-sync` (cron, de 6 em 6h) / `email-sync-manual` (botão "Sincronizar agora") — ambas chamam `_shared/email-sync-logica.ts`, que por cada integração activa: renova o token OAuth se necessário, lista mensagens recentes, aplica o filtro de relevância, descarrega o PDF para o bucket `faturas-pdf` (subcaminho `{empresa_id}/emails/{mensagem_id}.pdf`) e insere em `emails_fornecedores_pendentes`.
 
-Cada fornecedor de email (Outlook, IMAP, …) é um adaptador cumprindo o contrato `AdaptadorEmail` em `_shared/email-tipos.ts` — o mesmo padrão da telemetria, para um fornecedor novo (ex.: Gmail) não obrigar a tocar na orquestração de sync/OAuth.
+Cada fornecedor de email é um adaptador cumprindo o contrato `AdaptadorEmail` em `_shared/email-tipos.ts` — o mesmo padrão da telemetria. Hoje existem três: `outlook.ts` (Microsoft Graph), `google.ts` (Gmail API — serve tanto Google Workspace como Gmail pessoal, a Google não distingue os dois no OAuth) e `imap.ts`.
 
 **Filtro de relevância** (`_shared/filtro-email.ts`), pensado em camadas para não deixar escapar facturas (lê assunto, corpo e nome do PDF anexado, não só o remetente) nem apanhar facturas de fornecedores não relacionados com pneus (a palavra genérica "fatura"/"invoice" sozinha não é suficiente):
 
@@ -206,14 +206,18 @@ RESEND_API_KEY=...     (para emails — reset de password e formulário de conta
 ```
 
 ### 5. Segredos das Edge Functions (Supabase Dashboard → Edge Functions → Secrets)
-Só necessários para "Faturas por email" via Outlook (o adaptador IMAP não precisa de nada disto — as credenciais vêm do próprio utilizador em runtime):
+Só necessários para "Faturas por email" via Outlook/Google (o adaptador IMAP não precisa de nada disto — as credenciais vêm do próprio utilizador em runtime):
 ```
 MS_CLIENT_ID=...        (App Registration no Azure/Entra ID, tipo "Web", multi-tenant)
 MS_CLIENT_SECRET=...
 MS_TENANT=organizations
-OAUTH_STATE_SECRET=...  (string aleatória longa, só para assinar o `state` do OAuth)
+GOOGLE_CLIENT_ID=...     (OAuth Client ID no Google Cloud Console, tipo "Web application")
+GOOGLE_CLIENT_SECRET=...
+OAUTH_STATE_SECRET=...  (string aleatória longa, só para assinar o `state` do OAuth — partilhado por todos os fornecedores OAuth)
 ```
-Na função `email-oauth-callback`, desligar manualmente "Verify JWT" nas definições da função no Dashboard (é a Microsoft que chama este endpoint, não traz JWT do Supabase).
+Na função `email-oauth-callback`, desligar manualmente "Verify JWT" nas definições da função no Dashboard (é o fornecedor — Microsoft ou Google — que chama este endpoint, não traz JWT do Supabase).
+
+Para o Google especificamente: Google Cloud Console → criar/escolher um projecto → **APIs & Services → Library** → activar "Gmail API" → **APIs & Services → OAuth consent screen** (tipo "External", basta ficar em modo "Testing" com o teu próprio email como "Test user" — não precisa de verificação da Google para uso interno) → **APIs & Services → Credentials → Create Credentials → OAuth client ID**, tipo "Web application", com o Redirect URI igual ao do Outlook (`.../functions/v1/email-oauth-callback`, a mesma função serve os dois fornecedores).
 
 ### 6. Publicar
 Railway → New Project → Deploy from GitHub repo → adicionar as variáveis do passo 4. Deploy automático a cada push para `main`. Edge Functions e migrações continuam manuais (ver "Fluxo de trabalho" acima).
