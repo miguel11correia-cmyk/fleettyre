@@ -34,9 +34,10 @@ async function carregarStatusTelemetria() {
 
   if (!status.ligado) {
     el.innerHTML = `
+      <p style="font-size:11px;color:var(--text2);margin-bottom:10px">Não é o login normal do portal Cartrack — é o utilizador/password gerados na secção "Definições da API" (API Settings) da conta Cartrack.</p>
       <div class="g2">
-        <div class="frow"><label>Utilizador Cartrack</label><input type="text" id="tel-username" placeholder="ex: TRAN00108"></div>
-        <div class="frow"><label>Password</label><input type="password" id="tel-password"></div>
+        <div class="frow"><label>Utilizador da API</label><input type="text" id="tel-username" placeholder="ex: TRAN00108"></div>
+        <div class="frow"><label>Password da API</label><input type="password" id="tel-password"></div>
       </div>
       <div class="frow" style="max-width:200px"><label>Região</label><input type="text" id="tel-region" value="pt"></div>
       <button class="btn btn-brand" onclick="ligarCartrack()">Ligar Cartrack</button>`;
