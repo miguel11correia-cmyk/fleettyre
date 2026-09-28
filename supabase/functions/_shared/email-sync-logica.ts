@@ -6,11 +6,13 @@
 
 import type { AdaptadorEmail, TokensEmail } from "./email-tipos.ts";
 import { outlook } from "./outlook.ts";
+import { google } from "./google.ts";
 import { imap } from "./imap.ts";
 import { pareceFatura } from "./filtro-email.ts";
 
 export const ADAPTADORES_EMAIL: Record<string, AdaptadorEmail> = {
   outlook,
+  google,
   imap,
 };
 

@@ -25,7 +25,7 @@ async function initEmailsFornecedores() {
   await carregarEmailsPendentes();
 }
 
-const NOME_FORNECEDOR = { outlook: 'Outlook', imap: 'IMAP' };
+const NOME_FORNECEDOR = { outlook: 'Outlook', google: 'Google', imap: 'IMAP' };
 
 async function carregarStatusEmail() {
   const el = document.getElementById('email-forn-status');
@@ -42,6 +42,7 @@ async function carregarStatusEmail() {
     el.innerHTML = `
       <div style="display:flex;gap:8px;margin-bottom:14px">
         <button class="btn btn-brand" onclick="ligarOutlook()">Ligar Outlook</button>
+        <button class="btn btn-brand" onclick="ligarGoogle()">Ligar Google</button>
       </div>
       <div style="border-top:0.5px solid var(--border);padding-top:14px">
         <p style="font-size:11px;color:var(--text2);margin-bottom:8px">Ou liga directamente por IMAP (email de alojamento normal, sem ser Microsoft 365/Google Workspace):</p>
@@ -73,6 +74,15 @@ async function carregarStatusEmail() {
 
 async function ligarOutlook() {
   const resposta = await chamarFuncaoEmail('email-oauth-iniciar?fornecedor=outlook');
+  if (resposta.url) {
+    window.location.href = resposta.url;
+  } else {
+    showFeedback('email-forn-feedback', resposta.erro || 'Erro ao iniciar ligação.', true);
+  }
+}
+
+async function ligarGoogle() {
+  const resposta = await chamarFuncaoEmail('email-oauth-iniciar?fornecedor=google');
   if (resposta.url) {
     window.location.href = resposta.url;
   } else {
