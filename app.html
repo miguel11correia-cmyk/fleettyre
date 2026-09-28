@@ -309,9 +309,15 @@
   <div class="panel" id="painel-password">
     <div class="panel-head"><span>Mudar password</span><button class="btn-close" onclick="fecharPainelPassword()">✕</button></div>
     <div class="panel-body">
-      <div class="frow"><label>Nova password</label><input type="password" id="pw-nova" autocomplete="new-password"></div>
-      <div class="frow"><label>Confirmar nova password</label><input type="password" id="pw-confirmar" autocomplete="new-password"></div>
-      <button class="btn btn-p w100" onclick="guardarNovaPassword()" style="margin-top:12px">🔒 Guardar nova password</button>
+      <div id="pw-passo-actual">
+        <div class="frow"><label>Password actual</label><input type="password" id="pw-atual" autocomplete="current-password"></div>
+        <button class="btn btn-p w100" onclick="confirmarPasswordActual()" style="margin-top:12px">Confirmar</button>
+      </div>
+      <div id="pw-passo-nova" class="hidden">
+        <div class="frow"><label>Nova password</label><input type="password" id="pw-nova" autocomplete="new-password"></div>
+        <div class="frow"><label>Confirmar nova password</label><input type="password" id="pw-confirmar" autocomplete="new-password"></div>
+        <button class="btn btn-p w100" onclick="guardarNovaPassword()" style="margin-top:12px">🔒 Guardar nova password</button>
+      </div>
       <div id="pw-feedback" class="feedback hidden"></div>
     </div>
   </div>
