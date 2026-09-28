@@ -1,0 +1,44 @@
+// ── TELEMETRIA SYNC MANUAL ────────────────────────────────────────
+// Autenticado — é isto que o botão "Sincronizar agora" da app chama,
+// nunca telemetria-sync directamente (essa usa a service role key sem
+// verificar quem pediu, só serve para ser chamada pelo pg_cron). A
+// empresa é sempre derivada do JWT do utilizador, nunca de um
+// parâmetro do pedido.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { obterEmpresaId } from "../_shared/auth.ts";
+import { sincronizarIntegracaoTelemetria } from "../_shared/telemetria-sync-logica.ts";
+import { CORS_HEADERS, tratarPreflight } from "../_shared/cors.ts";
+
+const SUPABASE_URL         = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+Deno.serve(async (req) => {
+  const preflight = tratarPreflight(req);
+  if (preflight) return preflight;
+
+  const empresaId = await obterEmpresaId(req);
+  if (!empresaId) {
+    return new Response(JSON.stringify({ ok: false, erro: "Não autenticado ou sem empresa associada." }), { status: 401, headers: CORS_HEADERS });
+  }
+
+  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  const { data: integ, error } = await sb
+    .from("integracoes_telemetria")
+    .select("*")
+    .eq("empresa_id", empresaId)
+    .eq("ativo", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    return new Response(JSON.stringify({ ok: false, erro: error.message }), { status: 500, headers: CORS_HEADERS });
+  }
+  if (!integ) {
+    return new Response(JSON.stringify({ ok: false, erro: "Sem integração de telemetria activa." }), { status: 400, headers: CORS_HEADERS });
+  }
+
+  const resultado = await sincronizarIntegracaoTelemetria(sb, integ);
+  return new Response(JSON.stringify(resultado), { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+});

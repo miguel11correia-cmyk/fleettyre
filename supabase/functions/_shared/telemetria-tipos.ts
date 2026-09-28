@@ -16,4 +16,10 @@ export interface AdaptadorTelemetria {
     matricula: string,
     credenciais: Record<string, unknown>
   ): Promise<LeituraOdometro | null>;
+
+  // Validação leve das credenciais ao ligar pela primeira vez (ver
+  // telemetria-ligar) — não garante 100% que tudo vai funcionar depois
+  // (isso só se sabe a sincronizar veículos a sério), mas apanha erros
+  // óbvios de digitação antes de gravar.
+  testarCredenciais(credenciais: Record<string, unknown>): Promise<boolean>;
 }

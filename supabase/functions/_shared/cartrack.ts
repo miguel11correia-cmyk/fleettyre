@@ -33,6 +33,26 @@ function extrairOdometro(payload: unknown): number | null {
 }
 
 export const cartrack: AdaptadorTelemetria = {
+  // Pede a lista de veículos (endpoint leve, não depende de nenhuma
+  // matrícula específica) só para confirmar que a autenticação está
+  // correcta — não interessa o conteúdo da resposta, só o estado HTTP.
+  async testarCredenciais(credenciais): Promise<boolean> {
+    const username = String(credenciais.username ?? "");
+    const password = String(credenciais.password ?? "");
+    const region   = String(credenciais.region ?? "pt");
+    if (!username || !password) return false;
+
+    const base = `https://fleetapi-${region}.cartrack.com/rest`;
+    const auth = "Basic " + btoa(`${username}:${password}`);
+
+    try {
+      const resp = await fetch(`${base}/vehicles?limit=1`, { headers: { Authorization: auth } });
+      return resp.ok;
+    } catch {
+      return false;
+    }
+  },
+
   async obterOdometro(matricula, credenciais): Promise<LeituraOdometro | null> {
     const username = String(credenciais.username ?? "");
     const password = String(credenciais.password ?? "");

@@ -229,6 +229,9 @@
         <div class="ni" onclick="navReg('emails-fornecedores',this)" data-page="emails-fornecedores">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="15" height="12" rx="1.5"/><path d="M2.5 5.5 10 11l7.5-5.5"/></svg></span>Faturas por email
         </div>
+        <div class="ni" onclick="navReg('telemetria',this)" data-page="telemetria">
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5a7.5 7.5 0 1 0 7.5 7.5"/><path d="M10 5.5v5l3.5 2"/><circle cx="10" cy="10" r="1"/></svg></span>Telemetria (KMs)
+        </div>
       </div>
 
       <!-- MENU VEÍCULOS -->
@@ -1068,6 +1071,19 @@
       <div id="rr-feedback" class="feedback hidden"></div>
     </div>
 
+    <!-- REGISTOS — TELEMETRIA -->
+    <div class="page hidden" id="page-telemetria">
+      <div class="page-header">
+        <h2>Telemetria (KMs)</h2>
+      </div>
+      <div class="card">
+        <div class="ct">Ligação ao sistema de telemetria/GPS</div>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:12px">Preenche automaticamente o "KM actual" dos veículos (usado como referência em Por matrícula e nos alertas) — não substitui os KMs manuais dos registos de pneus.</p>
+        <div id="telemetria-status"><p class="empty-msg">A carregar...</p></div>
+        <div id="telemetria-feedback" class="feedback hidden"></div>
+      </div>
+    </div>
+
     <!-- REGISTOS — FATURAS POR EMAIL -->
     <div class="page hidden" id="page-emails-fornecedores">
       <div class="page-header">
@@ -1483,6 +1499,7 @@
 <script src="js/fornecedores.js"></script>
 <script src="js/marcas.js"></script>
 <script src="js/emails-fornecedores.js"></script>
+<script src="js/telemetria.js"></script>
 <script src="js/analytics.js"></script>
 <script src="js/stock.js"></script>
 <script src="js/pdf-anexo.js"></script>
