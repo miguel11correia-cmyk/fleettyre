@@ -19,6 +19,17 @@ export const ADAPTADORES_EMAIL: Record<string, AdaptadorEmail> = {
 const JANELA_PRIMEIRA_SINCRONIZACAO_DIAS = 30;
 const SOBREPOSICAO_HORAS = 1;
 
+// O Message-ID de um email (ex: "<GV2PR02MB93...@...>") tem caracteres
+// (`<`, `>`, `@`) que a Storage do Supabase rejeita num caminho de
+// ficheiro ("Invalid key") — em vez de tentar sanitizar/escapar, usa-se
+// antes um hash determinístico, que evita este problema por completo
+// independentemente do formato do id de cada fornecedor.
+async function chaveStorageSegura(id: string): Promise<string> {
+  const bytes = new TextEncoder().encode(id);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 export interface IntegracaoEmail {
   id: number;
   empresa_id: string;
@@ -91,11 +102,12 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     try {
       const anexo = m.anexosPdf[0]; // só o primeiro PDF — suficiente para o objectivo (ter a factura à mão)
       const bytes = await adaptador.obterAnexoPdf(tokens, m.idInterno, anexo.id);
-      pdfPath = `${integ.empresa_id}/emails/${encodeURIComponent(m.id)}.pdf`;
+      pdfPath = `${integ.empresa_id}/emails/${await chaveStorageSegura(m.id)}.pdf`;
       const { error: errUp } = await sb.storage.from("faturas-pdf").upload(pdfPath, bytes, { contentType: "application/pdf" });
-      if (errUp) { pdfPath = null; }
-    } catch {
-      pdfPath = null; // fica sem PDF anexado, mas ainda vale a pena listar o email
+      if (errUp) { console.error("Erro a subir PDF para storage:", errUp.message); pdfPath = null; }
+    } catch (e) {
+      console.error("Erro a descarregar anexo PDF:", String(e)); // fica sem PDF anexado, mas ainda vale a pena listar o email
+      pdfPath = null;
     }
 
     const { error: errIns } = await sb.from("emails_fornecedores_pendentes").insert({
@@ -104,6 +116,7 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
       mensagem_id: m.id,
       remetente: m.remetente,
       assunto: m.assunto,
+      resumo_corpo: m.resumoCorpo,
       data_recebido: m.dataRecebido,
       pdf_path: pdfPath,
     });
