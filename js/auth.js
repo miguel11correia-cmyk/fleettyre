@@ -105,14 +105,41 @@ function mostrarApp() {
 // ── MUDAR PASSWORD ────────────────────────────────────────────────
 
 function abrirPainelPassword() {
+  document.getElementById('pw-atual').value = '';
   document.getElementById('pw-nova').value = '';
   document.getElementById('pw-confirmar').value = '';
+  document.getElementById('pw-passo-actual').classList.remove('hidden');
+  document.getElementById('pw-passo-nova').classList.add('hidden');
   document.getElementById('pw-feedback').classList.add('hidden');
   document.getElementById('painel-password').classList.add('open');
 }
 
 function fecharPainelPassword() {
   document.getElementById('painel-password').classList.remove('open');
+}
+
+async function confirmarPasswordActual() {
+  const passwordActual = document.getElementById('pw-atual').value;
+  if (!passwordActual) {
+    showFeedback('pw-feedback', 'Introduz a tua password actual.', true);
+    return;
+  }
+
+  loading(true);
+  // Reautentica com a password actual — confirma que está certa e, de
+  // caminho, renova a sessão (o Supabase exige sessão recente para
+  // mudar a password, com "Secure password change" activo).
+  const { error } = await sb.auth.signInWithPassword({ email: currentUser.email, password: passwordActual });
+  loading(false);
+
+  if (error) {
+    showFeedback('pw-feedback', 'Password actual incorrecta.', true);
+    return;
+  }
+
+  document.getElementById('pw-passo-actual').classList.add('hidden');
+  document.getElementById('pw-passo-nova').classList.remove('hidden');
+  document.getElementById('pw-feedback').classList.add('hidden');
 }
 
 async function guardarNovaPassword() {
