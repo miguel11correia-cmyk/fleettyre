@@ -48,22 +48,19 @@ async function loadFrotaReboques() {
   const mesesMed   = mesesArr.length > 0 ? Math.round(mesesArr.reduce((s,v) => s+v, 0) / mesesArr.length) : null;
   const comCusto       = data.filter(r => r.custo_pneu > 0);
   const custoHistorico = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
-  const custoMed       = comCusto.length > 0 ? custoHistorico / comCusto.length : null;
   // Só os pneus activos (montados agora) — o histórico completo faria o
   // valor crescer sempre, mesmo sem o custo real por mês ter mudado.
   const custoAtivos    = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
-
-  document.getElementById('rfk1').textContent = data.length;
-  document.getElementById('rfk2').textContent = activos.length;
-  document.getElementById('rfk3').textContent = mesesMed ? mesesMed + ' meses' : '—';
-  document.getElementById('rfk4').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
-  document.getElementById('rfk5').textContent = custoMed ? fmtEur(custoMed) : '—';
-
-  // Custo dos pneus activos deste reboque, por mês
   const custoMes = (custoAtivos > 0 && mesesMed && mesesMed > 0)
     ? fmtEur(custoAtivos / mesesMed) : '—';
-  document.getElementById('rfk6').textContent = custoMes;
-  document.getElementById('rfk7').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
+
+  // 5 cartões finais — cada um a responder a uma pergunta real de quem
+  // gere a frota (ver README, secção "Cálculos").
+  document.getElementById('rfk1').textContent = activos.length;
+  document.getElementById('rfk2').textContent = custoMes;
+  document.getElementById('rfk3').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
+  document.getElementById('rfk4').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
+  document.getElementById('rfk5').textContent = mesesMed ? mesesMed + ' meses' : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_REBOQUE[reboque?.num_eixos];

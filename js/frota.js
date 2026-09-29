@@ -67,7 +67,6 @@ async function loadFrota() {
 
   const comCusto        = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
   const custoHistorico  = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
-  const custoMed        = comCusto.length > 0 ? custoHistorico / comCusto.length : null;
   // Só os pneus activos (montados agora) — o histórico completo faria o
   // valor crescer sempre, mesmo sem o custo real por km ter mudado.
   const custoAtivos     = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
@@ -77,14 +76,13 @@ async function loadFrota() {
     ? (custoAtivos / kmsmedios).toFixed(4)
     : null;
 
-  document.getElementById('fk1').textContent = data.length;
-  document.getElementById('fk2').textContent = activos;
-  document.getElementById('fk3').textContent = kmsmedios ? fmt(kmsmedios) : '—';
-  document.getElementById('fk4').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
-  document.getElementById('fk5').textContent = custoMed   ? fmtEur(custoMed)   : '—';
-  document.getElementById('fk6').textContent = eurKm      ? '€ ' + eurKm   : '—';
-  document.getElementById('fk7').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
-  document.getElementById('fk8').textContent = kmsHistorico ? fmt(kmsHistorico) : '—';
+  // 5 cartões finais — cada um a responder a uma pergunta real de quem
+  // gere a frota (ver README, secção "Cálculos").
+  document.getElementById('fk1').textContent = activos;
+  document.getElementById('fk2').textContent = eurKm ? '€ ' + eurKm : '—';
+  document.getElementById('fk3').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
+  document.getElementById('fk4').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
+  document.getElementById('fk5').textContent = kmsHistorico ? fmt(kmsHistorico) : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_VEICULO[veiculo?.num_eixos];
