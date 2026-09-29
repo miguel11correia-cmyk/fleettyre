@@ -4,31 +4,6 @@
 
 const TIPOS_ORDEM = ['Novo', 'Remix', 'Rechapado', 'Piso Aberto'];
 
-// Seleciona uma amostra legível para o gráfico: top 5 mais eficientes,
-// top 5 menos eficientes, e até 3 mais próximos da média — sem duplicar
-// veículos que já entrem em mais do que um grupo (frotas pequenas).
-function amostraComparativa(linhasOrdenadas, valorKey, media) {
-  const n = linhasOrdenadas.length;
-  const topN    = linhasOrdenadas.slice(0, 5);
-  const bottomN = linhasOrdenadas.slice(Math.max(0, n - 5));
-
-  const escolhidos = new Set([...topN, ...bottomN].map(l => l.matricula));
-  const proximosMedia = linhasOrdenadas
-    .filter(l => !escolhidos.has(l.matricula))
-    .sort((a, b) => Math.abs(a[valorKey] - media) - Math.abs(b[valorKey] - media))
-    .slice(0, 3);
-
-  const vistos = new Set();
-  const amostra = [...topN, ...bottomN, ...proximosMedia].filter(l => {
-    if (vistos.has(l.matricula)) return false;
-    vistos.add(l.matricula);
-    return true;
-  });
-
-  amostra.sort((a, b) => a[valorKey] - b[valorKey]);
-  return amostra;
-}
-
 async function loadAnalytics() {
   loading(true);
   const [{ data, error }, { data: veiculosData }] = await Promise.all([
@@ -101,17 +76,25 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
   Object.keys(porMat).forEach(mat => {
     const regs      = porMat[mat];
     const kmAtual   = kmAtualPorMat ? kmAtualPorMat[mat] : null;
-    const kmsEfArr  = regs.map(r => kmsEfectuados(r, kmAtual)).filter(x => x != null).map(x => x.km);
-    const kmsMed    = kmsEfArr.length > 0 ? kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length : null;
+    const ativosArr = regs.filter(r => !r.mes_desmont);
 
-    const comCusto   = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
-    const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
-    const custoMed   = comCusto.length > 0 ? custoTotal / comCusto.length : null;
+    // KMs médios dos pneus ACTIVOS — kmsReaisOuEstimados (js/alertas.js)
+    // já tinha a cascata real→estimativa desde antes de haver telemetria,
+    // por isso funciona sempre, mesmo sem Cartrack ligado. Exige
+    // mes_mont/kms_mont preenchidos, tal como o uso original em Alertas.
+    const kmsAtivosArr = ativosArr.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, regs, kmAtual));
+    const kmsMed = kmsAtivosArr.length > 0 ? kmsAtivosArr.reduce((s, v) => s + v, 0) / kmsAtivosArr.length : null;
 
-    const eurKm = (custoMed && kmsMed && kmsMed > 0) ? custoMed / kmsMed : null;
+    const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+
+    // €/km = custo dos pneus ACTIVOS (montados agora) ÷ KMs médios dos
+    // pneus ACTIVOS — não o histórico todo, que faria o valor crescer
+    // sempre à medida que mais pneus vão sendo substituídos.
+    const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const eurKm = (custoAtivos > 0 && kmsMed && kmsMed > 0) ? custoAtivos / kmsMed : null;
     if (eurKm == null) return; // só entram veículos com dados suficientes para comparar
 
-    linhas.push({ matricula: mat, nPneus: regs.length, kmsMed, custoMed, eurKm });
+    linhas.push({ matricula: mat, nPneus: regs.length, kmsMed, custoAtivos, eurKm });
   });
 
   const kpis = { media: 'an-media-frota', maisEf: 'an-mais-eficiente', menosEf: 'an-menos-eficiente', n: 'an-n-veiculos' };
@@ -120,9 +103,6 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
   if (linhas.length === 0) {
     Object.values(kpis).forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
     if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem veículos com KMs e custo suficientes para comparar.</td></tr>';
-    if (charts['c-an-veiculos']) { charts['c-an-veiculos'].destroy(); delete charts['c-an-veiculos']; }
-    const chartMediaEmpty = document.getElementById('an-chart-media');
-    if (chartMediaEmpty) chartMediaEmpty.textContent = '';
     return;
   }
 
@@ -144,25 +124,10 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
         <td><strong>${l.matricula}</strong></td>
         <td style="text-align:center">${l.nPneus}</td>
         <td style="text-align:right">${fmt(Math.round(l.kmsMed))}</td>
-        <td style="text-align:right">${fmtEur(l.custoMed)}</td>
+        <td style="text-align:right">${fmtEur(l.custoAtivos)}</td>
         <td style="text-align:right">€ ${l.eurKm.toFixed(4)}</td>
         <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
       </tr>`;
     }).join('');
-  }
-
-  const amostra   = amostraComparativa(linhas, 'eurKm', media);
-  const barColors = amostra.map(l => l.eurKm > media ? '#c93030' : '#15803d');
-  mkChart('c-an-veiculos', 'bar', amostra.map(l => l.matricula), amostra.map(l => Number(l.eurKm.toFixed(4))), barColors, {
-    indexAxis: 'y',
-    scales: {
-      x: { grid: { color: '#e5e4df' }, ticks: { color: '#8a8884', font: { size: 10 } } },
-      y: { grid: { display: false },   ticks: { color: '#8a8884', font: { size: 10 } } },
-    },
-  });
-
-  const chartMedia = document.getElementById('an-chart-media');
-  if (chartMedia) {
-    chartMedia.textContent = `Média da frota: € ${media.toFixed(4)}/km — de referência para as barras acima (${amostra.length} de ${linhas.length} veículos: mais eficientes, menos eficientes e mais próximos da média)`;
   }
 }

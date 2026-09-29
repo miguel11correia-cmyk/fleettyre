@@ -240,10 +240,11 @@ Se o pneu ainda estiver montado e o veículo tiver `km_atual` (via telemetria), 
 Custo médio = Soma dos custos de pneu ÷ Nº de pneus com custo preenchido
 ```
 
-### Custo por km
+### Custo por km (por veículo)
 ```
-€/km = Custo médio por pneu ÷ KMs médios por pneu
+€/km = Custo dos pneus ACTIVOS (montados agora) ÷ KMs médios dos pneus ACTIVOS
 ```
+Numerador e denominador usam só os pneus activos (não o histórico completo) — senão o custo (uma soma) cresceria sempre com o tempo enquanto os KMs médios (uma média) ficam estáveis, inflacionando o rácio artificialmente. Os KMs médios dos activos vêm de `kmsReaisOuEstimados` (`js/alertas.js`) — cascata real (telemetria) → KMs máximos conhecidos do veículo → média mensal entre montagens passadas → constante de 7500km/mês, a mesma lógica já usada nos Alertas desde antes de existir telemetria, por isso funciona sempre. O custo e os KMs médios do histórico completo (activos + já substituídos) ficam visíveis à parte, só para referência, sem entrar na fórmula. Usado em "Por matrícula" e em "Análise → Comparação entre veículos". Para reboques, o denominador continua a ser a duração média (meses) — não têm conta-quilómetros próprio — e o custo é sempre só dos pneus activos (`€/mês`).
 
 ### Taxa de desgaste
 ```

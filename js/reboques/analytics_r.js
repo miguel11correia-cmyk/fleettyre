@@ -72,14 +72,15 @@ function renderComparacaoReboques(data) {
     const mesesArr   = comMeses.map(r => mesesEntre(r.mes_mont, r.mes_desmont));
     const mesesMed   = mesesArr.length > 0 ? mesesArr.reduce((s, v) => s + v, 0) / mesesArr.length : null;
 
-    const comCusto   = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
-    const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
-    const custoMed   = comCusto.length > 0 ? custoTotal / comCusto.length : null;
+    const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
 
-    const eurMes = (custoMed && mesesMed && mesesMed > 0) ? custoMed / mesesMed : null;
+    // €/mês = custo dos pneus ACTIVOS deste reboque ÷ duração média — não
+    // o histórico todo, que faria o valor crescer sempre.
+    const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const eurMes = (custoAtivos > 0 && mesesMed && mesesMed > 0) ? custoAtivos / mesesMed : null;
     if (eurMes == null) return;
 
-    linhas.push({ matricula: mat, nPneus: regs.length, mesesMed, custoMed, eurMes });
+    linhas.push({ matricula: mat, nPneus: regs.length, mesesMed, custoAtivos, eurMes });
   });
 
   const kpis = { media: 'ran-media-frota', maisEf: 'ran-mais-eficiente', menosEf: 'ran-menos-eficiente', n: 'ran-n-veiculos' };
@@ -88,9 +89,6 @@ function renderComparacaoReboques(data) {
   if (linhas.length === 0) {
     Object.values(kpis).forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
     if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem reboques com meses e custo suficientes para comparar.</td></tr>';
-    if (charts['rc-an-veiculos']) { charts['rc-an-veiculos'].destroy(); delete charts['rc-an-veiculos']; }
-    const chartMediaEmpty = document.getElementById('ran-chart-media');
-    if (chartMediaEmpty) chartMediaEmpty.textContent = '';
     return;
   }
 
@@ -112,25 +110,10 @@ function renderComparacaoReboques(data) {
         <td><strong>${l.matricula}</strong></td>
         <td style="text-align:center">${l.nPneus}</td>
         <td style="text-align:right">${Math.round(l.mesesMed)} meses</td>
-        <td style="text-align:right">${fmtEur(l.custoMed)}</td>
+        <td style="text-align:right">${fmtEur(l.custoAtivos)}</td>
         <td style="text-align:right">${fmtEur(l.eurMes)}</td>
         <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
       </tr>`;
     }).join('');
-  }
-
-  const amostra   = amostraComparativa(linhas, 'eurMes', media);
-  const barColors = amostra.map(l => l.eurMes > media ? '#c93030' : '#15803d');
-  mkChart('rc-an-veiculos', 'bar', amostra.map(l => l.matricula), amostra.map(l => Number(l.eurMes.toFixed(2))), barColors, {
-    indexAxis: 'y',
-    scales: {
-      x: { grid: { color: '#e5e4df' }, ticks: { color: '#8a8884', font: { size: 10 } } },
-      y: { grid: { display: false },   ticks: { color: '#8a8884', font: { size: 10 } } },
-    },
-  });
-
-  const chartMedia = document.getElementById('ran-chart-media');
-  if (chartMedia) {
-    chartMedia.textContent = `Média da frota: ${fmtEur(media)}/mês — de referência para as barras acima (${amostra.length} de ${linhas.length} reboques: mais eficientes, menos eficientes e mais próximos da média)`;
   }
 }

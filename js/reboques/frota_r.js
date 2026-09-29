@@ -46,20 +46,24 @@ async function loadFrotaReboques() {
   const comMeses   = data.filter(r => r.mes_desmont && r.mes_mont);
   const mesesArr   = comMeses.map(r => mesesEntre(r.mes_mont, r.mes_desmont));
   const mesesMed   = mesesArr.length > 0 ? Math.round(mesesArr.reduce((s,v) => s+v, 0) / mesesArr.length) : null;
-  const comCusto   = data.filter(r => r.custo_pneu > 0);
-  const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
-  const custoMed   = comCusto.length > 0 ? custoTotal / comCusto.length : null;
+  const comCusto       = data.filter(r => r.custo_pneu > 0);
+  const custoHistorico = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
+  const custoMed       = comCusto.length > 0 ? custoHistorico / comCusto.length : null;
+  // Só os pneus activos (montados agora) — o histórico completo faria o
+  // valor crescer sempre, mesmo sem o custo real por mês ter mudado.
+  const custoAtivos    = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
 
   document.getElementById('rfk1').textContent = data.length;
   document.getElementById('rfk2').textContent = activos.length;
   document.getElementById('rfk3').textContent = mesesMed ? mesesMed + ' meses' : '—';
-  document.getElementById('rfk4').textContent = custoTotal > 0 ? fmtEur(custoTotal) : '—';
+  document.getElementById('rfk4').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
   document.getElementById('rfk5').textContent = custoMed ? fmtEur(custoMed) : '—';
 
-  // Custo por mês ativo
-  const custoMes = (custoMed && mesesMed && mesesMed > 0)
-    ? fmtEur(custoMed / mesesMed) : '—';
+  // Custo dos pneus activos deste reboque, por mês
+  const custoMes = (custoAtivos > 0 && mesesMed && mesesMed > 0)
+    ? fmtEur(custoAtivos / mesesMed) : '—';
   document.getElementById('rfk6').textContent = custoMes;
+  document.getElementById('rfk7').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_REBOQUE[reboque?.num_eixos];

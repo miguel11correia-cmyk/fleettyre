@@ -605,10 +605,12 @@
         <div class="krow">
           <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="fk1">—</div><div class="kpi-s">histórico</div></div>
           <div class="kpi green"><div class="kpi-l">Ativos</div><div class="kpi-v green" id="fk2">—</div><div class="kpi-s">sem desmontagem</div></div>
-          <div class="kpi"><div class="kpi-l">KMs médios/pneu</div><div class="kpi-v" id="fk3">—</div><div class="kpi-s">real ou estimado</div></div>
-          <div class="kpi amber"><div class="kpi-l">Custo total (€)</div><div class="kpi-v amber" id="fk4">—</div><div class="kpi-s">com custo preenchido</div></div>
+          <div class="kpi"><div class="kpi-l">KMs médios ativos</div><div class="kpi-v" id="fk3">—</div><div class="kpi-s">real ou estimado</div></div>
+          <div class="kpi amber"><div class="kpi-l">Custo pneus ativos (€)</div><div class="kpi-v amber" id="fk4">—</div><div class="kpi-s">montados agora</div></div>
           <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="fk5">—</div><div class="kpi-s">só com valor</div></div>
-          <div class="kpi"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk6">—</div><div class="kpi-s">custo ÷ km médio</div></div>
+          <div class="kpi"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk6">—</div><div class="kpi-s">custo ativos ÷ km médio</div></div>
+          <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="fk7">—</div><div class="kpi-s">ativos + substituídos</div></div>
+          <div class="kpi"><div class="kpi-l">KMs médios histórico</div><div class="kpi-v" id="fk8">—</div><div class="kpi-s">ativos + substituídos</div></div>
         </div>
         <div class="card hidden" id="frota-lugares-card">
           <div class="ct">Posições</div>
@@ -885,18 +887,12 @@
         <div class="kpi"><div class="kpi-l">Veículos comparados</div><div class="kpi-v" id="an-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
       </div>
       <div class="card">
-        <div class="ct">Comparação de custo por km — ranking de eficiência</div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Mostra os 5 mais eficientes, os 5 menos eficientes e os mais próximos da média — a tabela abaixo tem sempre todos os veículos.</p>
-        <div class="cw-t" style="height:320px"><canvas id="c-an-veiculos" aria-label="Comparação de custo por km entre veículos"></canvas></div>
-        <p id="an-chart-media" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px"></p>
-      </div>
-      <div class="card">
         <div class="ct">Detalhe por veículo</div>
         <div class="table-wrap">
           <table>
             <thead><tr>
               <th>#</th><th>Matrícula</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">KMs médios/pneu</th>
-              <th style="text-align:right">Custo médio/pneu (€)</th><th style="text-align:right">€/km</th><th>Estado</th>
+              <th style="text-align:right">Custo ativos (€)</th><th style="text-align:right">€/km</th><th>Estado</th>
             </tr></thead>
             <tbody id="an-veiculos-tbody"></tbody>
           </table>
@@ -1294,9 +1290,10 @@
           <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="rfk1">—</div><div class="kpi-s">histórico</div></div>
           <div class="kpi green"><div class="kpi-l">Ativos</div><div class="kpi-v green" id="rfk2">—</div><div class="kpi-s">sem desmontagem</div></div>
           <div class="kpi"><div class="kpi-l">Duração média</div><div class="kpi-v" id="rfk3">—</div><div class="kpi-s">pneus desmontados</div></div>
-          <div class="kpi amber"><div class="kpi-l">Custo total (€)</div><div class="kpi-v amber" id="rfk4">—</div><div class="kpi-s">com custo preenchido</div></div>
+          <div class="kpi amber"><div class="kpi-l">Custo pneus ativos (€)</div><div class="kpi-v amber" id="rfk4">—</div><div class="kpi-s">montados agora</div></div>
           <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="rfk5">—</div></div>
-          <div class="kpi"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk6">—</div><div class="kpi-s">custo ÷ duração</div></div>
+          <div class="kpi"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk6">—</div><div class="kpi-s">custo ativos ÷ duração</div></div>
+          <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="rfk7">—</div><div class="kpi-s">ativos + substituídos</div></div>
         </div>
         <div class="card hidden" id="rfrota-lugares-card">
           <div class="ct">Posições</div>
@@ -1453,18 +1450,12 @@
         <div class="kpi"><div class="kpi-l">Reboques comparados</div><div class="kpi-v" id="ran-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
       </div>
       <div class="card">
-        <div class="ct">Comparação de custo por mês — ranking de eficiência</div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Mostra os 5 mais eficientes, os 5 menos eficientes e os mais próximos da média — a tabela abaixo tem sempre todos os reboques.</p>
-        <div class="cw-t" style="height:320px"><canvas id="rc-an-veiculos" aria-label="Comparação de custo por mês entre reboques"></canvas></div>
-        <p id="ran-chart-media" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px"></p>
-      </div>
-      <div class="card">
         <div class="ct">Detalhe por reboque</div>
         <div class="table-wrap">
           <table>
             <thead><tr>
               <th>#</th><th>Matrícula</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">Duração média</th>
-              <th style="text-align:right">Custo médio/pneu (€)</th><th style="text-align:right">€/mês</th><th>Estado</th>
+              <th style="text-align:right">Custo ativos (€)</th><th style="text-align:right">€/mês</th><th>Estado</th>
             </tr></thead>
             <tbody id="ran-veiculos-tbody"></tbody>
           </table>

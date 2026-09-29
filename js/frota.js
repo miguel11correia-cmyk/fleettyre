@@ -44,28 +44,47 @@ async function loadFrota() {
   if (error || !data) return;
 
   // ── KPIs da matrícula ──
-  const activos  = data.filter(r => !r.mes_desmont).length;
+  const activosArr0 = data.filter(r => !r.mes_desmont);
+  const activos  = activosArr0.length;
   const kmAtual  = veiculo?.km_atual ?? null;
+
+  // KMs médios dos pneus ATIVOS — usa kmsReaisOuEstimados (js/alertas.js),
+  // que já tinha a cascata real→estimativa desde antes de haver
+  // telemetria, para nunca ficar sem valor mesmo sem Cartrack ligado.
+  // Exige mes_mont/kms_mont preenchidos, tal como o uso original em
+  // Alertas — sem isso a estimativa cairia sempre no fallback de 0.
+  const kmsAtivosArr = activosArr0.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, data, kmAtual));
+  const kmsmedios = kmsAtivosArr.length > 0
+    ? Math.round(kmsAtivosArr.reduce((s, v) => s + v, 0) / kmsAtivosArr.length)
+    : null;
+
+  // KMs médios do histórico completo (activos + já desmontados) — só
+  // para referência, não entra na fórmula do €/km.
   const kmsEfArr = data.map(r => kmsEfectuados(r, kmAtual)).filter(x => x != null).map(x => x.km);
-  const kmsmedios = kmsEfArr.length > 0
+  const kmsHistorico = kmsEfArr.length > 0
     ? Math.round(kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length)
     : null;
 
-  const comCusto   = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
-  const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
-  const custoMed   = comCusto.length > 0 ? custoTotal / comCusto.length : null;
+  const comCusto        = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+  const custoHistorico  = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
+  const custoMed        = comCusto.length > 0 ? custoHistorico / comCusto.length : null;
+  // Só os pneus activos (montados agora) — o histórico completo faria o
+  // valor crescer sempre, mesmo sem o custo real por km ter mudado.
+  const custoAtivos     = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
 
-  // €/km = custo médio por pneu ÷ KMs médios por pneu
-  const eurKm = (custoMed && kmsmedios && kmsmedios > 0)
-    ? (custoMed / kmsmedios).toFixed(4)
+  // €/km = custo dos pneus activos ÷ KMs médios por pneu
+  const eurKm = (custoAtivos > 0 && kmsmedios && kmsmedios > 0)
+    ? (custoAtivos / kmsmedios).toFixed(4)
     : null;
 
   document.getElementById('fk1').textContent = data.length;
   document.getElementById('fk2').textContent = activos;
   document.getElementById('fk3').textContent = kmsmedios ? fmt(kmsmedios) : '—';
-  document.getElementById('fk4').textContent = custoTotal > 0 ? fmtEur(custoTotal) : '—';
+  document.getElementById('fk4').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
   document.getElementById('fk5').textContent = custoMed   ? fmtEur(custoMed)   : '—';
   document.getElementById('fk6').textContent = eurKm      ? '€ ' + eurKm   : '—';
+  document.getElementById('fk7').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
+  document.getElementById('fk8').textContent = kmsHistorico ? fmt(kmsHistorico) : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_VEICULO[veiculo?.num_eixos];
