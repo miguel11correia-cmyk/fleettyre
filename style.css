@@ -644,6 +644,38 @@ tbody tr:hover td { background: var(--bg); }
 .b-alert { background: #fef2f2; color: #991b1b; }
 .b-warn  { background: #fffbeb; color: #b45309; }
 
+/* Chip — mesma forma do badge (pílula), mas para um valor removível
+   pelo próprio utilizador (ex: domínios de email de um fornecedor). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 4px 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  background: var(--bg);
+  border: 0.5px solid var(--border2);
+  color: var(--text);
+}
+.chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  transition: background .1s, color .1s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .chip button:hover { background: var(--red-bg); color: var(--red); }
+}
+
 /* ── SELECTOR BAR ─────────────────────────────────────────────── */
 .sel-bar {
   display: flex;
