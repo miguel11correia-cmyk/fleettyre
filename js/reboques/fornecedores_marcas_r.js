@@ -54,7 +54,7 @@ async function loadMarcasReboques() {
   const agg = {};
   data.filter(r => r.marca).forEach(r => {
     const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, mesesArr: [], custos: [] };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, mesesArr: [], custos: [], custoAtivos: 0 };
     agg[k].total++;
     if (r.tipo === 'Novo')        agg[k].novo++;
     else if (r.tipo === 'Remix')  agg[k].remix++;
@@ -64,12 +64,31 @@ async function loadMarcasReboques() {
       agg[k].mesesArr.push(mesesEntre(r.mes_mont, r.mes_desmont));
     }
     if (r.custo_pneu > 0) agg[k].custos.push(Number(r.custo_pneu));
+    // €/mês desta marca — só pneus activos, tal como em "Por
+    // reboque"/"Análise" (o histórico completo faria o valor crescer
+    // sempre); duração média fica a cargo do mesesArr (ciclos já
+    // concluídos, não tem o mesmo problema por já ser limitado).
+    if (!r.mes_desmont && r.custo_pneu > 0) agg[k].custoAtivos += Number(r.custo_pneu);
   });
 
-  const keys = Object.keys(agg).sort((a, b) => agg[b].total - agg[a].total);
+  const eurMesPorMarca = {};
+  Object.keys(agg).forEach(k => {
+    const m = agg[k];
+    const mesesM = m.mesesArr.length > 0 ? m.mesesArr.reduce((s,v) => s+v, 0) / m.mesesArr.length : null;
+    eurMesPorMarca[k] = (m.custoAtivos > 0 && mesesM && mesesM > 0) ? m.custoAtivos / mesesM : null;
+  });
+
+  const keys = Object.keys(agg).sort((a, b) => {
+    const ea = eurMesPorMarca[a], eb = eurMesPorMarca[b];
+    if (ea != null && eb != null) return ea - eb;
+    if (ea != null) return -1;
+    if (eb != null) return 1;
+    return agg[b].total - agg[a].total;
+  });
+
   const tbody = document.getElementById('rmarc-tbody');
   if (tbody) {
-    tbody.innerHTML = keys.map(k => {
+    tbody.innerHTML = keys.map((k, i) => {
       const m = agg[k];
       const mesesM = m.mesesArr.length > 0
         ? Math.round(m.mesesArr.reduce((s,v) => s+v, 0) / m.mesesArr.length) + ' meses'
@@ -77,11 +96,14 @@ async function loadMarcasReboques() {
       const custoM = m.custos.length > 0
         ? fmtEur(m.custos.reduce((s,v) => s+v, 0) / m.custos.length)
         : '—';
+      const eurMes = eurMesPorMarca[k];
       return `<tr>
+        <td>${eurMes != null ? i + 1 : '—'}</td>
         <td><strong>${k}</strong></td>
         <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
         <td style="text-align:right">${mesesM}</td>
         <td style="text-align:right">${custoM}</td>
+        <td style="text-align:right">${eurMes != null ? fmtEur(eurMes) : '—'}</td>
       </tr>`;
     }).join('');
   }

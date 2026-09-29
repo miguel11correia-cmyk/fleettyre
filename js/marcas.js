@@ -16,11 +16,20 @@ async function loadMarcas() {
   const kmAtualPorMat = {};
   (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
 
+  // Agrupado por matrícula — necessário como contexto do próprio veículo
+  // de cada pneu para o kmsReaisOuEstimados (kms máximos conhecidos,
+  // média mensal entre montagens passadas).
+  const porMat = {};
+  data.forEach(r => {
+    if (!porMat[r.matricula]) porMat[r.matricula] = [];
+    porMat[r.matricula].push(r);
+  });
+
   const hoje = mesAtual();
   const agg  = {};
   data.filter(r => r.marca).forEach(r => {
     const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [], taxaArr: [] };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [], taxaArr: [], custoAtivos: 0, kmsAtivosArr: [] };
     agg[k].total++;
     if (r.tipo === 'Novo')             agg[k].novo++;
     else if (r.tipo === 'Remix')       agg[k].remix++;
@@ -31,12 +40,38 @@ async function loadMarcas() {
     if (r.custo_pneu > 0)              agg[k].custos.push(Number(r.custo_pneu));
     const taxa = taxaDesgaste(r);
     if (taxa !== null)                 agg[k].taxaArr.push(taxa);
+
+    // €/km desta marca — só pneus activos (montados agora), tal como em
+    // "Por matrícula"/"Análise": custo total cresceria sempre com o
+    // histórico, os KMs médios usam a mesma cascata real→estimativa.
+    if (!r.mes_desmont) {
+      if (r.custo_pneu > 0) agg[k].custoAtivos += Number(r.custo_pneu);
+      if (r.mes_mont && r.kms_mont) {
+        agg[k].kmsAtivosArr.push(kmsReaisOuEstimados(r, porMat[r.matricula], kmAtualPorMat[r.matricula]));
+      }
+    }
   });
 
-  const keys = Object.keys(agg).sort((a, b) => agg[b].total - agg[a].total);
+  const eurKmPorMarca = {};
+  Object.keys(agg).forEach(k => {
+    const m = agg[k];
+    const kmsMedAtivos = m.kmsAtivosArr.length > 0 ? m.kmsAtivosArr.reduce((s,v) => s+v, 0) / m.kmsAtivosArr.length : null;
+    eurKmPorMarca[k] = (m.custoAtivos > 0 && kmsMedAtivos && kmsMedAtivos > 0) ? m.custoAtivos / kmsMedAtivos : null;
+  });
+
+  // Ranking: marcas com €/km calculável primeiro (mais eficiente/barata
+  // primeiro), as restantes no fim por ordem de quantidade de pneus.
+  const keys = Object.keys(agg).sort((a, b) => {
+    const ea = eurKmPorMarca[a], eb = eurKmPorMarca[b];
+    if (ea != null && eb != null) return ea - eb;
+    if (ea != null) return -1;
+    if (eb != null) return 1;
+    return agg[b].total - agg[a].total;
+  });
+
   const tbody = document.getElementById('marc-tbody');
   if (tbody) {
-    tbody.innerHTML = keys.map(k => {
+    tbody.innerHTML = keys.map((k, i) => {
       const m = agg[k];
       const kmsM = m.kmsArr.length > 0
         ? fmt(Math.round(m.kmsArr.reduce((s,v) => s+v, 0) / m.kmsArr.length))
@@ -47,12 +82,15 @@ async function loadMarcas() {
       const taxaM = m.taxaArr.length > 0
         ? (m.taxaArr.reduce((s,v) => s+v, 0) / m.taxaArr.length).toFixed(3)
         : '—';
+      const eurKm = eurKmPorMarca[k];
       return `<tr>
+        <td>${eurKm != null ? i + 1 : '—'}</td>
         <td><strong>${k}</strong></td>
         <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
         <td style="text-align:right">${kmsM}</td>
         <td style="text-align:right">${taxaM}</td>
         <td style="text-align:right">${custoM}</td>
+        <td style="text-align:right">${eurKm != null ? '€ ' + eurKm.toFixed(4) : '—'}</td>
       </tr>`;
     }).join('');
   }
