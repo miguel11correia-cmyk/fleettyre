@@ -156,6 +156,8 @@ Cada fornecedor de email é um adaptador cumprindo o contrato `AdaptadorEmail` e
 1. Tem de ter um PDF anexado (condição obrigatória).
 2. E depois: o remetente bate com algum dos `dominios_email` de um fornecedor da empresa **ou** aparece uma palavra específica de pneus (pneu, pneus, pneumático(s), tyre(s), tire(s), rechapagem, recauchutagem) no assunto, no corpo ou no nome do PDF.
 
+Cada entrada em `dominios_email` pode ser um domínio (`fornecedor.pt`, compara só o domínio do remetente) ou um email completo (`jose@gmail.com`, compara o endereço inteiro) — necessário para fornecedores que usam um provedor partilhado (Gmail, Outlook.pt, Hotmail, etc.), onde um domínio sozinho apanharia qualquer pessoa que use esse provedor, não só o fornecedor em questão.
+
 ---
 
 ## Email (Resend)

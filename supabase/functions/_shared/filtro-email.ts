@@ -23,10 +23,23 @@ function textoContemPalavraEspecifica(texto: string): boolean {
   return PALAVRAS_CHAVE_PNEUS.some(p => s.includes(p));
 }
 
-export function remetenteBateComFornecedor(remetente: string, dominios: string[]): boolean {
-  const dominioRemetente = (remetente || "").split("@")[1]?.toLowerCase();
+// Cada entrada em `identificadores` pode ser um domínio próprio de uma
+// empresa (ex: "sobralpneus.pt") ou um email completo (ex:
+// "jose@gmail.com") — necessário para fornecedores que usam um
+// provedor partilhado (Gmail, Outlook.pt, Hotmail, etc.), onde o
+// domínio sozinho apanharia qualquer pessoa que use esse provedor, não
+// só o fornecedor em questão. Uma entrada com "@" é comparada ao
+// endereço completo; sem "@", só ao domínio.
+export function remetenteBateComFornecedor(remetente: string, identificadores: string[]): boolean {
+  const remetenteLower  = (remetente || "").toLowerCase();
+  const dominioRemetente = remetenteLower.split("@")[1];
   if (!dominioRemetente) return false;
-  return dominios.some(d => d && dominioRemetente === d.toLowerCase());
+
+  return identificadores.some(id => {
+    if (!id) return false;
+    const idLower = id.toLowerCase();
+    return idLower.includes("@") ? remetenteLower === idLower : dominioRemetente === idLower;
+  });
 }
 
 // `textos` = assunto, resumo do corpo, nomes dos anexos — o que estiver
