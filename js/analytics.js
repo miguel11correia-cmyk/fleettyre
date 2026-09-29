@@ -76,14 +76,20 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
   Object.keys(porMat).forEach(mat => {
     const regs      = porMat[mat];
     const kmAtual   = kmAtualPorMat ? kmAtualPorMat[mat] : null;
-    const kmsEfArr  = regs.map(r => kmsEfectuados(r, kmAtual)).filter(x => x != null).map(x => x.km);
-    const kmsMed    = kmsEfArr.length > 0 ? kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length : null;
+    const ativosArr = regs.filter(r => !r.mes_desmont);
+
+    // KMs médios dos pneus ACTIVOS — kmsReaisOuEstimados (js/alertas.js)
+    // já tinha a cascata real→estimativa desde antes de haver telemetria,
+    // por isso funciona sempre, mesmo sem Cartrack ligado. Exige
+    // mes_mont/kms_mont preenchidos, tal como o uso original em Alertas.
+    const kmsAtivosArr = ativosArr.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, regs, kmAtual));
+    const kmsMed = kmsAtivosArr.length > 0 ? kmsAtivosArr.reduce((s, v) => s + v, 0) / kmsAtivosArr.length : null;
 
     const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
 
-    // €/km = custo dos pneus ACTIVOS (montados agora) deste veículo ÷
-    // KMs médios por pneu — não o histórico todo, que faria o valor
-    // crescer sempre à medida que mais pneus vão sendo substituídos.
+    // €/km = custo dos pneus ACTIVOS (montados agora) ÷ KMs médios dos
+    // pneus ACTIVOS — não o histórico todo, que faria o valor crescer
+    // sempre à medida que mais pneus vão sendo substituídos.
     const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
     const eurKm = (custoAtivos > 0 && kmsMed && kmsMed > 0) ? custoAtivos / kmsMed : null;
     if (eurKm == null) return; // só entram veículos com dados suficientes para comparar
