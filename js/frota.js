@@ -51,21 +51,25 @@ async function loadFrota() {
     ? Math.round(kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length)
     : null;
 
-  const comCusto   = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
-  const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
-  const custoMed   = comCusto.length > 0 ? custoTotal / comCusto.length : null;
+  const comCusto        = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+  const custoHistorico  = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
+  const custoMed        = comCusto.length > 0 ? custoHistorico / comCusto.length : null;
+  // Só os pneus activos (montados agora) — o histórico completo faria o
+  // valor crescer sempre, mesmo sem o custo real por km ter mudado.
+  const custoAtivos     = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
 
-  // €/km = custo total dos pneus deste veículo ÷ KMs médios por pneu
-  const eurKm = (custoTotal > 0 && kmsmedios && kmsmedios > 0)
-    ? (custoTotal / kmsmedios).toFixed(4)
+  // €/km = custo dos pneus activos ÷ KMs médios por pneu
+  const eurKm = (custoAtivos > 0 && kmsmedios && kmsmedios > 0)
+    ? (custoAtivos / kmsmedios).toFixed(4)
     : null;
 
   document.getElementById('fk1').textContent = data.length;
   document.getElementById('fk2').textContent = activos;
   document.getElementById('fk3').textContent = kmsmedios ? fmt(kmsmedios) : '—';
-  document.getElementById('fk4').textContent = custoTotal > 0 ? fmtEur(custoTotal) : '—';
+  document.getElementById('fk4').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
   document.getElementById('fk5').textContent = custoMed   ? fmtEur(custoMed)   : '—';
   document.getElementById('fk6').textContent = eurKm      ? '€ ' + eurKm   : '—';
+  document.getElementById('fk7').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_VEICULO[veiculo?.num_eixos];

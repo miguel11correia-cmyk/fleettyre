@@ -79,16 +79,16 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
     const kmsEfArr  = regs.map(r => kmsEfectuados(r, kmAtual)).filter(x => x != null).map(x => x.km);
     const kmsMed    = kmsEfArr.length > 0 ? kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length : null;
 
-    const comCusto   = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
-    const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
 
-    // €/km = custo total de TODOS os pneus deste veículo (montados e já
-    // substituídos) ÷ KMs médios por pneu — reflete o que o veículo
-    // realmente custa em pneus por km, não só o custo de um pneu isolado.
-    const eurKm = (custoTotal > 0 && kmsMed && kmsMed > 0) ? custoTotal / kmsMed : null;
+    // €/km = custo dos pneus ACTIVOS (montados agora) deste veículo ÷
+    // KMs médios por pneu — não o histórico todo, que faria o valor
+    // crescer sempre à medida que mais pneus vão sendo substituídos.
+    const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const eurKm = (custoAtivos > 0 && kmsMed && kmsMed > 0) ? custoAtivos / kmsMed : null;
     if (eurKm == null) return; // só entram veículos com dados suficientes para comparar
 
-    linhas.push({ matricula: mat, nPneus: regs.length, kmsMed, custoTotal, eurKm });
+    linhas.push({ matricula: mat, nPneus: regs.length, kmsMed, custoAtivos, eurKm });
   });
 
   const kpis = { media: 'an-media-frota', maisEf: 'an-mais-eficiente', menosEf: 'an-menos-eficiente', n: 'an-n-veiculos' };
@@ -118,7 +118,7 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
         <td><strong>${l.matricula}</strong></td>
         <td style="text-align:center">${l.nPneus}</td>
         <td style="text-align:right">${fmt(Math.round(l.kmsMed))}</td>
-        <td style="text-align:right">${fmtEur(l.custoTotal)}</td>
+        <td style="text-align:right">${fmtEur(l.custoAtivos)}</td>
         <td style="text-align:right">€ ${l.eurKm.toFixed(4)}</td>
         <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
       </tr>`;

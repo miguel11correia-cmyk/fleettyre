@@ -72,14 +72,15 @@ function renderComparacaoReboques(data) {
     const mesesArr   = comMeses.map(r => mesesEntre(r.mes_mont, r.mes_desmont));
     const mesesMed   = mesesArr.length > 0 ? mesesArr.reduce((s, v) => s + v, 0) / mesesArr.length : null;
 
-    const comCusto   = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
-    const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
 
-    // €/mês = custo total de TODOS os pneus deste reboque ÷ duração média
-    const eurMes = (custoTotal > 0 && mesesMed && mesesMed > 0) ? custoTotal / mesesMed : null;
+    // €/mês = custo dos pneus ACTIVOS deste reboque ÷ duração média — não
+    // o histórico todo, que faria o valor crescer sempre.
+    const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const eurMes = (custoAtivos > 0 && mesesMed && mesesMed > 0) ? custoAtivos / mesesMed : null;
     if (eurMes == null) return;
 
-    linhas.push({ matricula: mat, nPneus: regs.length, mesesMed, custoTotal, eurMes });
+    linhas.push({ matricula: mat, nPneus: regs.length, mesesMed, custoAtivos, eurMes });
   });
 
   const kpis = { media: 'ran-media-frota', maisEf: 'ran-mais-eficiente', menosEf: 'ran-menos-eficiente', n: 'ran-n-veiculos' };
@@ -109,7 +110,7 @@ function renderComparacaoReboques(data) {
         <td><strong>${l.matricula}</strong></td>
         <td style="text-align:center">${l.nPneus}</td>
         <td style="text-align:right">${Math.round(l.mesesMed)} meses</td>
-        <td style="text-align:right">${fmtEur(l.custoTotal)}</td>
+        <td style="text-align:right">${fmtEur(l.custoAtivos)}</td>
         <td style="text-align:right">${fmtEur(l.eurMes)}</td>
         <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
       </tr>`;
