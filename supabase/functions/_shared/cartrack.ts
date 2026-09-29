@@ -71,11 +71,16 @@ export const cartrack: AdaptadorTelemetria = {
       + `&end_timestamp=${encodeURIComponent(formatarData(agora))}`;
 
     const resp = await fetch(url, { headers: { Authorization: auth } });
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      // Lança em vez de devolver null, para o motivo real (estado HTTP +
+      // corpo da resposta da Cartrack) chegar ao resultado da sincronização
+      // em vez de desaparecer atrás de um "sem leitura de odómetro" genérico.
+      throw new Error(`Cartrack ${resp.status} em /vehicles/${matricula}/odometer: ${await resp.text()}`);
+    }
 
     const payload = await resp.json();
     const km = extrairOdometro(payload);
-    if (km == null) return null;
+    if (km == null) throw new Error(`Cartrack: campo de odómetro não reconhecido na resposta: ${JSON.stringify(payload)}`);
 
     return { km: Math.round(km), em: new Date().toISOString() };
   },
