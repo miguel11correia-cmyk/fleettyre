@@ -342,14 +342,10 @@ body {
 .kpi-s { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 0.1px; }
 .kpi-v.blue, .kpi-v.green, .kpi-v.amber, .kpi-v.red { color: var(--text); }
 
-/* Variante compacta — para linhas com mais cartões (ex: "Por
-   matrícula"/"Por reboque"), a caberem todos numa só linha em vez de
-   passar para uma segunda. */
-.krow-compact { grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
-.krow-compact .kpi    { padding: 9px 10px; }
-.krow-compact .kpi-l  { font-size: 10px; margin-bottom: 3px; }
-.krow-compact .kpi-v  { font-size: 17px; }
-.krow-compact .kpi-s  { font-size: 9px; margin-top: 2px; }
+/* Destaque — o número mais importante do grupo (ex: €/km), maior e com
+   o acento da marca, para se distinguir dos restantes cartões de apoio. */
+.kpi-highlight { border-top-color: var(--brand-red); }
+.kpi-highlight .kpi-v { font-size: 20px; color: var(--brand-red); }
 
 /* ── CARDS ────────────────────────────────────────────────────── */
 .card {

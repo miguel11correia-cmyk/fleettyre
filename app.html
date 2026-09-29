@@ -602,15 +602,12 @@
           <select id="sel-mat" data-fancy onchange="loadFrota()"></select>
         </div>
         <div class="card" id="frota-info-veiculo"></div>
-        <div class="krow krow-compact">
-          <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="fk1">—</div><div class="kpi-s">histórico</div></div>
-          <div class="kpi green"><div class="kpi-l">Ativos</div><div class="kpi-v green" id="fk2">—</div><div class="kpi-s">sem desmontagem</div></div>
-          <div class="kpi"><div class="kpi-l">KMs médios ativos</div><div class="kpi-v" id="fk3">—</div><div class="kpi-s">real ou estimado</div></div>
-          <div class="kpi amber"><div class="kpi-l">Custo pneus ativos (€)</div><div class="kpi-v amber" id="fk4">—</div><div class="kpi-s">montados agora</div></div>
-          <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="fk5">—</div><div class="kpi-s">só com valor</div></div>
-          <div class="kpi"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk6">—</div><div class="kpi-s">custo ativos ÷ km médio</div></div>
-          <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="fk7">—</div><div class="kpi-s">ativos + substituídos</div></div>
-          <div class="kpi"><div class="kpi-l">KMs médios histórico</div><div class="kpi-v" id="fk8">—</div><div class="kpi-s">ativos + substituídos</div></div>
+        <div class="krow">
+          <div class="kpi green"><div class="kpi-l">Pneus activos</div><div class="kpi-v green" id="fk1">—</div><div class="kpi-s">montados agora</div></div>
+          <div class="kpi kpi-highlight"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk2">—</div><div class="kpi-s">custo activo ÷ km médio</div></div>
+          <div class="kpi amber"><div class="kpi-l">Custo activo (€)</div><div class="kpi-v amber" id="fk3">—</div><div class="kpi-s">pneus montados agora</div></div>
+          <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="fk4">—</div><div class="kpi-s">activos + substituídos</div></div>
+          <div class="kpi"><div class="kpi-l">KMs médios/pneu</div><div class="kpi-v" id="fk5">—</div><div class="kpi-s">histórico</div></div>
         </div>
         <div class="card hidden" id="frota-lugares-card">
           <div class="ct">Posições</div>
@@ -1286,14 +1283,12 @@
           <select id="sel-mat-r" data-fancy onchange="loadFrotaReboques()"></select>
         </div>
         <div class="card" id="frota-info-reboque"></div>
-        <div class="krow krow-compact">
-          <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="rfk1">—</div><div class="kpi-s">histórico</div></div>
-          <div class="kpi green"><div class="kpi-l">Ativos</div><div class="kpi-v green" id="rfk2">—</div><div class="kpi-s">sem desmontagem</div></div>
-          <div class="kpi"><div class="kpi-l">Duração média</div><div class="kpi-v" id="rfk3">—</div><div class="kpi-s">pneus desmontados</div></div>
-          <div class="kpi amber"><div class="kpi-l">Custo pneus ativos (€)</div><div class="kpi-v amber" id="rfk4">—</div><div class="kpi-s">montados agora</div></div>
-          <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="rfk5">—</div></div>
-          <div class="kpi"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk6">—</div><div class="kpi-s">custo ativos ÷ duração</div></div>
-          <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="rfk7">—</div><div class="kpi-s">ativos + substituídos</div></div>
+        <div class="krow">
+          <div class="kpi green"><div class="kpi-l">Pneus activos</div><div class="kpi-v green" id="rfk1">—</div><div class="kpi-s">montados agora</div></div>
+          <div class="kpi kpi-highlight"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk2">—</div><div class="kpi-s">custo activo ÷ duração</div></div>
+          <div class="kpi amber"><div class="kpi-l">Custo activo (€)</div><div class="kpi-v amber" id="rfk3">—</div><div class="kpi-s">pneus montados agora</div></div>
+          <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="rfk4">—</div><div class="kpi-s">activos + substituídos</div></div>
+          <div class="kpi"><div class="kpi-l">Duração média</div><div class="kpi-v" id="rfk5">—</div><div class="kpi-s">pneus desmontados</div></div>
         </div>
         <div class="card hidden" id="rfrota-lugares-card">
           <div class="ct">Posições</div>
