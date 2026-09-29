@@ -56,9 +56,9 @@ async function loadFrotaReboques() {
   document.getElementById('rfk4').textContent = custoTotal > 0 ? fmtEur(custoTotal) : '—';
   document.getElementById('rfk5').textContent = custoMed ? fmtEur(custoMed) : '—';
 
-  // Custo por mês ativo
-  const custoMes = (custoMed && mesesMed && mesesMed > 0)
-    ? fmtEur(custoMed / mesesMed) : '—';
+  // Custo total dos pneus deste reboque, por mês
+  const custoMes = (custoTotal > 0 && mesesMed && mesesMed > 0)
+    ? fmtEur(custoTotal / mesesMed) : '—';
   document.getElementById('rfk6').textContent = custoMes;
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──

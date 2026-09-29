@@ -55,9 +55,9 @@ async function loadFrota() {
   const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
   const custoMed   = comCusto.length > 0 ? custoTotal / comCusto.length : null;
 
-  // €/km = custo médio por pneu ÷ KMs médios por pneu
-  const eurKm = (custoMed && kmsmedios && kmsmedios > 0)
-    ? (custoMed / kmsmedios).toFixed(4)
+  // €/km = custo total dos pneus deste veículo ÷ KMs médios por pneu
+  const eurKm = (custoTotal > 0 && kmsmedios && kmsmedios > 0)
+    ? (custoTotal / kmsmedios).toFixed(4)
     : null;
 
   document.getElementById('fk1').textContent = data.length;

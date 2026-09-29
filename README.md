@@ -240,10 +240,11 @@ Se o pneu ainda estiver montado e o veículo tiver `km_atual` (via telemetria), 
 Custo médio = Soma dos custos de pneu ÷ Nº de pneus com custo preenchido
 ```
 
-### Custo por km
+### Custo por km (por veículo/reboque)
 ```
-€/km = Custo médio por pneu ÷ KMs médios por pneu
+€/km = Custo total dos pneus desse veículo (activos + já substituídos) ÷ KMs médios por pneu desse veículo
 ```
+Usa a soma de todos os custos, não a média de um pneu isolado — reflecte o que o veículo realmente custa em pneus por km, e não só o custo de um pneu médio. Usado em "Por matrícula" e em "Análise → Comparação entre veículos". Para reboques, o denominador é a duração média (meses) em vez de KMs (`€/mês`).
 
 ### Taxa de desgaste
 ```
