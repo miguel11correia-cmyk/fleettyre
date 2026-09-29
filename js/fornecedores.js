@@ -103,8 +103,8 @@ async function renderGestaoFornecedores() {
         <input type="text" id="novo-forn-nome" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()">
       </div>
       <div class="frow" style="margin:0;flex:1">
-        <label>Domínios de email (opcional)</label>
-        <input type="text" id="novo-forn-dominio" placeholder="ex: fornecedor.pt, fornecedor2.pt">
+        <label>Domínios/emails (opcional)</label>
+        <input type="text" id="novo-forn-dominio" placeholder="ex: fornecedor.pt ou jose@gmail.com">
       </div>
       <button class="btn btn-p" onclick="adicionarFornecedor()" style="flex-shrink:0"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Adicionar</button>
     </div>
@@ -114,7 +114,7 @@ async function renderGestaoFornecedores() {
     </div>
     <div class="table-wrap${fornGestaoExpandida ? '' : ' hidden'}" style="margin-top:8px">
       <table>
-        <thead><tr><th>Código</th><th>Nome</th><th>Domínios de email</th><th>Ação</th></tr></thead>
+        <thead><tr><th>Código</th><th>Nome</th><th>Domínios/emails <span style="font-weight:400;color:var(--text3)">(usa o email completo para gmail.com, outlook.pt, etc.)</span></th><th>Ação</th></tr></thead>
         <tbody>
           ${(data || []).map(f => `<tr>
             <td><strong>${f.codigo}</strong></td>
@@ -123,7 +123,7 @@ async function renderGestaoFornecedores() {
               <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
                 ${(f.dominios_email || []).map(d => `<span class="chip">${d}<button onclick="removerDominioFornecedor(${f.id}, '${d}')" title="Remover">×</button></span>`).join('')}
               </div>
-              <input type="text" id="dom-input-${f.id}" placeholder="+ domínio" style="height:24px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:140px" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarDominioFornecedor(${f.id})}">
+              <input type="text" id="dom-input-${f.id}" placeholder="+ domínio ou email" style="height:24px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:170px" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarDominioFornecedor(${f.id})}">
             </td>
             <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
           </tr>`).join('')}
