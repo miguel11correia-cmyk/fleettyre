@@ -103,7 +103,7 @@ Multi-tenancy: quase todas as tabelas têm `empresa_id`, e o acesso é controlad
 | `reboques_frota` | Ficha de cada reboque — equivalente a `veiculos`, sem `reboque_hab` |
 | `pneus` | Um registo por montagem/desmontagem de pneu num **veículo** — `posicao` é o lugar fixo (ver abaixo) |
 | `reboques` | Um registo por montagem/desmontagem de pneu num **reboque** — nome confuso de propósito histórico: é a tabela de *pneus de reboques*, não a ficha de reboques (essa é `reboques_frota`) |
-| `marcas`, `fornecedores` | Listas geridas por empresa, usadas nos selects de marca/fornecedor em toda a app (`fornecedores.dominio_email` é opcional, usado pelo filtro de "Faturas por email") |
+| `marcas`, `fornecedores` | Listas geridas por empresa, usadas nos selects de marca/fornecedor em toda a app (`fornecedores.dominios_email`, `text[]` opcional, usado pelo filtro de "Faturas por email" — um fornecedor pode ter mais do que um domínio) |
 | `stock_faturas`, `stock_linhas` | Faturas de compra de pneus e as suas linhas, para controlo de stock |
 | `integracoes_telemetria` | Credenciais por empresa + fornecedor de telemetria (ver abaixo) — só-admin |
 | `integracoes_email` | Tokens/credenciais por empresa + fornecedor de email (ver abaixo) — só-admin |
@@ -154,7 +154,7 @@ Cada fornecedor de email é um adaptador cumprindo o contrato `AdaptadorEmail` e
 **Filtro de relevância** (`_shared/filtro-email.ts`), pensado em camadas para não deixar escapar facturas (lê assunto, corpo e nome do PDF anexado, não só o remetente) nem apanhar facturas de fornecedores não relacionados com pneus (a palavra genérica "fatura"/"invoice" sozinha não é suficiente):
 
 1. Tem de ter um PDF anexado (condição obrigatória).
-2. E depois: o remetente bate com o `dominio_email` de algum fornecedor da empresa **ou** aparece uma palavra específica de pneus (pneu, pneus, pneumático(s), tyre(s), tire(s), rechapagem, recauchutagem) no assunto, no corpo ou no nome do PDF.
+2. E depois: o remetente bate com algum dos `dominios_email` de um fornecedor da empresa **ou** aparece uma palavra específica de pneus (pneu, pneus, pneumático(s), tyre(s), tire(s), rechapagem, recauchutagem) no assunto, no corpo ou no nome do PDF.
 
 ---
 

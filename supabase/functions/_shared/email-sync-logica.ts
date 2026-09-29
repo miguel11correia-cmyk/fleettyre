@@ -69,10 +69,10 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
 
   const { data: fornecedores } = await sb
     .from("fornecedores")
-    .select("dominio_email")
+    .select("dominios_email")
     .eq("empresa_id", integ.empresa_id)
-    .not("dominio_email", "is", null);
-  const dominiosConhecidos: string[] = (fornecedores ?? []).map((f: any) => f.dominio_email);
+    .not("dominios_email", "is", null);
+  const dominiosConhecidos: string[] = (fornecedores ?? []).flatMap((f: any) => f.dominios_email ?? []);
 
   const mensagens = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
 

@@ -103,8 +103,8 @@ async function renderGestaoFornecedores() {
         <input type="text" id="novo-forn-nome" placeholder="ex: JOSE LOURENCO" oninput="this.value=this.value.toUpperCase()">
       </div>
       <div class="frow" style="margin:0;flex:1">
-        <label>Domínio de email (opcional)</label>
-        <input type="text" id="novo-forn-dominio" placeholder="ex: fornecedor.pt">
+        <label>Domínios de email (opcional)</label>
+        <input type="text" id="novo-forn-dominio" placeholder="ex: fornecedor.pt, fornecedor2.pt">
       </div>
       <button class="btn btn-p" onclick="adicionarFornecedor()" style="flex-shrink:0"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Adicionar</button>
     </div>
@@ -114,12 +114,17 @@ async function renderGestaoFornecedores() {
     </div>
     <div class="table-wrap${fornGestaoExpandida ? '' : ' hidden'}" style="margin-top:8px">
       <table>
-        <thead><tr><th>Código</th><th>Nome</th><th>Domínio de email</th><th>Ação</th></tr></thead>
+        <thead><tr><th>Código</th><th>Nome</th><th>Domínios de email</th><th>Ação</th></tr></thead>
         <tbody>
           ${(data || []).map(f => `<tr>
             <td><strong>${f.codigo}</strong></td>
             <td>${f.nome}</td>
-            <td><input type="text" value="${f.dominio_email || ''}" placeholder="ex: fornecedor.pt" style="height:26px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:140px" onchange="atualizarDominioFornecedor(${f.id}, this.value, this)"></td>
+            <td>
+              <div style="display:flex;gap:4px;align-items:center">
+                <input type="text" id="dom-forn-${f.id}" value="${(f.dominios_email || []).join(', ')}" placeholder="ex: fornecedor.pt, fornecedor2.pt" style="height:26px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:170px">
+                <button class="btn btn-sm btn-icon" onclick="atualizarDominiosFornecedor(${f.id})" title="Guardar domínios"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></button>
+              </div>
+            </td>
             <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
           </tr>`).join('')}
         </tbody>
@@ -133,14 +138,22 @@ function toggleGestaoFornecedores() {
   renderGestaoFornecedores();
 }
 
+// Separa por vírgula, tira espaços, baixa para minúsculas, ignora
+// entradas vazias — devolve null (não array vazio) quando não sobra
+// nada, para bater certo com o filtro (.not('dominios_email', 'is', null)).
+function parseDominios(valor) {
+  const lista = valor.split(',').map(d => d.trim().toLowerCase()).filter(Boolean);
+  return lista.length > 0 ? lista : null;
+}
+
 async function adicionarFornecedor() {
   const cod     = document.getElementById('novo-forn-cod').value.trim();
   const nome    = document.getElementById('novo-forn-nome').value.trim().toUpperCase();
-  const dominio = document.getElementById('novo-forn-dominio').value.trim().toLowerCase();
+  const dominios = parseDominios(document.getElementById('novo-forn-dominio').value);
   if (!cod || !nome) { showFeedback('forn-gestao-feedback', 'Preencha o código e o nome.', true); return; }
 
   loading(true);
-  const { error } = await sb.from('fornecedores').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome, dominio_email: dominio || null }]);
+  const { error } = await sb.from('fornecedores').insert([{ empresa_id: currentEmpresaId, codigo: cod, nome, dominios_email: dominios }]);
   loading(false);
 
   if (error) { showFeedback('forn-gestao-feedback', 'Erro: ' + error.message, true); return; }
@@ -149,11 +162,11 @@ async function adicionarFornecedor() {
   await renderGestaoFornecedores();
 }
 
-async function atualizarDominioFornecedor(id, valor, input) {
-  const dominio = valor.trim().toLowerCase();
-  const { error } = await sb.from('fornecedores').update({ dominio_email: dominio || null }).eq('id', id);
+async function atualizarDominiosFornecedor(id) {
+  const input = document.getElementById(`dom-forn-${id}`);
+  const dominios = parseDominios(input.value);
+  const { error } = await sb.from('fornecedores').update({ dominios_email: dominios }).eq('id', id);
 
-  if (!input) return;
   input.style.transition = 'border-color 0.15s var(--ease-out), background 0.15s var(--ease-out)';
   input.style.borderColor = error ? 'var(--red)' : 'var(--green)';
   input.style.background = error ? '#fef2f2' : 'var(--green-bg)';
@@ -162,7 +175,7 @@ async function atualizarDominioFornecedor(id, valor, input) {
     input.style.background = '';
   }, 900);
 
-  if (error) alert('Erro ao guardar o domínio: ' + error.message);
+  if (error) alert('Erro ao guardar os domínios: ' + error.message);
 }
 
 async function apagarFornecedor(id, nome) {
