@@ -602,7 +602,7 @@
           <select id="sel-mat" data-fancy onchange="loadFrota()"></select>
         </div>
         <div class="card" id="frota-info-veiculo"></div>
-        <div class="krow">
+        <div class="krow krow-compact">
           <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="fk1">—</div><div class="kpi-s">histórico</div></div>
           <div class="kpi green"><div class="kpi-l">Ativos</div><div class="kpi-v green" id="fk2">—</div><div class="kpi-s">sem desmontagem</div></div>
           <div class="kpi"><div class="kpi-l">KMs médios ativos</div><div class="kpi-v" id="fk3">—</div><div class="kpi-s">real ou estimado</div></div>
@@ -798,8 +798,8 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
-              <th>KMs médios/pneu</th><th>Taxa desgaste média (mm/1000km)</th><th>Custo médio/pneu (€)</th>
+              <th>#</th><th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
+              <th>KMs médios/pneu</th><th>Taxa desgaste média (mm/1000km)</th><th>Custo médio/pneu (€)</th><th style="text-align:right">€/km (activos)</th>
             </tr></thead>
             <tbody id="marc-tbody"></tbody>
           </table>
@@ -1286,7 +1286,7 @@
           <select id="sel-mat-r" data-fancy onchange="loadFrotaReboques()"></select>
         </div>
         <div class="card" id="frota-info-reboque"></div>
-        <div class="krow">
+        <div class="krow krow-compact">
           <div class="kpi blue"><div class="kpi-l">Pneus montados</div><div class="kpi-v blue" id="rfk1">—</div><div class="kpi-s">histórico</div></div>
           <div class="kpi green"><div class="kpi-l">Ativos</div><div class="kpi-v green" id="rfk2">—</div><div class="kpi-s">sem desmontagem</div></div>
           <div class="kpi"><div class="kpi-l">Duração média</div><div class="kpi-v" id="rfk3">—</div><div class="kpi-s">pneus desmontados</div></div>
@@ -1411,7 +1411,7 @@
       <div class="card">
         <div class="ct">Desempenho por marca</div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Marca</th><th>Total</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Ab.</th><th>Duração média</th><th>Custo médio/pneu (€)</th></tr></thead>
+          <thead><tr><th>#</th><th>Marca</th><th>Total</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Ab.</th><th>Duração média</th><th>Custo médio/pneu (€)</th><th style="text-align:right">€/mês (activos)</th></tr></thead>
           <tbody id="rmarc-tbody"></tbody>
         </table></div>
       </div>
