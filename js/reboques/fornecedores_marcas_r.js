@@ -54,7 +54,7 @@ async function loadMarcasReboques() {
   const agg = {};
   data.filter(r => r.marca).forEach(r => {
     const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, mesesArr: [], custos: [], custoAtivos: 0 };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, mesesArr: [], custos: [] };
     agg[k].total++;
     if (r.tipo === 'Novo')        agg[k].novo++;
     else if (r.tipo === 'Remix')  agg[k].remix++;
@@ -64,18 +64,18 @@ async function loadMarcasReboques() {
       agg[k].mesesArr.push(mesesEntre(r.mes_mont, r.mes_desmont));
     }
     if (r.custo_pneu > 0) agg[k].custos.push(Number(r.custo_pneu));
-    // €/mês desta marca — só pneus activos, tal como em "Por
-    // reboque"/"Análise" (o histórico completo faria o valor crescer
-    // sempre); duração média fica a cargo do mesesArr (ciclos já
-    // concluídos, não tem o mesmo problema por já ser limitado).
-    if (!r.mes_desmont && r.custo_pneu > 0) agg[k].custoAtivos += Number(r.custo_pneu);
   });
 
+  // €/mês desta marca = custo médio ÷ duração média, usando o
+  // histórico completo da marca (várias pneus independentes, não uma
+  // entidade única a acumular histórico) — mais amostras dão uma média
+  // mais robusta, ao contrário de "Por reboque"/"Análise".
   const eurMesPorMarca = {};
   Object.keys(agg).forEach(k => {
     const m = agg[k];
+    const custoM = m.custos.length   > 0 ? m.custos.reduce((s,v) => s+v, 0)   / m.custos.length   : null;
     const mesesM = m.mesesArr.length > 0 ? m.mesesArr.reduce((s,v) => s+v, 0) / m.mesesArr.length : null;
-    eurMesPorMarca[k] = (m.custoAtivos > 0 && mesesM && mesesM > 0) ? m.custoAtivos / mesesM : null;
+    eurMesPorMarca[k] = (custoM && mesesM && mesesM > 0) ? custoM / mesesM : null;
   });
 
   const keys = Object.keys(agg).sort((a, b) => {

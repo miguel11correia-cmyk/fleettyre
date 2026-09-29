@@ -16,20 +16,11 @@ async function loadMarcas() {
   const kmAtualPorMat = {};
   (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
 
-  // Agrupado por matrícula — necessário como contexto do próprio veículo
-  // de cada pneu para o kmsReaisOuEstimados (kms máximos conhecidos,
-  // média mensal entre montagens passadas).
-  const porMat = {};
-  data.forEach(r => {
-    if (!porMat[r.matricula]) porMat[r.matricula] = [];
-    porMat[r.matricula].push(r);
-  });
-
   const hoje = mesAtual();
   const agg  = {};
   data.filter(r => r.marca).forEach(r => {
     const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [], taxaArr: [], custoAtivos: 0, kmsAtivosArr: [] };
+    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [], taxaArr: [] };
     agg[k].total++;
     if (r.tipo === 'Novo')             agg[k].novo++;
     else if (r.tipo === 'Remix')       agg[k].remix++;
@@ -40,23 +31,20 @@ async function loadMarcas() {
     if (r.custo_pneu > 0)              agg[k].custos.push(Number(r.custo_pneu));
     const taxa = taxaDesgaste(r);
     if (taxa !== null)                 agg[k].taxaArr.push(taxa);
-
-    // €/km desta marca — só pneus activos (montados agora), tal como em
-    // "Por matrícula"/"Análise": custo total cresceria sempre com o
-    // histórico, os KMs médios usam a mesma cascata real→estimativa.
-    if (!r.mes_desmont) {
-      if (r.custo_pneu > 0) agg[k].custoAtivos += Number(r.custo_pneu);
-      if (r.mes_mont && r.kms_mont) {
-        agg[k].kmsAtivosArr.push(kmsReaisOuEstimados(r, porMat[r.matricula], kmAtualPorMat[r.matricula]));
-      }
-    }
   });
 
+  // €/km desta marca = custo médio ÷ KMs médios, usando o histórico
+  // COMPLETO da marca (activos + já substituídos, de todos os
+  // veículos) — ao contrário de "Por matrícula"/"Análise", aqui não há
+  // uma entidade única a acumular histórico para sempre; é uma média
+  // estatística entre vários pneus independentes, por isso mais
+  // amostras (o histórico todo) dão uma média mais robusta.
   const eurKmPorMarca = {};
   Object.keys(agg).forEach(k => {
     const m = agg[k];
-    const kmsMedAtivos = m.kmsAtivosArr.length > 0 ? m.kmsAtivosArr.reduce((s,v) => s+v, 0) / m.kmsAtivosArr.length : null;
-    eurKmPorMarca[k] = (m.custoAtivos > 0 && kmsMedAtivos && kmsMedAtivos > 0) ? m.custoAtivos / kmsMedAtivos : null;
+    const custoM = m.custos.length > 0 ? m.custos.reduce((s,v) => s+v, 0) / m.custos.length : null;
+    const kmsM   = m.kmsArr.length  > 0 ? m.kmsArr.reduce((s,v) => s+v, 0)  / m.kmsArr.length  : null;
+    eurKmPorMarca[k] = (custoM && kmsM && kmsM > 0) ? custoM / kmsM : null;
   });
 
   // Ranking: marcas com €/km calculável primeiro (mais eficiente/barata
