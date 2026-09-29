@@ -120,10 +120,10 @@ async function renderGestaoFornecedores() {
             <td><strong>${f.codigo}</strong></td>
             <td>${f.nome}</td>
             <td>
-              <div style="display:flex;gap:4px;align-items:center">
-                <input type="text" id="dom-forn-${f.id}" value="${(f.dominios_email || []).join(', ')}" placeholder="ex: fornecedor.pt, fornecedor2.pt" style="height:26px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:170px">
-                <button class="btn btn-sm btn-icon" onclick="atualizarDominiosFornecedor(${f.id})" title="Guardar domínios"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></button>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px">
+                ${(f.dominios_email || []).map(d => `<span class="chip">${d}<button onclick="removerDominioFornecedor(${f.id}, '${d}')" title="Remover">×</button></span>`).join('')}
               </div>
+              <input type="text" id="dom-input-${f.id}" placeholder="+ domínio" style="height:24px;font-size:11px;padding:0 6px;border:0.5px solid var(--border2);border-radius:4px;width:140px" onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarDominioFornecedor(${f.id})}">
             </td>
             <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarFornecedor(${f.id},'${f.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
           </tr>`).join('')}
@@ -162,20 +162,27 @@ async function adicionarFornecedor() {
   await renderGestaoFornecedores();
 }
 
-async function atualizarDominiosFornecedor(id) {
-  const input = document.getElementById(`dom-forn-${id}`);
-  const dominios = parseDominios(input.value);
-  const { error } = await sb.from('fornecedores').update({ dominios_email: dominios }).eq('id', id);
+async function adicionarDominioFornecedor(id) {
+  const input = document.getElementById(`dom-input-${id}`);
+  const novo = input.value.trim().toLowerCase();
+  if (!novo) return;
 
-  input.style.transition = 'border-color 0.15s var(--ease-out), background 0.15s var(--ease-out)';
-  input.style.borderColor = error ? 'var(--red)' : 'var(--green)';
-  input.style.background = error ? '#fef2f2' : 'var(--green-bg)';
-  setTimeout(() => {
-    input.style.borderColor = '';
-    input.style.background = '';
-  }, 900);
+  const { data: atual } = await sb.from('fornecedores').select('dominios_email').eq('id', id).single();
+  const atuais = atual?.dominios_email || [];
+  if (atuais.includes(novo)) { input.value = ''; return; }
 
-  if (error) alert('Erro ao guardar os domínios: ' + error.message);
+  const { error } = await sb.from('fornecedores').update({ dominios_email: [...atuais, novo] }).eq('id', id);
+  if (error) { alert('Erro ao guardar o domínio: ' + error.message); return; }
+  await renderGestaoFornecedores();
+}
+
+async function removerDominioFornecedor(id, dominio) {
+  const { data: atual } = await sb.from('fornecedores').select('dominios_email').eq('id', id).single();
+  const restantes = (atual?.dominios_email || []).filter(d => d !== dominio);
+
+  const { error } = await sb.from('fornecedores').update({ dominios_email: restantes.length ? restantes : null }).eq('id', id);
+  if (error) { alert('Erro ao remover o domínio: ' + error.message); return; }
+  await renderGestaoFornecedores();
 }
 
 async function apagarFornecedor(id, nome) {
