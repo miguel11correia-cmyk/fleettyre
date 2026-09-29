@@ -214,6 +214,7 @@ MS_TENANT=organizations
 GOOGLE_CLIENT_ID=...     (OAuth Client ID no Google Cloud Console, tipo "Web application")
 GOOGLE_CLIENT_SECRET=...
 OAUTH_STATE_SECRET=...  (string aleatória longa, só para assinar o `state` do OAuth — partilhado por todos os fornecedores OAuth)
+CRON_SECRET=...          (string aleatória longa — exigida por telemetria-sync e email-sync, para o pg_cron ser a única coisa que as consegue chamar; ver migrations/026_cron_secret.sql)
 ```
 Na função `email-oauth-callback`, desligar manualmente "Verify JWT" nas definições da função no Dashboard (é o fornecedor — Microsoft ou Google — que chama este endpoint, não traz JWT do Supabase).
 
@@ -264,7 +265,8 @@ Segue o guia próprio `SKILL_design.md` (na raiz do repo). Pontos concretos já 
 ## Segurança
 
 - Login obrigatório (email/password, com mudança a 2 passos e recuperação por email).
-- Row Level Security em todas as tabelas — acesso sempre filtrado por `empresa_id` via `membros`, ou global para `admins`. Tabelas com credenciais/tokens (`integracoes_telemetria`, `integracoes_email`) são só-admin; o frontend nunca as lê directamente, só através de Edge Functions autenticadas que derivam a `empresa_id` sempre do JWT de quem chama, nunca de um parâmetro do pedido.
+- Row Level Security em todas as tabelas — acesso sempre filtrado por `empresa_id` via `membros`, ou global para `admins`. Tabelas com credenciais/tokens (`integracoes_telemetria`, `integracoes_email`) são só-admin; o frontend nunca as lê directamente, só através de Edge Functions autenticadas que derivam a `empresa_id` sempre do JWT de quem chama, nunca de um parâmetro do pedido. `membros`/`admins` só têm política de leitura para utilizadores normais — nenhum consegue escrever-se a si próprio numa empresa ou promover-se a admin.
+- `telemetria-sync`/`email-sync` (as funções de cron, que usam a service role key) exigem o cabeçalho `x-cron-secret` — a chave anon/publishable sozinha (pública, embutida no HTML) não chega para as chamar, ao contrário do que acontecia antes desta correcção.
 - Credenciais de integrações (Supabase, Resend, telemetria, Microsoft Graph, IMAP) só em variáveis de ambiente/segredos — nunca no código.
 - Funções chamadas pelo browser com cabeçalho `Authorization` custom exigem tratamento explícito de CORS/preflight (`_shared/cors.ts`) — o Supabase não adiciona isto automaticamente.
 - HTTPS em todos os pedidos.

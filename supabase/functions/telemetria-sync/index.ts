@@ -1,8 +1,10 @@
 // ── TELEMETRIA SYNC ──────────────────────────────────────────────
-// Edge Function genérica (cron/admin, sem verificação de quem chamou —
-// só é invocada pelo pg_cron) que percorre TODAS as integrações de
-// telemetria activas e sincroniza cada uma. O botão "Sincronizar agora"
-// da app chama telemetria-sync-manual, não esta.
+// Edge Function genérica (cron), pensada só para o pg_cron chamar. A
+// chave anon/publishable sozinha NÃO chega para autorizar isto (é
+// pública, vem embutida no HTML) — por isso exige-se também o
+// cabeçalho x-cron-secret, um segredo conhecido só pelo agendamento do
+// pg_cron. O botão "Sincronizar agora" da app chama
+// telemetria-sync-manual, não esta.
 //
 // Parâmetros opcionais na URL (para testar sem mexer em todas as
 // empresas de uma vez):
@@ -17,8 +19,13 @@ import { sincronizarIntegracaoTelemetria } from "../_shared/telemetria-sync-logi
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const CRON_SECRET          = Deno.env.get("CRON_SECRET") ?? "";
 
 Deno.serve(async (req) => {
+  if (!CRON_SECRET || req.headers.get("x-cron-secret") !== CRON_SECRET) {
+    return new Response(JSON.stringify({ erro: "Não autorizado." }), { status: 401 });
+  }
+
   const url       = new URL(req.url);
   const empresaId = url.searchParams.get("empresa_id");
   const limite    = parseInt(url.searchParams.get("limite") ?? "") || null;
