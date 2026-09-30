@@ -90,7 +90,11 @@ export const imap: AdaptadorEmail = {
       // `ultima_sincronizacao` até "agora" — a próxima sincronização
       // continua exactamente daqui, em vez de saltar por cima do resto
       // da janela e perder essas mensagens para sempre.
-      const LIMITE_DESCARGAS_COMPLETAS = 60;
+      // Cada descarga fica em memória (cachePdfs) até email-sync-logica.ts
+      // a consumir mais tarde — com várias facturas de alguns MB cada,
+      // 60 de uma vez chegava a exceder o limite de memória da função
+      // (confirmado num teste real). 20 é mais conservador.
+      const LIMITE_DESCARGAS_COMPLETAS = 20;
       let descarregadas = 0;
 
       const mensagens: MensagemEmailCandidata[] = [];
