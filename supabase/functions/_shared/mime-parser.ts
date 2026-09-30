@@ -70,7 +70,7 @@ export function descodificarTextoCabecalho(valor: string): string {
   });
 }
 
-function descodificarCorpo(bytes: Uint8Array, transferEncoding: string): Uint8Array {
+export function descodificarCorpo(bytes: Uint8Array, transferEncoding: string): Uint8Array {
   const enc = transferEncoding.toLowerCase();
   if (enc === "base64") {
     // Remove quebras de linha antes de descodificar.
@@ -148,11 +148,11 @@ export function extrairPrimeiroPdf(mensagemCompleta: Uint8Array): AnexoPdf | nul
   return null;
 }
 
-function removerTags(html: string): string {
+export function removerTags(html: string): string {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function descodificarQuotedPrintable(texto: string): string {
+export function descodificarQuotedPrintable(texto: string): string {
   return texto
     .replace(/=\r?\n/g, "") // "soft line break"
     .replace(/=([0-9A-Fa-f]{2})/g, (_m, hex) => String.fromCharCode(parseInt(hex, 16)));
