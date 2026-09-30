@@ -74,7 +74,19 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     .not("dominios_email", "is", null);
   const dominiosConhecidos: string[] = (fornecedores ?? []).flatMap((f: any) => f.dominios_email ?? []);
 
-  const mensagens = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
+  const { mensagens, completo, ateData } = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
+
+  // Quando o adaptador não conseguiu cobrir a janela toda numa só chamada
+  // (ex: limite de segurança de CPU no IMAP, ver imap.ts), NÃO avança
+  // `ultima_sincronizacao` até "agora" — avança só até onde o adaptador
+  // realmente chegou (`ateData`), para a sincronização seguinte continuar
+  // exactamente dali, em vez de saltar por cima do resto da janela e
+  // perder essas mensagens para sempre. Sem `ateData` disponível (não
+  // devia acontecer, mas por segurança), não avança nada — repete a
+  // mesma janela na próxima tentativa, em vez de arriscar perder algo.
+  const proximaUltimaSincronizacao = completo
+    ? new Date().toISOString()
+    : (ateData ? ateData.toISOString() : integ.ultima_sincronizacao);
 
   // Verifica assunto, resumo do corpo e nomes dos anexos — não só o
   // assunto — para não deixar escapar facturas com assunto vago.
@@ -83,8 +95,10 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
   );
 
   if (candidatas.length === 0) {
-    await sb.from("integracoes_email").update({ ultima_sincronizacao: new Date().toISOString() }).eq("id", integ.id);
-    return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, novos: 0 };
+    if (proximaUltimaSincronizacao) {
+      await sb.from("integracoes_email").update({ ultima_sincronizacao: proximaUltimaSincronizacao }).eq("id", integ.id);
+    }
+    return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, novos: 0, completo };
   }
 
   const { data: jaVistos } = await sb
@@ -123,7 +137,9 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     if (!errIns) novos++;
   }
 
-  await sb.from("integracoes_email").update({ ultima_sincronizacao: new Date().toISOString() }).eq("id", integ.id);
+  if (proximaUltimaSincronizacao) {
+    await sb.from("integracoes_email").update({ ultima_sincronizacao: proximaUltimaSincronizacao }).eq("id", integ.id);
+  }
 
-  return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, total_candidatas: candidatas.length, novos };
+  return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, total_candidatas: candidatas.length, novos, completo };
 }

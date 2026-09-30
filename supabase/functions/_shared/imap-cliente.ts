@@ -150,16 +150,31 @@ export class ClienteIMAP {
     return resp.literais[0];
   }
 
-  // Verificação barata — só a estrutura MIME (tipos/nomes de cada parte),
-  // sem descarregar o conteúdo. Usada para descartar mensagens sem PDF
-  // anexado antes de gastar tempo de CPU a descarregar e analisar a
-  // mensagem completa (a condição já é obrigatória no filtro a jusante,
-  // por isso isto não deixa escapar nada — só evita trabalho a mais).
-  async temAnexoPdf(uid: string): Promise<boolean> {
-    const resp = await this.#executar(`UID FETCH ${uid} (BODYSTRUCTURE)`);
-    if (!resp.ok) return false;
-    const texto = resp.linhas.join(" ").toLowerCase();
-    return texto.includes("pdf");
+  // Verificação barata — só a estrutura MIME (tipos/nomes de cada parte)
+  // e a data, sem descarregar o conteúdo. Usada para descartar mensagens
+  // sem PDF anexado antes de gastar tempo de CPU a descarregar e analisar
+  // a mensagem completa (a condição já é obrigatória no filtro a jusante,
+  // por isso isto não deixa escapar nada — só evita trabalho a mais). A
+  // data serve para saber até onde a sincronização avançou, quando um
+  // limite de segurança obriga a parar a meio de uma janela grande.
+  async verificarMensagem(uid: string): Promise<{ temPdf: boolean; dataRecebido: Date | null }> {
+    const resp = await this.#executar(`UID FETCH ${uid} (BODYSTRUCTURE INTERNALDATE)`);
+    if (!resp.ok) return { temPdf: false, dataRecebido: null };
+    const texto = resp.linhas.join(" ");
+    const temPdf = texto.toLowerCase().includes("pdf");
+
+    // INTERNALDATE "05-Jan-2026 12:34:56 +0000"
+    const m = /INTERNALDATE "(\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) ([+-]\d{4})"/.exec(texto);
+    let dataRecebido: Date | null = null;
+    if (m) {
+      const meses: Record<string, number> = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+      const [, dia, mes, ano, hora, min, seg, fuso] = m;
+      const sinal = fuso[0] === "-" ? -1 : 1;
+      const fusoMin = sinal * (parseInt(fuso.slice(1, 3), 10) * 60 + parseInt(fuso.slice(3, 5), 10));
+      const utc = Date.UTC(parseInt(ano, 10), meses[mes], parseInt(dia, 10), parseInt(hora, 10), parseInt(min, 10), parseInt(seg, 10));
+      dataRecebido = new Date(utc - fusoMin * 60000);
+    }
+    return { temPdf, dataRecebido };
   }
 
   async fechar(): Promise<void> {

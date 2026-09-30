@@ -6,7 +6,7 @@
 // tenant Microsoft 365, por isso usamos sempre o endpoint "organizations"
 // em vez de um tenant específico.
 
-import type { AdaptadorEmail, MensagemEmailCandidata, TokensEmail } from "./email-tipos.ts";
+import type { AdaptadorEmail, MensagemEmailCandidata, ResultadoListagem, TokensEmail } from "./email-tipos.ts";
 
 const MS_CLIENT_ID     = Deno.env.get("MS_CLIENT_ID")     ?? "";
 const MS_CLIENT_SECRET = Deno.env.get("MS_CLIENT_SECRET") ?? "";
@@ -105,7 +105,7 @@ export const outlook: AdaptadorEmail = {
     });
   },
 
-  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<MensagemEmailCandidata[]> {
+  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<ResultadoListagem> {
     // bodyPreview vem "de borla" no mesmo pedido — usado no filtro além
     // do assunto, para não deixar escapar facturas com assunto vago.
     const select = "id,internetMessageId,subject,from,receivedDateTime,hasAttachments,bodyPreview";
@@ -156,7 +156,7 @@ export const outlook: AdaptadorEmail = {
       paginas++;
     }
 
-    return mensagens;
+    return { mensagens, completo: true };
   },
 
   async obterAnexoPdf(tokens, idInternoMensagem, anexoId): Promise<Uint8Array> {
