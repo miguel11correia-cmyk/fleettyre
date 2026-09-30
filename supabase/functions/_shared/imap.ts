@@ -35,7 +35,7 @@ import {
   parsearCabecalhos,
   removerTags,
 } from "./mime-parser.ts";
-import { pareceFatura } from "./filtro-email.ts";
+import { pareceFatura, remetenteBateComFornecedor } from "./filtro-email.ts";
 
 // Os PDFs já extraídos ficam aqui durante a sincronização, para
 // obterAnexoPdf não ter de descarregar a mensagem outra vez — válido só
@@ -135,6 +135,12 @@ export const imap: AdaptadorEmail = {
         for (const uid of lote) {
           const info = infos.get(uid);
           if (info) examinadas++;
+          // Diagnostico temporario: mostra TODOS os emails de um dominio
+          // registado, tenham ou nao PDF, para confirmar se a extracao do
+          // remetente (ENVELOPE) esta a funcionar.
+          if (info && remetenteBateComFornecedor(info.remetente, dominiosConhecidos)) {
+            console.log(`IMAP: encontrado email de fornecedor conhecido — de "${info.remetente}", temPdf: ${info.temPdf}, assunto "${info.assunto}"`);
+          }
           if (info?.dataRecebido) ultimaDataExaminada = info.dataRecebido;
           if (!info || !info.temPdf) continue; // sem PDF, não interessa — condição obrigatória do filtro
 
