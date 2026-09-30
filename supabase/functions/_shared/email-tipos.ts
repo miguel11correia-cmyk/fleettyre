@@ -45,6 +45,10 @@ export interface ResultadoListagem {
   // chamada (Outlook, Google) devolvem sempre `completo: true`.
   completo: boolean;
   ateData?: Date;
+  // Diagnóstico — quantas mensagens existiam na janela e quantas foram
+  // mesmo examinadas nesta chamada (visível na app, não só nos logs).
+  totalNaJanela?: number;
+  examinadas?: number;
 }
 
 export interface AdaptadorEmail {
