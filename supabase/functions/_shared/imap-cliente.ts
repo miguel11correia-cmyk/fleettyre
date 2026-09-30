@@ -57,13 +57,27 @@ class LeitorBytes {
     }
   }
 
+  // Lê exactamente `n` bytes — usado para literais grandes (a mensagem
+  // completa, com anexos em base64, pode ter vários MB). Aloca o destino
+  // UMA vez e escreve os pedaços lidos directamente no sítio certo, em
+  // vez de recriar+copiar o buffer acumulado a cada pedaço (como
+  // `#encherBuffer` faz, aceitável para linhas curtas, mas quadrático —
+  // e portanto caro em CPU — para literais de vários MB).
   async lerBytes(n: number): Promise<Uint8Array> {
-    while (this.#buffer.length < n) {
-      if (!(await this.#encherBuffer())) throw new Error("Ligação IMAP fechada inesperadamente.");
+    const resultado = new Uint8Array(n);
+    const doBufferExistente = Math.min(this.#buffer.length, n);
+    resultado.set(this.#buffer.subarray(0, doBufferExistente), 0);
+    this.#buffer = this.#buffer.slice(doBufferExistente);
+
+    let escrito = doBufferExistente;
+    while (escrito < n) {
+      const chunk = new Uint8Array(Math.min(n - escrito, 65536));
+      const lido = await this.#conn.read(chunk);
+      if (lido === null) throw new Error("Ligação IMAP fechada inesperadamente.");
+      resultado.set(chunk.subarray(0, lido), escrito);
+      escrito += lido;
     }
-    const dados = this.#buffer.slice(0, n);
-    this.#buffer = this.#buffer.slice(n);
-    return dados;
+    return resultado;
   }
 
   async escrever(texto: string) {
