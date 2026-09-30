@@ -35,7 +35,7 @@ import {
   parsearCabecalhos,
   removerTags,
 } from "./mime-parser.ts";
-import { pareceFatura, remetenteBateComFornecedor } from "./filtro-email.ts";
+import { pareceFatura, remetenteBateComFornecedor, remetenteBateComFornecedorPorNome } from "./filtro-email.ts";
 
 // Os PDFs já extraídos ficam aqui durante a sincronização, para
 // obterAnexoPdf não ter de descarregar a mensagem outra vez — válido só
@@ -49,6 +49,14 @@ const TAMANHO_RESUMO = 800;
 function extrairEndereco(cabecalhoFrom: string): string {
   const m = /<([^>]+)>/.exec(cabecalhoFrom);
   return (m ? m[1] : cabecalhoFrom).trim();
+}
+
+// Do cabeçalho bruto "From: \"Sobral Pneus\" <geral@moloni.pt>" extrai só
+// o nome de exibição ("Sobral Pneus") — usado no caminho de segurança
+// (mensagem completa), onde não há ENVELOPE já parseado com o nome à parte.
+function extrairNomeExibicao(cabecalhoFrom: string): string {
+  const semEndereco = cabecalhoFrom.replace(/<[^>]*>/, "").trim();
+  return semEndereco.replace(/^"|"$/g, "").trim();
 }
 
 // Decodifica uma parte de texto (plain ou html) já isolada pelo
@@ -83,7 +91,7 @@ export const imap: AdaptadorEmail = {
     return tokens; // credenciais directas não "expiram" no sentido OAuth
   },
 
-  async listarMensagensRecentes(tokens, desde, dominiosConhecidos): Promise<ResultadoListagem> {
+  async listarMensagensRecentes(tokens, desde, dominiosConhecidos, nomesFornecedores): Promise<ResultadoListagem> {
     const host = String(tokens.host ?? "");
     const port = Number(tokens.port ?? 993);
     const usuario = String(tokens.usuario ?? "");
@@ -95,15 +103,27 @@ export const imap: AdaptadorEmail = {
     const cliente = await ClienteIMAP.ligar(host, port);
     try {
       await cliente.login(usuario, password);
-      await cliente.selecionarInbox();
 
-      const uidsBrutos = await cliente.pesquisarDesde(desde);
-      // Mais antigas primeiro — para o progresso, se o limite de
-      // segurança abaixo alguma vez obrigar a parar a meio, avançar
-      // sempre para a frente no tempo (nunca voltar atrás nem saltar
-      // mensagens por analisar).
-      const uids = [...uidsBrutos].sort((a, b) => Number(a) - Number(b));
-      console.log(`IMAP: ${uids.length} mensagens na janela desde ${desde.toISOString()}`);
+      // Diagnostico temporario: confirmar os nomes reais das pastas da
+      // caixa, para perceber se ha uma pasta separada (ex: "Faturas",
+      // "Fornecedores") para onde regras de email movem automaticamente
+      // mensagens de fornecedores antes desta sincronizacao (que so olha
+      // a INBOX) as conseguir ver.
+      try {
+        const pastas = await cliente.listarPastas();
+        console.log(`IMAP: pastas encontradas na caixa: ${pastas.join(" | ")}`);
+      } catch (e) {
+        console.error(`IMAP: falha a listar pastas: ${String(e)}`);
+      }
+
+      // Além da INBOX, lê também a Archive — muitos webmails (o desta
+      // caixa incluído, confirmado por diagnóstico) arquivam
+      // automaticamente mensagens lidas mais antigas para lá, o que fazia
+      // com que facturas de fornecedores de há mais de uns dias nunca
+      // fossem vistas por esta sincronização (só olhava a INBOX).
+      // Sent/Trash/Junk/spam/Drafts não interessam — não é lá que chegam
+      // facturas de fornecedores.
+      const PASTAS_A_LER = ["INBOX", "INBOX.Archive"];
 
       // Verificação em lotes (ver ClienteIMAP.verificarMensagens) — um
       // único pedido à rede por lote, não um por mensagem.
@@ -121,6 +141,26 @@ export const imap: AdaptadorEmail = {
       let ultimaDataExaminada: Date | null = null;
       let completo = true;
       let examinadas = 0;
+      let totalNaJanela = 0;
+
+      pastaExterna:
+      for (const pasta of PASTAS_A_LER) {
+        try {
+          if (pasta === "INBOX") await cliente.selecionarInbox();
+          else await cliente.selecionarPasta(pasta);
+        } catch (e) {
+          console.error(`IMAP: não foi possível abrir a pasta "${pasta}" (pode não existir nesta caixa): ${String(e)}`);
+          continue; // pasta pode simplesmente não existir — segue para a seguinte
+        }
+
+        const uidsBrutos = await cliente.pesquisarDesde(desde);
+        // Mais antigas primeiro — para o progresso, se o limite de
+        // segurança abaixo alguma vez obrigar a parar a meio, avançar
+        // sempre para a frente no tempo (nunca voltar atrás nem saltar
+        // mensagens por analisar).
+        const uids = [...uidsBrutos].sort((a, b) => Number(a) - Number(b));
+        totalNaJanela += uids.length;
+        console.log(`IMAP: ${uids.length} mensagens na janela desde ${desde.toISOString()} (pasta "${pasta}")`);
 
       loteExterno:
       for (let i = 0; i < uids.length; i += LOTE_VERIFICACAO) {
@@ -138,8 +178,8 @@ export const imap: AdaptadorEmail = {
           // Diagnostico temporario: mostra TODOS os emails de um dominio
           // registado, tenham ou nao PDF, para confirmar se a extracao do
           // remetente (ENVELOPE) esta a funcionar.
-          if (info && remetenteBateComFornecedor(info.remetente, dominiosConhecidos)) {
-            console.log(`IMAP: encontrado email de fornecedor conhecido — de "${info.remetente}", temPdf: ${info.temPdf}, assunto "${info.assunto}"`);
+          if (info && (remetenteBateComFornecedor(info.remetente, dominiosConhecidos) || remetenteBateComFornecedorPorNome(info.remetenteNome, nomesFornecedores))) {
+            console.log(`IMAP: encontrado email de fornecedor conhecido — de "${info.remetenteNome}" <${info.remetente}>, temPdf: ${info.temPdf}, partePdf: ${info.partePdf ?? "não identificada (cai no caminho de segurança)"}, messageId: ${info.messageId ? "presente" : "AUSENTE"}, assunto "${info.assunto}"`);
           }
           if (info?.dataRecebido) ultimaDataExaminada = info.dataRecebido;
           if (!info || !info.temPdf) continue; // sem PDF, não interessa — condição obrigatória do filtro
@@ -158,19 +198,20 @@ export const imap: AdaptadorEmail = {
               try {
                 const bytesTexto = await cliente.obterParte(uid, info.parteTexto);
                 resumoCorpo = decodificarParteTexto(bytesTexto, info.codificacaoTexto, info.tipoTexto);
-              } catch {
+              } catch (e) {
+                console.error(`IMAP: falha a obter parte de texto ${info.parteTexto} da mensagem UID ${uid}: ${String(e)}`);
                 resumoCorpo = "";
               }
             }
 
-            if (!pareceFatura(info.remetente, [assunto, resumoCorpo, info.nomePdf], dominiosConhecidos)) {
+            if (!pareceFatura(info.remetente, info.remetenteNome, [assunto, resumoCorpo, info.nomePdf], dominiosConhecidos, nomesFornecedores)) {
               continue; // irrelevante — nunca descarrega o PDF, é a poupança principal desta arquitectura
             }
 
             if (descarregadas >= LIMITE_DESCARGAS_PDF) {
               completo = false;
               console.log(`IMAP: limite de ${LIMITE_DESCARGAS_PDF} PDFs atingido — a continuar a partir de ${ultimaDataExaminada?.toISOString() ?? "?"} na próxima sincronização.`);
-              break loteExterno;
+              break pastaExterna;
             }
 
             try {
@@ -182,13 +223,14 @@ export const imap: AdaptadorEmail = {
                 id: messageId,
                 idInterno: uid,
                 remetente: info.remetente,
+                remetenteNome: info.remetenteNome,
                 assunto,
                 resumoCorpo,
                 dataRecebido: (info.dataRecebido ?? new Date()).toISOString(),
                 anexosPdf: [{ id: messageId, nome: info.nomePdf || "anexo.pdf" }],
               });
-            } catch {
-              // não conseguiu descarregar o PDF desta — segue para a próxima, não pára tudo
+            } catch (e) {
+              console.error(`IMAP: falha a descarregar PDF (parte ${info.partePdf}) da mensagem UID ${uid}: ${String(e)}`);
             }
             continue;
           }
@@ -201,26 +243,31 @@ export const imap: AdaptadorEmail = {
           if (descarregadas >= LIMITE_DESCARGAS_PDF) {
             completo = false;
             console.log(`IMAP: limite de ${LIMITE_DESCARGAS_PDF} PDFs atingido — a continuar a partir de ${ultimaDataExaminada?.toISOString() ?? "?"} na próxima sincronização.`);
-            break loteExterno;
+            break pastaExterna;
           }
 
           let mensagemCompleta: Uint8Array;
           try {
             mensagemCompleta = await cliente.obterMensagemCompleta(uid);
-          } catch {
+          } catch (e) {
+            console.error(`IMAP: falha a obter mensagem completa (caminho de segurança) UID ${uid}: ${String(e)}`);
             continue;
           }
 
           const anexo = extrairPrimeiroPdf(mensagemCompleta);
-          if (!anexo) continue;
+          if (!anexo) {
+            console.error(`IMAP: caminho de segurança UID ${uid} — BODYSTRUCTURE não identificou PDF e extrairPrimeiroPdf também não encontrou nenhum na mensagem completa.`);
+            continue;
+          }
 
           const textoCompleto = new TextDecoder("latin1").decode(mensagemCompleta);
           const cabecalhos = parsearCabecalhos(textoCompleto.split(/\r\n\r\n/)[0]);
           const remetenteFallback = info.remetente || extrairEndereco(cabecalhos["from"] || "");
+          const remetenteNomeFallback = info.remetenteNome || descodificarTextoCabecalho(extrairNomeExibicao(cabecalhos["from"] || ""));
           const assuntoFallback = assunto || descodificarTextoCabecalho(cabecalhos["subject"] || "");
           const resumoCorpoFallback = extrairResumoTexto(mensagemCompleta);
 
-          if (!pareceFatura(remetenteFallback, [assuntoFallback, resumoCorpoFallback, anexo.nome], dominiosConhecidos)) {
+          if (!pareceFatura(remetenteFallback, remetenteNomeFallback, [assuntoFallback, resumoCorpoFallback, anexo.nome], dominiosConhecidos, nomesFornecedores)) {
             continue;
           }
 
@@ -230,6 +277,7 @@ export const imap: AdaptadorEmail = {
             id: messageId,
             idInterno: uid,
             remetente: remetenteFallback,
+            remetenteNome: remetenteNomeFallback,
             assunto: assuntoFallback,
             resumoCorpo: resumoCorpoFallback,
             dataRecebido: cabecalhos["date"] ? new Date(cabecalhos["date"]).toISOString() : (info.dataRecebido ?? new Date()).toISOString(),
@@ -237,14 +285,15 @@ export const imap: AdaptadorEmail = {
           });
         }
       }
+      } // fim do for de pastas (pastaExterna)
 
-      console.log(`IMAP: ${examinadas}/${uids.length} mensagens examinadas, ${mensagens.length} factura(s) encontrada(s), janela ${completo ? "completa" : "incompleta — continua na próxima sincronização"}.`);
+      console.log(`IMAP: ${examinadas}/${totalNaJanela} mensagens examinadas (todas as pastas), ${mensagens.length} factura(s) encontrada(s), janela ${completo ? "completa" : "incompleta — continua na próxima sincronização"}.`);
 
       return {
         mensagens,
         completo,
         ateData: completo ? undefined : (ultimaDataExaminada ?? undefined),
-        totalNaJanela: uids.length,
+        totalNaJanela,
         examinadas,
       };
     } finally {

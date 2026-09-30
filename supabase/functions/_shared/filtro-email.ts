@@ -42,9 +42,46 @@ export function remetenteBateComFornecedor(remetente: string, identificadores: s
   });
 }
 
+// Normaliza para comparar nomes: minúsculas, sem acentos, espaços a mais
+// colapsados — "Sobral Pneus, Lda." e "SOBRAL   PNEUS LDA" ficam iguais.
+function normalizarNome(texto: string): string {
+  return (texto || "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "") // remove acentos
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ") // pontuação vira espaço (vírgulas, pontos, etc.)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Muitos fornecedores facturam através de plataformas terceiras (Moloni,
+// InvoiceXpress, Vendus, PHC, ...) — o domínio do email não tem nada a
+// ver com o do fornecedor, mas o NOME DE EXIBIÇÃO do remetente continua
+// a ser o nome do fornecedor. Comparação por conteúdo (não exacta) nos
+// dois sentidos, para aceitar tanto "Sobral Pneus" dentro de "Sobral
+// Pneus, Lda." como o contrário.
+export function remetenteBateComFornecedorPorNome(remetenteNome: string, nomesFornecedores: string[]): boolean {
+  const nomeNormalizado = normalizarNome(remetenteNome);
+  if (!nomeNormalizado) return false;
+
+  return nomesFornecedores.some(nome => {
+    const nomeFornecedorNormalizado = normalizarNome(nome);
+    if (!nomeFornecedorNormalizado) return false;
+    return nomeNormalizado.includes(nomeFornecedorNormalizado) || nomeFornecedorNormalizado.includes(nomeNormalizado);
+  });
+}
+
 // `textos` = assunto, resumo do corpo, nomes dos anexos — o que estiver
 // disponível; basta um deles conter uma palavra específica de pneus.
-export function pareceFatura(remetente: string, textos: string[], dominiosConhecidos: string[]): boolean {
+// O domínio/email OU o nome de exibição bater com um fornecedor
+// conhecido já chega — não é preciso ter as duas coisas.
+export function pareceFatura(
+  remetente: string,
+  remetenteNome: string,
+  textos: string[],
+  dominiosConhecidos: string[],
+  nomesFornecedores: string[],
+): boolean {
   if (remetenteBateComFornecedor(remetente, dominiosConhecidos)) return true;
+  if (remetenteBateComFornecedorPorNome(remetenteNome, nomesFornecedores)) return true;
   return textos.some(t => textoContemPalavraEspecifica(t));
 }

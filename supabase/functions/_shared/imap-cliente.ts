@@ -176,11 +176,24 @@ function extrairEnderecoDeEnvelope(enderecos: any): string {
   return `${mailbox}@${host}`;
 }
 
-function extrairDeEnvelope(envelope: any): { assunto: string; remetente: string; messageId: string } {
-  if (!ehLista(envelope)) return { assunto: "", remetente: "", messageId: "" };
+// Endereço em ENVELOPE: [nomePessoal, rotaOrigem, mailbox, host] — o
+// nome de exibição ("Sobral Pneus", por ex.) vem em texto já
+// descodificado de RFC 2047 pelo servidor em alguns casos, mas não
+// sempre; descodificarTextoCabecalho (chamado por quem usa isto) trata
+// disso, tal como já faz para o assunto.
+function extrairNomeDeEnvelope(enderecos: any): string {
+  if (!ehLista(enderecos) || enderecos.length === 0) return "";
+  const primeiro = enderecos[0];
+  if (!ehLista(primeiro)) return "";
+  return comoTexto(primeiro[0]);
+}
+
+function extrairDeEnvelope(envelope: any): { assunto: string; remetente: string; remetenteNome: string; messageId: string } {
+  if (!ehLista(envelope)) return { assunto: "", remetente: "", remetenteNome: "", messageId: "" };
   return {
     assunto: comoTexto(envelope[1]),
     remetente: extrairEnderecoDeEnvelope(envelope[2]),
+    remetenteNome: extrairNomeDeEnvelope(envelope[2]),
     messageId: comoTexto(envelope[9]),
   };
 }
@@ -255,6 +268,7 @@ export interface InfoMensagemIMAP {
   dataRecebido: Date | null;
   assunto: string;
   remetente: string;
+  remetenteNome: string;
   messageId: string;
   partePdf: string | null;   // número da parte MIME com o PDF, se identificada
   nomePdf: string;
@@ -326,6 +340,26 @@ export class ClienteIMAP {
   async selecionarInbox(): Promise<void> {
     const resp = await this.#executar(`SELECT INBOX`);
     if (!resp.ok) throw new Error(`SELECT INBOX falhou: ${resp.linhas.join(" ")}`);
+  }
+
+  async selecionarPasta(nome: string): Promise<void> {
+    const resp = await this.#executar(`SELECT ${this.#aspas(nome)}`);
+    if (!resp.ok) throw new Error(`SELECT ${nome} falhou: ${resp.linhas.join(" ")}`);
+  }
+
+  // Diagnóstico: nomes reais das pastas na caixa (podem não corresponder
+  // ao que o webmail mostra — acentos/hierarquia às vezes vêm codificados
+  // em UTF-7 modificado). Cada linha de resposta é tipo:
+  // * LIST (\HasNoChildren) "/" "Faturas"
+  async listarPastas(): Promise<string[]> {
+    const resp = await this.#executar(`LIST "" "*"`);
+    if (!resp.ok) return [];
+    const nomes: string[] = [];
+    for (const linha of resp.linhas) {
+      const m = /^\* LIST \([^)]*\)\s+(?:"[^"]*"|NIL)\s+(?:"([^"]*)"|(\S+))/.exec(linha);
+      if (m) nomes.push(m[1] ?? m[2]);
+    }
+    return nomes;
   }
 
   // Formato de data exigido pelo IMAP SEARCH: "01-Jan-2026" — só granularidade
@@ -417,7 +451,7 @@ export class ClienteIMAP {
         ?? partes.find(p => p.tipo === "text" && p.subtipo === "html")
         ?? null;
 
-      const { assunto, remetente, messageId } = extrairDeEnvelope(envelope);
+      const { assunto, remetente, remetenteNome, messageId } = extrairDeEnvelope(envelope);
       // Sinal simples de reforço (texto contém "pdf" nalgum lado) — se o
       // parser de BODYSTRUCTURE não confirmar uma parte com confiança,
       // este sinal ainda avisa imap.ts para não desistir da mensagem.
@@ -428,6 +462,7 @@ export class ClienteIMAP {
         dataRecebido: extrairDataInterna(texto),
         assunto,
         remetente,
+        remetenteNome,
         messageId,
         partePdf: partePdf ? partePdf.numero : null,
         nomePdf: partePdf ? partePdf.nome : "",

@@ -77,6 +77,12 @@ function extrairEmail(remetenteHeader: string): string {
   return (match ? match[1] : remetenteHeader).trim();
 }
 
+// Extrai o nome de exibição de dentro de "Nome Apelido <email@dominio.pt>".
+function extrairNomeExibicao(remetenteHeader: string): string {
+  const semEndereco = remetenteHeader.replace(/<[^>]*>/, "").trim();
+  return semEndereco.replace(/^"|"$/g, "").trim();
+}
+
 // Percorre as partes da mensagem (pode ser aninhado, ex: multipart/mixed
 // com um multipart/alternative lá dentro) à procura de anexos PDF.
 function encontrarAnexosPdf(parte: any, acc: { id: string; nome: string }[] = []): { id: string; nome: string }[] {
@@ -131,7 +137,7 @@ export const google: AdaptadorEmail = {
     });
   },
 
-  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<ResultadoListagem> {
+  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos, _nomesFornecedores): Promise<ResultadoListagem> {
     // A pesquisa da Gmail usa a sintaxe própria dela (não OData) — "after:"
     // só tem resolução ao dia, por isso o filtro por hora exacta fica a
     // cargo do _shared/email-sync-logica.ts (que já tem sobreposição).
@@ -161,11 +167,13 @@ export const google: AdaptadorEmail = {
 
         const headers = msg.payload?.headers ?? [];
         const messageIdHeader = decodificarHeaderAssunto(headers, "Message-ID") || msg.id;
+        const fromHeader = decodificarHeaderAssunto(headers, "From");
 
         mensagens.push({
           id: messageIdHeader, // chave de dedup estável — o header Message-ID, tal como no Outlook
           idInterno: msg.id,
-          remetente: extrairEmail(decodificarHeaderAssunto(headers, "From")),
+          remetente: extrairEmail(fromHeader),
+          remetenteNome: extrairNomeExibicao(fromHeader),
           assunto: decodificarHeaderAssunto(headers, "Subject"),
           resumoCorpo: msg.snippet || "",
           dataRecebido: new Date(Number(msg.internalDate)).toISOString(),

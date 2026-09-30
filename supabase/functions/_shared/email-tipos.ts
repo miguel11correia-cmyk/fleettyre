@@ -29,6 +29,11 @@ export interface MensagemEmailCandidata {
   idInterno: string; // id específico do fornecedor, só válido nesta sessão — usado para
                       // pedidos seguintes (ex: obterAnexoPdf), pode não ser o mesmo que `id`
   remetente: string;
+  remetenteNome: string; // nome de exibição do remetente (ex: "Sobral Pneus") — muitos
+                          // fornecedores facturam através de plataformas terceiras (Moloni,
+                          // InvoiceXpress, Vendus, ...) cujo domínio de email nada tem a ver
+                          // com o do fornecedor; o nome de exibição continua a ser o do
+                          // fornecedor nesses casos, por isso serve de segundo critério de match
   assunto: string;
   resumoCorpo: string; // resumo/preview do corpo — usado no filtro além do assunto
   dataRecebido: string; // ISO timestamp
@@ -59,10 +64,11 @@ export interface AdaptadorEmail {
   trocarCodigoPorTokens(code: string, redirectUri: string): Promise<TokensEmail>;
   atualizarToken(tokens: TokensEmail): Promise<TokensEmail>;
 
-  // Sincronização. `dominiosConhecidos` é opcional — adaptadores que
-  // conseguem filtrar de forma barata sem ele (ex: Graph) podem
-  // ignorá-lo; adaptadores onde descarregar a mensagem completa é caro
-  // (ex: IMAP) usam-no para decidir o que vale a pena descarregar.
-  listarMensagensRecentes(tokens: TokensEmail, desde: Date, dominiosConhecidos: string[]): Promise<ResultadoListagem>;
+  // Sincronização. `dominiosConhecidos`/`nomesFornecedores` são opcionais
+  // — adaptadores que conseguem filtrar de forma barata sem eles (ex:
+  // Graph) podem ignorá-los; adaptadores onde descarregar a mensagem
+  // completa é caro (ex: IMAP) usam-nos para decidir o que vale a pena
+  // descarregar.
+  listarMensagensRecentes(tokens: TokensEmail, desde: Date, dominiosConhecidos: string[], nomesFornecedores: string[]): Promise<ResultadoListagem>;
   obterAnexoPdf(tokens: TokensEmail, idInternoMensagem: string, anexoId: string): Promise<Uint8Array>;
 }
