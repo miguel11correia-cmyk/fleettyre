@@ -57,10 +57,34 @@ export const imap: AdaptadorEmail = {
       await cliente.login(usuario, password);
       await cliente.selecionarInbox();
 
-      const uids = await cliente.pesquisarDesde(desde);
+      const uidsBrutos = await cliente.pesquisarDesde(desde);
+      // Mais recentes primeiro — UIDs são atribuídos por ordem de
+      // chegada, por isso ordenar do maior para o menor equivale a mais
+      // recente primeiro. Importa quando o limite abaixo é atingido: fica
+      // sempre com as facturas mais recentes/accionáveis, não as mais
+      // antigas da janela.
+      const uids = [...uidsBrutos].sort((a, b) => Number(b) - Number(a));
+      console.log(`IMAP: ${uids.length} mensagens na janela desde ${desde.toISOString()}`);
+
+      // Limite de segurança: descarregar a mensagem completa é o passo
+      // caro em CPU — numa caixa de correio geral (não só facturas),
+      // muitos emails têm ALGUM PDF (electricidade, seguros, software,
+      // ...) sem serem de pneus, e só se sabe ao analisar por inteiro.
+      // Sem limite, uma janela grande (ex: primeira sincronização, 30
+      // dias) pode exceder o orçamento de CPU da função. As sincronizações
+      // seguintes têm uma janela muito mais pequena (poucas horas), por
+      // isso isto só limita mesmo a primeira vez.
+      const LIMITE_DESCARGAS_COMPLETAS = 60;
+      let descarregadas = 0;
+
       const mensagens: MensagemEmailCandidata[] = [];
 
       for (const uid of uids) {
+        if (descarregadas >= LIMITE_DESCARGAS_COMPLETAS) {
+          console.log(`IMAP: limite de ${LIMITE_DESCARGAS_COMPLETAS} descargas completas atingido, ${uids.length - descarregadas} mensagens por analisar ficam para a próxima sincronização.`);
+          break;
+        }
+
         // Verificação barata (só a estrutura MIME, sem descarregar o
         // conteúdo) antes de gastar CPU a analisar a mensagem completa —
         // a maioria do correio normal de uma caixa geral não tem PDF
@@ -72,6 +96,7 @@ export const imap: AdaptadorEmail = {
           continue;
         }
 
+        descarregadas++;
         let mensagemCompleta: Uint8Array;
         try {
           mensagemCompleta = await cliente.obterMensagemCompleta(uid);
