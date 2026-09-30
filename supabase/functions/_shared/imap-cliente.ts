@@ -14,6 +14,18 @@ function indexOfCRLF(buf: Uint8Array, desde = 0): number {
   return -1;
 }
 
+function extrairDataInterna(texto: string): Date | null {
+  // INTERNALDATE "05-Jan-2026 12:34:56 +0000"
+  const m = /INTERNALDATE "(\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) ([+-]\d{4})"/.exec(texto);
+  if (!m) return null;
+  const meses: Record<string, number> = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+  const [, dia, mes, ano, hora, min, seg, fuso] = m;
+  const sinal = fuso[0] === "-" ? -1 : 1;
+  const fusoMin = sinal * (parseInt(fuso.slice(1, 3), 10) * 60 + parseInt(fuso.slice(3, 5), 10));
+  const utc = Date.UTC(parseInt(ano, 10), meses[mes], parseInt(dia, 10), parseInt(hora, 10), parseInt(min, 10), parseInt(seg, 10));
+  return new Date(utc - fusoMin * 60000);
+}
+
 class LeitorBytes {
   #conn: Deno.TlsConn;
   #buffer: Uint8Array = new Uint8Array(0);
@@ -150,31 +162,49 @@ export class ClienteIMAP {
     return resp.literais[0];
   }
 
-  // Verificação barata — só a estrutura MIME (tipos/nomes de cada parte)
-  // e a data, sem descarregar o conteúdo. Usada para descartar mensagens
-  // sem PDF anexado antes de gastar tempo de CPU a descarregar e analisar
-  // a mensagem completa (a condição já é obrigatória no filtro a jusante,
-  // por isso isto não deixa escapar nada — só evita trabalho a mais). A
-  // data serve para saber até onde a sincronização avançou, quando um
-  // limite de segurança obriga a parar a meio de uma janela grande.
-  async verificarMensagem(uid: string): Promise<{ temPdf: boolean; dataRecebido: Date | null }> {
-    const resp = await this.#executar(`UID FETCH ${uid} (BODYSTRUCTURE INTERNALDATE)`);
-    if (!resp.ok) return { temPdf: false, dataRecebido: null };
-    const texto = resp.linhas.join(" ");
-    const temPdf = texto.toLowerCase().includes("pdf");
+  // Verificação barata em LOTE — só a estrutura MIME (tipos/nomes de cada
+  // parte) e a data de cada mensagem, sem descarregar conteúdo nenhum, e
+  // num único pedido à rede para todo o lote (este cliente não faz
+  // pipelining — um pedido por mensagem seria demasiados round-trips
+  // sequenciais para uma caixa com centenas/milhares de mensagens numa
+  // janela). Usada para descartar mensagens sem PDF anexado antes de
+  // gastar tempo de CPU a descarregar e analisar a mensagem completa (a
+  // condição já é obrigatória no filtro a jusante, por isso isto não
+  // deixa escapar nada — só evita trabalho a mais). A data de cada
+  // mensagem serve para saber até onde a sincronização avançou, quando
+  // um limite de segurança obriga a parar a meio de uma janela grande.
+  async verificarMensagens(uids: string[]): Promise<Map<string, { temPdf: boolean; dataRecebido: Date | null }>> {
+    const resultado = new Map<string, { temPdf: boolean; dataRecebido: Date | null }>();
+    if (uids.length === 0) return resultado;
 
-    // INTERNALDATE "05-Jan-2026 12:34:56 +0000"
-    const m = /INTERNALDATE "(\d{2})-(\w{3})-(\d{4}) (\d{2}):(\d{2}):(\d{2}) ([+-]\d{4})"/.exec(texto);
-    let dataRecebido: Date | null = null;
-    if (m) {
-      const meses: Record<string, number> = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
-      const [, dia, mes, ano, hora, min, seg, fuso] = m;
-      const sinal = fuso[0] === "-" ? -1 : 1;
-      const fusoMin = sinal * (parseInt(fuso.slice(1, 3), 10) * 60 + parseInt(fuso.slice(3, 5), 10));
-      const utc = Date.UTC(parseInt(ano, 10), meses[mes], parseInt(dia, 10), parseInt(hora, 10), parseInt(min, 10), parseInt(seg, 10));
-      dataRecebido = new Date(utc - fusoMin * 60000);
+    const resp = await this.#executar(`UID FETCH ${uids.join(",")} (UID BODYSTRUCTURE INTERNALDATE)`);
+    if (!resp.ok) return resultado;
+
+    // Cada mensagem do lote começa numa linha "* N FETCH (...)" — agrupa
+    // essa linha com as seguintes, até à próxima "* N FETCH" ou ao fim.
+    let grupoAtual: string[] = [];
+    const grupos: string[][] = [];
+    for (const linha of resp.linhas) {
+      if (/^\* \d+ FETCH/.test(linha)) {
+        if (grupoAtual.length > 0) grupos.push(grupoAtual);
+        grupoAtual = [linha];
+      } else if (grupoAtual.length > 0) {
+        grupoAtual.push(linha);
+      }
     }
-    return { temPdf, dataRecebido };
+    if (grupoAtual.length > 0) grupos.push(grupoAtual);
+
+    for (const grupo of grupos) {
+      const texto = grupo.join(" ");
+      const uidMatch = /UID (\d+)/.exec(texto);
+      if (!uidMatch) continue;
+      resultado.set(uidMatch[1], {
+        temPdf: texto.toLowerCase().includes("pdf"),
+        dataRecebido: extrairDataInterna(texto),
+      });
+    }
+
+    return resultado;
   }
 
   async fechar(): Promise<void> {

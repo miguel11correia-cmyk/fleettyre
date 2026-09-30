@@ -12,10 +12,11 @@
 // a mensagem completa (não há um "$select" barato) — por isso descarrega-
 // se sempre o corpo todo de cada candidato dentro da janela de datas
 // (troca desempenho por não deixar escapar nenhuma factura, decisão
-// explícita do utilizador). Antes disso, uma verificação BODYSTRUCTURE
-// (ClienteIMAP.verificarMensagem) descarta mensagens sem nenhum anexo —
-// a maioria do correio normal de uma caixa geral — sem custo de CPU
-// significativo, já que ter PDF é de qualquer forma condição obrigatória.
+// explícita do utilizador). Antes disso, uma verificação BODYSTRUCTURE em
+// lote (ClienteIMAP.verificarMensagens) descarta mensagens sem nenhum
+// anexo — a maioria do correio normal de uma caixa geral — sem custo de
+// CPU significativo, já que ter PDF é de qualquer forma condição
+// obrigatória.
 // O filtro de palavra-chave/domínio corre depois, fora daqui, em
 // email-sync-logica.ts.
 //
@@ -72,8 +73,15 @@ export const imap: AdaptadorEmail = {
       const uids = [...uidsBrutos].sort((a, b) => Number(a) - Number(b));
       console.log(`IMAP: ${uids.length} mensagens na janela desde ${desde.toISOString()}`);
 
+      // Verificação barata em lotes (ver ClienteIMAP.verificarMensagens) —
+      // um único pedido à rede por lote, não um por mensagem, porque este
+      // cliente não faz pipelining e centenas/milhares de round-trips
+      // sequenciais já custa CPU a mais por si só, antes sequer de chegar
+      // ao passo de descarregar mensagens completas.
+      const LOTE_VERIFICACAO = 100;
+
       // Limite de segurança: descarregar a mensagem completa é o passo
-      // caro em CPU — numa caixa de correio geral (não só facturas),
+      // mais caro em CPU — numa caixa de correio geral (não só facturas),
       // muitos emails têm ALGUM PDF (electricidade, seguros, software,
       // ...) sem serem de pneus, e só se sabe ao analisar por inteiro.
       // Sem limite, uma janela grande (ex: primeira sincronização, 30
@@ -89,57 +97,58 @@ export const imap: AdaptadorEmail = {
       let ultimaDataExaminada: Date | null = null;
       let completo = true;
 
-      for (const uid of uids) {
-        if (descarregadas >= LIMITE_DESCARGAS_COMPLETAS) {
-          completo = false;
-          console.log(`IMAP: limite de ${LIMITE_DESCARGAS_COMPLETAS} descargas completas atingido — a continuar a partir de ${ultimaDataExaminada?.toISOString() ?? "?"} na próxima sincronização.`);
-          break;
-        }
-
-        // Verificação barata (só a estrutura MIME e a data, sem descarregar
-        // o conteúdo) antes de gastar CPU a analisar a mensagem completa —
-        // a maioria do correio normal de uma caixa geral não tem PDF
-        // anexado, e essa é já uma condição obrigatória do filtro, por
-        // isso isto não deixa escapar nenhuma factura.
-        let verificacao: { temPdf: boolean; dataRecebido: Date | null };
+      loteExterno:
+      for (let i = 0; i < uids.length; i += LOTE_VERIFICACAO) {
+        const lote = uids.slice(i, i + LOTE_VERIFICACAO);
+        let verificacoes: Map<string, { temPdf: boolean; dataRecebido: Date | null }>;
         try {
-          verificacao = await cliente.verificarMensagem(uid);
+          verificacoes = await cliente.verificarMensagens(lote);
         } catch {
-          continue;
-        }
-        if (verificacao.dataRecebido) ultimaDataExaminada = verificacao.dataRecebido;
-        if (!verificacao.temPdf) continue;
-
-        descarregadas++;
-        let mensagemCompleta: Uint8Array;
-        try {
-          mensagemCompleta = await cliente.obterMensagemCompleta(uid);
-        } catch {
-          continue;
+          continue; // falha no lote todo — avança para o seguinte, não pára a sincronização toda
         }
 
-        const anexo = extrairPrimeiroPdf(mensagemCompleta);
-        if (!anexo) continue; // sem PDF, não interessa guardar
+        for (const uid of lote) {
+          const verificacao = verificacoes.get(uid);
+          if (verificacao?.dataRecebido) ultimaDataExaminada = verificacao.dataRecebido;
+          if (!verificacao || !verificacao.temPdf) continue;
 
-        const textoCompleto = new TextDecoder("latin1").decode(mensagemCompleta);
-        const cabecalhos = parsearCabecalhos(textoCompleto.split(/\r\n\r\n/)[0]);
+          if (descarregadas >= LIMITE_DESCARGAS_COMPLETAS) {
+            completo = false;
+            console.log(`IMAP: limite de ${LIMITE_DESCARGAS_COMPLETAS} descargas completas atingido — a continuar a partir de ${ultimaDataExaminada?.toISOString() ?? "?"} na próxima sincronização.`);
+            break loteExterno;
+          }
 
-        const remetente = extrairEndereco(cabecalhos["from"] || "");
-        const assunto = descodificarTextoCabecalho(cabecalhos["subject"] || "");
-        const messageId = (cabecalhos["message-id"] || "").trim();
-        if (!messageId) continue;
+          descarregadas++;
+          let mensagemCompleta: Uint8Array;
+          try {
+            mensagemCompleta = await cliente.obterMensagemCompleta(uid);
+          } catch {
+            continue;
+          }
 
-        cachePdfs.set(messageId, anexo.bytes);
+          const anexo = extrairPrimeiroPdf(mensagemCompleta);
+          if (!anexo) continue; // sem PDF, não interessa guardar
 
-        mensagens.push({
-          id: messageId,
-          idInterno: uid,
-          remetente,
-          assunto,
-          resumoCorpo: extrairResumoTexto(mensagemCompleta),
-          dataRecebido: cabecalhos["date"] ? new Date(cabecalhos["date"]).toISOString() : (verificacao.dataRecebido ?? new Date()).toISOString(),
-          anexosPdf: [{ id: messageId, nome: anexo.nome }],
-        });
+          const textoCompleto = new TextDecoder("latin1").decode(mensagemCompleta);
+          const cabecalhos = parsearCabecalhos(textoCompleto.split(/\r\n\r\n/)[0]);
+
+          const remetente = extrairEndereco(cabecalhos["from"] || "");
+          const assunto = descodificarTextoCabecalho(cabecalhos["subject"] || "");
+          const messageId = (cabecalhos["message-id"] || "").trim();
+          if (!messageId) continue;
+
+          cachePdfs.set(messageId, anexo.bytes);
+
+          mensagens.push({
+            id: messageId,
+            idInterno: uid,
+            remetente,
+            assunto,
+            resumoCorpo: extrairResumoTexto(mensagemCompleta),
+            dataRecebido: cabecalhos["date"] ? new Date(cabecalhos["date"]).toISOString() : (verificacao.dataRecebido ?? new Date()).toISOString(),
+            anexosPdf: [{ id: messageId, nome: anexo.nome }],
+          });
+        }
       }
 
       return { mensagens, completo, ateData: completo ? undefined : (ultimaDataExaminada ?? undefined) };
