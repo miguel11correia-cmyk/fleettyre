@@ -61,6 +61,13 @@ export const imap: AdaptadorEmail = {
     const password = String(tokens.password ?? "");
     if (!host || !usuario || !password) return { mensagens: [], completo: true };
 
+    // Limpa a cache de PDFs de uma eventual chamada anterior na mesma
+    // instância da função (Edge Functions podem reaproveitar a mesma
+    // instância "quente" entre invocações) — sem isto, PDFs de uma
+    // tentativa que falhou (ex: por limite de memória) podiam ficar
+    // presos em memória e somar-se aos da tentativa seguinte.
+    cachePdfs.clear();
+
     const cliente = await ClienteIMAP.ligar(host, port);
     try {
       await cliente.login(usuario, password);
@@ -94,7 +101,7 @@ export const imap: AdaptadorEmail = {
       // a consumir mais tarde — com várias facturas de alguns MB cada,
       // 60 de uma vez chegava a exceder o limite de memória da função
       // (confirmado num teste real). 20 é mais conservador.
-      const LIMITE_DESCARGAS_COMPLETAS = 20;
+      const LIMITE_DESCARGAS_COMPLETAS = 5;
       let descarregadas = 0;
 
       const mensagens: MensagemEmailCandidata[] = [];
