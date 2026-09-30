@@ -8,13 +8,16 @@
 // de OAuth deste adaptador nunca são chamados — lançam erro se o forem,
 // só para apanhar um eventual erro de programação cedo.
 //
-// Ao contrário do Graph, aqui não há forma barata de saber se uma
-// mensagem tem anexo PDF sem a descarregar por inteiro — por isso,
-// ao contrário do Outlook, descarrega-se sempre a mensagem completa
-// de cada candidato dentro da janela de datas (troca desempenho por
-// não deixar escapar nenhuma factura, decisão explícita do utilizador).
+// Ao contrário do Graph, o filtro de assunto/corpo aqui exige descarregar
+// a mensagem completa (não há um "$select" barato) — por isso descarrega-
+// se sempre o corpo todo de cada candidato dentro da janela de datas
+// (troca desempenho por não deixar escapar nenhuma factura, decisão
+// explícita do utilizador). Antes disso, uma verificação BODYSTRUCTURE
+// (ClienteIMAP.temAnexoPdf) descarta mensagens sem nenhum anexo — a
+// maioria do correio normal de uma caixa geral — sem custo de CPU
+// significativo, já que ter PDF é de qualquer forma condição obrigatória.
 // O filtro de palavra-chave/domínio corre depois, fora daqui, em
-// email-sync-logica.ts — aqui só se garante que há um PDF anexado.
+// email-sync-logica.ts.
 
 import type { AdaptadorEmail, MensagemEmailCandidata, TokensEmail } from "./email-tipos.ts";
 import { ClienteIMAP } from "./imap-cliente.ts";
@@ -58,6 +61,17 @@ export const imap: AdaptadorEmail = {
       const mensagens: MensagemEmailCandidata[] = [];
 
       for (const uid of uids) {
+        // Verificação barata (só a estrutura MIME, sem descarregar o
+        // conteúdo) antes de gastar CPU a analisar a mensagem completa —
+        // a maioria do correio normal de uma caixa geral não tem PDF
+        // anexado, e essa é já uma condição obrigatória do filtro, por
+        // isso isto não deixa escapar nenhuma factura.
+        try {
+          if (!(await cliente.temAnexoPdf(uid))) continue;
+        } catch {
+          continue;
+        }
+
         let mensagemCompleta: Uint8Array;
         try {
           mensagemCompleta = await cliente.obterMensagemCompleta(uid);

@@ -150,6 +150,18 @@ export class ClienteIMAP {
     return resp.literais[0];
   }
 
+  // Verificação barata — só a estrutura MIME (tipos/nomes de cada parte),
+  // sem descarregar o conteúdo. Usada para descartar mensagens sem PDF
+  // anexado antes de gastar tempo de CPU a descarregar e analisar a
+  // mensagem completa (a condição já é obrigatória no filtro a jusante,
+  // por isso isto não deixa escapar nada — só evita trabalho a mais).
+  async temAnexoPdf(uid: string): Promise<boolean> {
+    const resp = await this.#executar(`UID FETCH ${uid} (BODYSTRUCTURE)`);
+    if (!resp.ok) return false;
+    const texto = resp.linhas.join(" ").toLowerCase();
+    return texto.includes("pdf");
+  }
+
   async fechar(): Promise<void> {
     try { await this.#executar("LOGOUT"); } catch { /* já não importa */ }
   }
