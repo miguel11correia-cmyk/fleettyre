@@ -158,7 +158,6 @@ export const imap: AdaptadorEmail = {
             }
 
             if (!pareceFatura(info.remetente, [assunto, resumoCorpo, info.nomePdf], dominiosConhecidos)) {
-              console.log(`IMAP: rejeitado — de "${info.remetente}", assunto "${assunto}", anexo "${info.nomePdf}", resumo "${resumoCorpo.slice(0, 120)}"`);
               continue; // irrelevante — nunca descarrega o PDF, é a poupança principal desta arquitectura
             }
 
