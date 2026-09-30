@@ -128,10 +128,13 @@ async function sincronizarEmailAgora() {
   const resultado = await chamarFuncaoEmail('email-sync-manual', { method: 'POST' });
 
   if (resultado.ok) {
-    const aviso = resultado.completo === false
-      ? ' — ainda há mensagens por analisar nesta caixa; carrega em "Sincronizar agora" outra vez para continuar (nada fica por trás, só demora mais do que uma vez).'
+    const exame = resultado.totalNaJanela != null
+      ? ` (examinados ${resultado.examinadas ?? 0} de ${resultado.totalNaJanela} nesta caixa)`
       : '';
-    showFeedback('email-forn-feedback', `Sincronizado — ${resultado.novos ?? 0} novo(s) email(s)${aviso}`, false);
+    const aviso = resultado.completo === false
+      ? ' — ainda há mensagens por analisar; carrega em "Sincronizar agora" outra vez para continuar (nada fica por trás, só demora mais do que uma vez).'
+      : '';
+    showFeedback('email-forn-feedback', `Sincronizado — ${resultado.novos ?? 0} novo(s) email(s)${exame}${aviso}`, false);
   } else {
     showFeedback('email-forn-feedback', resultado.erro || 'Erro ao sincronizar.', true);
   }

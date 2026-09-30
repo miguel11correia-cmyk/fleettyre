@@ -120,6 +120,7 @@ export const imap: AdaptadorEmail = {
       const mensagens: MensagemEmailCandidata[] = [];
       let ultimaDataExaminada: Date | null = null;
       let completo = true;
+      let examinadas = 0;
 
       loteExterno:
       for (let i = 0; i < uids.length; i += LOTE_VERIFICACAO) {
@@ -133,6 +134,7 @@ export const imap: AdaptadorEmail = {
 
         for (const uid of lote) {
           const info = infos.get(uid);
+          if (info) examinadas++;
           if (info?.dataRecebido) ultimaDataExaminada = info.dataRecebido;
           if (!info || !info.temPdf) continue; // sem PDF, não interessa — condição obrigatória do filtro
 
@@ -230,7 +232,15 @@ export const imap: AdaptadorEmail = {
         }
       }
 
-      return { mensagens, completo, ateData: completo ? undefined : (ultimaDataExaminada ?? undefined) };
+      console.log(`IMAP: ${examinadas}/${uids.length} mensagens examinadas, ${mensagens.length} factura(s) encontrada(s), janela ${completo ? "completa" : "incompleta — continua na próxima sincronização"}.`);
+
+      return {
+        mensagens,
+        completo,
+        ateData: completo ? undefined : (ultimaDataExaminada ?? undefined),
+        totalNaJanela: uids.length,
+        examinadas,
+      };
     } finally {
       await cliente.fechar();
     }

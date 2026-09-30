@@ -74,7 +74,7 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     .not("dominios_email", "is", null);
   const dominiosConhecidos: string[] = (fornecedores ?? []).flatMap((f: any) => f.dominios_email ?? []);
 
-  const { mensagens, completo, ateData } = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
+  const { mensagens, completo, ateData, totalNaJanela, examinadas } = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
 
   // Quando o adaptador não conseguiu cobrir a janela toda numa só chamada
   // (ex: limite de segurança de CPU no IMAP, ver imap.ts), NÃO avança
@@ -98,7 +98,7 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     if (proximaUltimaSincronizacao) {
       await sb.from("integracoes_email").update({ ultima_sincronizacao: proximaUltimaSincronizacao }).eq("id", integ.id);
     }
-    return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, novos: 0, completo };
+    return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, novos: 0, completo, totalNaJanela, examinadas };
   }
 
   const { data: jaVistos } = await sb
@@ -141,5 +141,5 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     await sb.from("integracoes_email").update({ ultima_sincronizacao: proximaUltimaSincronizacao }).eq("id", integ.id);
   }
 
-  return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, total_candidatas: candidatas.length, novos, completo };
+  return { empresa_id: integ.empresa_id, fornecedor: integ.fornecedor, ok: true, total_candidatas: candidatas.length, novos, completo, totalNaJanela, examinadas };
 }
