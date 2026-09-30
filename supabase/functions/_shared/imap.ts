@@ -101,7 +101,7 @@ export const imap: AdaptadorEmail = {
       // a consumir mais tarde — com várias facturas de alguns MB cada,
       // 60 de uma vez chegava a exceder o limite de memória da função
       // (confirmado num teste real). 20 é mais conservador.
-      const LIMITE_DESCARGAS_COMPLETAS = 5;
+      const LIMITE_DESCARGAS_COMPLETAS = 3;
       let descarregadas = 0;
 
       const mensagens: MensagemEmailCandidata[] = [];
