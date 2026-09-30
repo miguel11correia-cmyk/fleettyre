@@ -16,7 +16,7 @@ export const ADAPTADORES_EMAIL: Record<string, AdaptadorEmail> = {
   imap,
 };
 
-const JANELA_PRIMEIRA_SINCRONIZACAO_DIAS = 30;
+const JANELA_PRIMEIRA_SINCRONIZACAO_DIAS = 180; // ~6 meses
 const SOBREPOSICAO_HORAS = 1;
 
 // O Message-ID de um email (ex: "<GV2PR02MB93...@...>") tem caracteres
