@@ -3,7 +3,7 @@
 // contas Google Workspace (empresa) como Gmail pessoal — a Google não
 // distingue os dois no OAuth, ao contrário da Microsoft.
 
-import type { AdaptadorEmail, MensagemEmailCandidata, TokensEmail } from "./email-tipos.ts";
+import type { AdaptadorEmail, MensagemEmailCandidata, ResultadoListagem, TokensEmail } from "./email-tipos.ts";
 
 const GOOGLE_CLIENT_ID     = Deno.env.get("GOOGLE_CLIENT_ID")     ?? "";
 const GOOGLE_CLIENT_SECRET = Deno.env.get("GOOGLE_CLIENT_SECRET") ?? "";
@@ -131,7 +131,7 @@ export const google: AdaptadorEmail = {
     });
   },
 
-  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<MensagemEmailCandidata[]> {
+  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<ResultadoListagem> {
     // A pesquisa da Gmail usa a sintaxe própria dela (não OData) — "after:"
     // só tem resolução ao dia, por isso o filtro por hora exacta fica a
     // cargo do _shared/email-sync-logica.ts (que já tem sobreposição).
@@ -177,7 +177,7 @@ export const google: AdaptadorEmail = {
       paginas++;
     } while (pageToken && paginas < 10); // teto de segurança — 500 mensagens por sincronização
 
-    return mensagens;
+    return { mensagens, completo: true };
   },
 
   async obterAnexoPdf(tokens, idInternoMensagem, anexoId): Promise<Uint8Array> {

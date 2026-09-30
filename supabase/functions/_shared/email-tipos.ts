@@ -35,6 +35,18 @@ export interface MensagemEmailCandidata {
   anexosPdf: AnexoPdfCandidato[];
 }
 
+export interface ResultadoListagem {
+  mensagens: MensagemEmailCandidata[];
+  // false quando o adaptador parou antes de cobrir a janela toda (ex: um
+  // limite de segurança de CPU no IMAP) — nesse caso `ateData` diz até
+  // onde chegou, para a próxima sincronização continuar exactamente daí
+  // em vez de saltar para "agora" e perder o que ficou por analisar no
+  // meio. Adaptadores que conseguem cobrir sempre a janela toda numa só
+  // chamada (Outlook, Google) devolvem sempre `completo: true`.
+  completo: boolean;
+  ateData?: Date;
+}
+
 export interface AdaptadorEmail {
   // OAuth — adaptadores de credenciais directas (ex: IMAP) não usam
   // nenhum destes três; a ligação faz-se por outra função própria
@@ -47,6 +59,6 @@ export interface AdaptadorEmail {
   // conseguem filtrar de forma barata sem ele (ex: Graph) podem
   // ignorá-lo; adaptadores onde descarregar a mensagem completa é caro
   // (ex: IMAP) usam-no para decidir o que vale a pena descarregar.
-  listarMensagensRecentes(tokens: TokensEmail, desde: Date, dominiosConhecidos: string[]): Promise<MensagemEmailCandidata[]>;
+  listarMensagensRecentes(tokens: TokensEmail, desde: Date, dominiosConhecidos: string[]): Promise<ResultadoListagem>;
   obterAnexoPdf(tokens: TokensEmail, idInternoMensagem: string, anexoId: string): Promise<Uint8Array>;
 }

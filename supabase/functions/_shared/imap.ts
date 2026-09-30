@@ -13,13 +13,21 @@
 // se sempre o corpo todo de cada candidato dentro da janela de datas
 // (troca desempenho por não deixar escapar nenhuma factura, decisão
 // explícita do utilizador). Antes disso, uma verificação BODYSTRUCTURE
-// (ClienteIMAP.temAnexoPdf) descarta mensagens sem nenhum anexo — a
-// maioria do correio normal de uma caixa geral — sem custo de CPU
+// (ClienteIMAP.verificarMensagem) descarta mensagens sem nenhum anexo —
+// a maioria do correio normal de uma caixa geral — sem custo de CPU
 // significativo, já que ter PDF é de qualquer forma condição obrigatória.
 // O filtro de palavra-chave/domínio corre depois, fora daqui, em
 // email-sync-logica.ts.
+//
+// Ainda assim, uma caixa geral pode ter muitas mensagens COM algum PDF
+// sem serem de pneus (electricidade, seguros, ...), que só se sabe ao
+// descarregar por inteiro — por isso há um limite de descargas completas
+// por chamada (ver LIMITE_DESCARGAS_COMPLETAS). Quando atingido, devolve
+// `completo: false` + `ateData`, para a sincronização seguinte continuar
+// exactamente dali em vez de saltar para "agora" e perder o resto da
+// janela.
 
-import type { AdaptadorEmail, MensagemEmailCandidata, TokensEmail } from "./email-tipos.ts";
+import type { AdaptadorEmail, MensagemEmailCandidata, ResultadoListagem, TokensEmail } from "./email-tipos.ts";
 import { ClienteIMAP } from "./imap-cliente.ts";
 import { descodificarTextoCabecalho, extrairPrimeiroPdf, extrairResumoTexto, parsearCabecalhos } from "./mime-parser.ts";
 
@@ -45,33 +53,64 @@ export const imap: AdaptadorEmail = {
     return tokens; // credenciais directas não "expiram" no sentido OAuth
   },
 
-  async listarMensagensRecentes(tokens, desde): Promise<MensagemEmailCandidata[]> {
+  async listarMensagensRecentes(tokens, desde): Promise<ResultadoListagem> {
     const host = String(tokens.host ?? "");
     const port = Number(tokens.port ?? 993);
     const usuario = String(tokens.usuario ?? "");
     const password = String(tokens.password ?? "");
-    if (!host || !usuario || !password) return [];
+    if (!host || !usuario || !password) return { mensagens: [], completo: true };
 
     const cliente = await ClienteIMAP.ligar(host, port);
     try {
       await cliente.login(usuario, password);
       await cliente.selecionarInbox();
 
-      const uids = await cliente.pesquisarDesde(desde);
+      const uidsBrutos = await cliente.pesquisarDesde(desde);
+      // Mais antigas primeiro — para o progresso, quando o limite abaixo
+      // obriga a parar a meio, avançar sempre para a frente no tempo
+      // (nunca voltar atrás nem saltar mensagens por analisar).
+      const uids = [...uidsBrutos].sort((a, b) => Number(a) - Number(b));
+      console.log(`IMAP: ${uids.length} mensagens na janela desde ${desde.toISOString()}`);
+
+      // Limite de segurança: descarregar a mensagem completa é o passo
+      // caro em CPU — numa caixa de correio geral (não só facturas),
+      // muitos emails têm ALGUM PDF (electricidade, seguros, software,
+      // ...) sem serem de pneus, e só se sabe ao analisar por inteiro.
+      // Sem limite, uma janela grande (ex: primeira sincronização, 30
+      // dias) pode exceder o orçamento de CPU da função. Quando atingido,
+      // `completo: false` + `ateData` dizem ao chamador para não avançar
+      // `ultima_sincronizacao` até "agora" — a próxima sincronização
+      // continua exactamente daqui, em vez de saltar por cima do resto
+      // da janela e perder essas mensagens para sempre.
+      const LIMITE_DESCARGAS_COMPLETAS = 60;
+      let descarregadas = 0;
+
       const mensagens: MensagemEmailCandidata[] = [];
+      let ultimaDataExaminada: Date | null = null;
+      let completo = true;
 
       for (const uid of uids) {
-        // Verificação barata (só a estrutura MIME, sem descarregar o
-        // conteúdo) antes de gastar CPU a analisar a mensagem completa —
+        if (descarregadas >= LIMITE_DESCARGAS_COMPLETAS) {
+          completo = false;
+          console.log(`IMAP: limite de ${LIMITE_DESCARGAS_COMPLETAS} descargas completas atingido — a continuar a partir de ${ultimaDataExaminada?.toISOString() ?? "?"} na próxima sincronização.`);
+          break;
+        }
+
+        // Verificação barata (só a estrutura MIME e a data, sem descarregar
+        // o conteúdo) antes de gastar CPU a analisar a mensagem completa —
         // a maioria do correio normal de uma caixa geral não tem PDF
         // anexado, e essa é já uma condição obrigatória do filtro, por
         // isso isto não deixa escapar nenhuma factura.
+        let verificacao: { temPdf: boolean; dataRecebido: Date | null };
         try {
-          if (!(await cliente.temAnexoPdf(uid))) continue;
+          verificacao = await cliente.verificarMensagem(uid);
         } catch {
           continue;
         }
+        if (verificacao.dataRecebido) ultimaDataExaminada = verificacao.dataRecebido;
+        if (!verificacao.temPdf) continue;
 
+        descarregadas++;
         let mensagemCompleta: Uint8Array;
         try {
           mensagemCompleta = await cliente.obterMensagemCompleta(uid);
@@ -98,12 +137,12 @@ export const imap: AdaptadorEmail = {
           remetente,
           assunto,
           resumoCorpo: extrairResumoTexto(mensagemCompleta),
-          dataRecebido: cabecalhos["date"] ? new Date(cabecalhos["date"]).toISOString() : new Date().toISOString(),
+          dataRecebido: cabecalhos["date"] ? new Date(cabecalhos["date"]).toISOString() : (verificacao.dataRecebido ?? new Date()).toISOString(),
           anexosPdf: [{ id: messageId, nome: anexo.nome }],
         });
       }
 
-      return mensagens;
+      return { mensagens, completo, ateData: completo ? undefined : (ultimaDataExaminada ?? undefined) };
     } finally {
       await cliente.fechar();
     }

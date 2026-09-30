@@ -151,6 +151,8 @@ Página "Faturas por email" (Registos), `js/emails-fornecedores.js`. `integracoe
 
 Cada fornecedor de email é um adaptador cumprindo o contrato `AdaptadorEmail` em `_shared/email-tipos.ts` — o mesmo padrão da telemetria. Hoje existem três: `outlook.ts` (Microsoft Graph), `google.ts` (Gmail API — serve tanto Google Workspace como Gmail pessoal, a Google não distingue os dois no OAuth) e `imap.ts`.
 
+**Sincronização parcial/resumível (só IMAP)**: ao contrário do Graph/Gmail (que filtram por anexo do lado da API, barato), o IMAP não tem essa opção — descarregar a mensagem completa é o passo caro em CPU, e uma caixa de correio geral pode ter muitos emails com algum PDF sem serem de pneus. Por isso `imap.ts` tem um limite de descargas completas por chamada (`LIMITE_DESCARGAS_COMPLETAS`, 60); `listarMensagensRecentes` devolve `{ mensagens, completo, ateData }` em vez de só a lista — quando `completo: false`, `_shared/email-sync-logica.ts` avança `ultima_sincronizacao` só até `ateData` (não até "agora"), para a sincronização seguinte continuar exactamente dali em vez de saltar por cima do resto da janela e perder mensagens. Numa caixa com muito por trás (ex: primeira sincronização de 30 dias), pode ser preciso clicar "Sincronizar agora" mais do que uma vez para apanhar tudo — a app avisa quando isso acontece.
+
 **Filtro de relevância** (`_shared/filtro-email.ts`), pensado em camadas para não deixar escapar facturas (lê assunto, corpo e nome do PDF anexado, não só o remetente) nem apanhar facturas de fornecedores não relacionados com pneus (a palavra genérica "fatura"/"invoice" sozinha não é suficiente):
 
 1. Tem de ter um PDF anexado (condição obrigatória).
