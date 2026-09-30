@@ -3,7 +3,7 @@
 // Functions, por isso isto implementa só o suficiente do protocolo
 // IMAP4rev1 (RFC 3501) para o que precisamos: ligar por TLS implícito
 // (porta 993, o mais comum em alojamento de email), autenticar,
-// procurar mensagens recentes, e ler cabeçalhos/anexos específicos.
+// procurar mensagens recentes, e ler metadados/partes específicas.
 // Não é uma biblioteca genérica — assume um pedido de cada vez, sem
 // pipelining, o que é suficiente para uma sincronização periódica.
 
@@ -24,6 +24,165 @@ function extrairDataInterna(texto: string): Date | null {
   const fusoMin = sinal * (parseInt(fuso.slice(1, 3), 10) * 60 + parseInt(fuso.slice(3, 5), 10));
   const utc = Date.UTC(parseInt(ano, 10), meses[mes], parseInt(dia, 10), parseInt(hora, 10), parseInt(min, 10), parseInt(seg, 10));
   return new Date(utc - fusoMin * 60000);
+}
+
+// ── Parser mínimo de listas parentizadas (BODYSTRUCTURE/ENVELOPE) ────
+// Ambas usam a mesma gramática: listas aninhadas entre parêntesis, com
+// strings entre aspas, números nus, e NIL para ausência de valor. Não
+// cobre literais dentro da própria estrutura (raro — só para campos
+// muito compridos, ex. um assunto enorme); nesse caso o campo em causa
+// fica vazio em vez de correcto, mas não faz o parser falhar.
+
+type Token =
+  | { t: "open" }
+  | { t: "close" }
+  | { t: "nil" }
+  | { t: "atom"; v: string }
+  | { t: "str"; v: string }
+  | { t: "num"; v: number };
+
+function tokenizar(texto: string): Token[] {
+  const tokens: Token[] = [];
+  let i = 0;
+  const n = texto.length;
+  while (i < n) {
+    const c = texto[i];
+    if (c === "(") { tokens.push({ t: "open" }); i++; continue; }
+    if (c === ")") { tokens.push({ t: "close" }); i++; continue; }
+    if (c === " " || c === "\t" || c === "\r" || c === "\n") { i++; continue; }
+    if (c === '"') {
+      let j = i + 1;
+      let v = "";
+      while (j < n && texto[j] !== '"') {
+        if (texto[j] === "\\" && j + 1 < n) { v += texto[j + 1]; j += 2; }
+        else { v += texto[j]; j++; }
+      }
+      tokens.push({ t: "str", v });
+      i = j + 1;
+      continue;
+    }
+    let j = i;
+    while (j < n && !/[\s()]/.test(texto[j])) j++;
+    const atom = texto.slice(i, j);
+    if (atom.length === 0) { i++; continue; }
+    if (atom.toUpperCase() === "NIL") tokens.push({ t: "nil" });
+    else if (/^\d+$/.test(atom)) tokens.push({ t: "num", v: parseInt(atom, 10) });
+    else tokens.push({ t: "atom", v: atom });
+    i = j;
+  }
+  return tokens;
+}
+
+// Devolve: lista aninhada (array), string, número, ou null (NIL) — a
+// árvore genérica que representa qualquer valor IMAP parentizado.
+function parsearValor(tokens: Token[], pos: { i: number }): any {
+  const tok = tokens[pos.i];
+  if (!tok) return null;
+  if (tok.t === "open") {
+    pos.i++;
+    const itens: any[] = [];
+    while (tokens[pos.i] && tokens[pos.i].t !== "close") {
+      itens.push(parsearValor(tokens, pos));
+    }
+    pos.i++; // consome "close"
+    return itens;
+  }
+  pos.i++;
+  if (tok.t === "nil") return null;
+  if (tok.t === "num") return tok.v;
+  return tok.v; // atom ou str — ambos tratados como texto
+}
+
+function ehLista(x: any): x is any[] { return Array.isArray(x); }
+function comoTexto(x: any): string { return typeof x === "string" ? x : ""; }
+
+// ── BODYSTRUCTURE: partes-folha com endereçamento por número ─────────
+// Parte não-multipart: [tipo, subtipo, params, id, descrição, codificação, tamanho, ...]
+// Parte multipart: [subparte1, subparte2, ..., subtipo, ...]
+// Numeração por RFC 3501: 1, 2, 3... no nível de topo; "2.1", "2.2" dentro
+// da 2ª subparte se essa for também multipart, etc.
+
+export interface ParteMime {
+  numero: string;
+  tipo: string;
+  subtipo: string;
+  nome: string;
+  codificacao: string;
+}
+
+function extrairNomeDeParams(params: any): string {
+  if (!ehLista(params)) return "";
+  for (let i = 0; i + 1 < params.length; i += 2) {
+    const chave = comoTexto(params[i]).toUpperCase();
+    if (chave === "NAME" || chave === "FILENAME") return comoTexto(params[i + 1]);
+  }
+  return "";
+}
+
+// O nome de um anexo pode vir nos parâmetros do content-type (NAME) ou
+// na content-disposition (FILENAME, numa posição de extensão que varia
+// por servidor) — procura em qualquer lista aninhada depois do tamanho.
+function procurarNomeEmExtensoes(itens: any[]): string {
+  for (let k = 6; k < itens.length; k++) {
+    const campo = itens[k];
+    if (!ehLista(campo)) continue;
+    const directo = extrairNomeDeParams(campo);
+    if (directo) return directo;
+    for (const sub of campo) {
+      if (ehLista(sub)) {
+        const indirecto = extrairNomeDeParams(sub);
+        if (indirecto) return indirecto;
+      }
+    }
+  }
+  return "";
+}
+
+function extrairPartesFolha(itens: any, prefixo: string, resultado: ParteMime[]) {
+  if (!ehLista(itens) || itens.length === 0) return;
+
+  if (ehLista(itens[0])) {
+    // Multipart — cada item que for lista é uma subparte, até ao
+    // subtipo (string, ex: "MIXED") que fecha a lista de subpartes.
+    let n = 1;
+    for (const item of itens) {
+      if (!ehLista(item)) break;
+      extrairPartesFolha(item, prefixo ? `${prefixo}.${n}` : String(n), resultado);
+      n++;
+    }
+    return;
+  }
+
+  const tipo = comoTexto(itens[0]).toLowerCase();
+  const subtipo = comoTexto(itens[1]).toLowerCase();
+  const params = itens[2];
+  const codificacao = comoTexto(itens[5]) || "7BIT";
+  const nome = extrairNomeDeParams(params) || procurarNomeEmExtensoes(itens);
+
+  resultado.push({ numero: prefixo || "1", tipo, subtipo, nome, codificacao });
+}
+
+// ── ENVELOPE: assunto, remetente, Message-ID ──────────────────────────
+// [data, assunto, from, sender, replyTo, to, cc, bcc, inReplyTo, messageId]
+// Endereços: lista de [nomePessoal, rotaOrigem, mailbox, host]
+
+function extrairEnderecoDeEnvelope(enderecos: any): string {
+  if (!ehLista(enderecos) || enderecos.length === 0) return "";
+  const primeiro = enderecos[0];
+  if (!ehLista(primeiro)) return "";
+  const mailbox = comoTexto(primeiro[2]);
+  const host = comoTexto(primeiro[3]);
+  if (!mailbox || !host) return "";
+  return `${mailbox}@${host}`;
+}
+
+function extrairDeEnvelope(envelope: any): { assunto: string; remetente: string; messageId: string } {
+  if (!ehLista(envelope)) return { assunto: "", remetente: "", messageId: "" };
+  return {
+    assunto: comoTexto(envelope[1]),
+    remetente: extrairEnderecoDeEnvelope(envelope[2]),
+    messageId: comoTexto(envelope[9]),
+  };
 }
 
 class LeitorBytes {
@@ -57,12 +216,12 @@ class LeitorBytes {
     }
   }
 
-  // Lê exactamente `n` bytes — usado para literais grandes (a mensagem
-  // completa, com anexos em base64, pode ter vários MB). Aloca o destino
-  // UMA vez e escreve os pedaços lidos directamente no sítio certo, em
-  // vez de recriar+copiar o buffer acumulado a cada pedaço (como
-  // `#encherBuffer` faz, aceitável para linhas curtas, mas quadrático —
-  // e portanto caro em CPU — para literais de vários MB).
+  // Lê exactamente `n` bytes — usado para literais grandes (um anexo em
+  // base64 pode ter vários MB). Aloca o destino UMA vez e escreve os
+  // pedaços lidos directamente no sítio certo, em vez de recriar+copiar
+  // o buffer acumulado a cada pedaço (como `#encherBuffer` faz,
+  // aceitável para linhas curtas, mas quadrático — e portanto caro em
+  // CPU — para literais de vários MB).
   async lerBytes(n: number): Promise<Uint8Array> {
     const resultado = new Uint8Array(n);
     const doBufferExistente = Math.min(this.#buffer.length, n);
@@ -89,6 +248,20 @@ export interface RespostaIMAP {
   ok: boolean;
   linhas: string[];
   literais: Uint8Array[];
+}
+
+export interface InfoMensagemIMAP {
+  temPdf: boolean;
+  dataRecebido: Date | null;
+  assunto: string;
+  remetente: string;
+  messageId: string;
+  partePdf: string | null;   // número da parte MIME com o PDF, se identificada
+  nomePdf: string;
+  codificacaoPdf: string;
+  parteTexto: string | null; // número da parte de texto (plain/html), se existir
+  codificacaoTexto: string;
+  tipoTexto: string;         // "plain" | "html" | ""
 }
 
 export class ClienteIMAP {
@@ -169,29 +342,36 @@ export class ClienteIMAP {
     return linhaResultado.replace("* SEARCH", "").trim().split(/\s+/).filter(Boolean);
   }
 
-  // Mensagem completa em bruto (cabeçalhos + corpo).
+  // Mensagem completa em bruto — só como último recurso (ver imap.ts),
+  // quando não foi possível identificar com confiança as partes por
+  // BODYSTRUCTURE. Nunca é o caminho normal, é caro em CPU/memória.
   async obterMensagemCompleta(uid: string): Promise<Uint8Array> {
     const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[])`);
     if (!resp.ok || resp.literais.length === 0) throw new Error("Não foi possível obter a mensagem completa.");
     return resp.literais[0];
   }
 
-  // Verificação barata em LOTE — só a estrutura MIME (tipos/nomes de cada
-  // parte) e a data de cada mensagem, sem descarregar conteúdo nenhum, e
-  // num único pedido à rede para todo o lote (este cliente não faz
+  // Uma parte MIME específica (endereçada pelo número calculado a partir
+  // do BODYSTRUCTURE) — usado para pedir só o texto (pequeno) ou só o
+  // PDF (o que interessa mesmo guardar), nunca a mensagem toda.
+  async obterParte(uid: string, numeroParte: string): Promise<Uint8Array> {
+    const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[${numeroParte}])`);
+    if (!resp.ok || resp.literais.length === 0) throw new Error(`Não foi possível obter a parte ${numeroParte} da mensagem.`);
+    return resp.literais[0];
+  }
+
+  // Verificação em LOTE — estrutura MIME (BODYSTRUCTURE), remetente e
+  // assunto (ENVELOPE) e data (INTERNALDATE) de várias mensagens dum só
+  // pedido à rede, sem descarregar nenhum conteúdo. Este cliente não faz
   // pipelining — um pedido por mensagem seria demasiados round-trips
   // sequenciais para uma caixa com centenas/milhares de mensagens numa
-  // janela). Usada para descartar mensagens sem PDF anexado antes de
-  // gastar tempo de CPU a descarregar e analisar a mensagem completa (a
-  // condição já é obrigatória no filtro a jusante, por isso isto não
-  // deixa escapar nada — só evita trabalho a mais). A data de cada
-  // mensagem serve para saber até onde a sincronização avançou, quando
-  // um limite de segurança obriga a parar a meio de uma janela grande.
-  async verificarMensagens(uids: string[]): Promise<Map<string, { temPdf: boolean; dataRecebido: Date | null }>> {
-    const resultado = new Map<string, { temPdf: boolean; dataRecebido: Date | null }>();
+  // janela. A partir daqui já se sabe, sem descarregar nada, em que
+  // parte exacta está o texto e em que parte está o PDF (se existir).
+  async verificarMensagens(uids: string[]): Promise<Map<string, InfoMensagemIMAP>> {
+    const resultado = new Map<string, InfoMensagemIMAP>();
     if (uids.length === 0) return resultado;
 
-    const resp = await this.#executar(`UID FETCH ${uids.join(",")} (UID BODYSTRUCTURE INTERNALDATE)`);
+    const resp = await this.#executar(`UID FETCH ${uids.join(",")} (UID BODYSTRUCTURE INTERNALDATE ENVELOPE)`);
     if (!resp.ok) return resultado;
 
     // Cada mensagem do lote começa numa linha "* N FETCH (...)" — agrupa
@@ -212,9 +392,49 @@ export class ClienteIMAP {
       const texto = grupo.join(" ");
       const uidMatch = /UID (\d+)/.exec(texto);
       if (!uidMatch) continue;
-      resultado.set(uidMatch[1], {
-        temPdf: texto.toLowerCase().includes("pdf"),
+      const uid = uidMatch[1];
+
+      const tokens = tokenizar(texto);
+      const pos = { i: 0 };
+      while (tokens[pos.i] && tokens[pos.i].t !== "open") pos.i++;
+      const dados = parsearValor(tokens, pos);
+
+      let bodystructure: any = null;
+      let envelope: any = null;
+      if (ehLista(dados)) {
+        for (let k = 0; k + 1 < dados.length; k += 2) {
+          const chave = comoTexto(dados[k]).toUpperCase();
+          if (chave === "BODYSTRUCTURE") bodystructure = dados[k + 1];
+          else if (chave === "ENVELOPE") envelope = dados[k + 1];
+        }
+      }
+
+      const partes: ParteMime[] = [];
+      extrairPartesFolha(bodystructure, "", partes);
+
+      const partePdf = partes.find(p => p.subtipo === "pdf" || /\.pdf$/i.test(p.nome)) ?? null;
+      const parteTexto = partes.find(p => p.tipo === "text" && p.subtipo === "plain")
+        ?? partes.find(p => p.tipo === "text" && p.subtipo === "html")
+        ?? null;
+
+      const { assunto, remetente, messageId } = extrairDeEnvelope(envelope);
+      // Sinal simples de reforço (texto contém "pdf" nalgum lado) — se o
+      // parser de BODYSTRUCTURE não confirmar uma parte com confiança,
+      // este sinal ainda avisa imap.ts para não desistir da mensagem.
+      const temPdfTextoSimples = texto.toLowerCase().includes("pdf");
+
+      resultado.set(uid, {
+        temPdf: !!partePdf || temPdfTextoSimples,
         dataRecebido: extrairDataInterna(texto),
+        assunto,
+        remetente,
+        messageId,
+        partePdf: partePdf ? partePdf.numero : null,
+        nomePdf: partePdf ? partePdf.nome : "",
+        codificacaoPdf: partePdf ? partePdf.codificacao : "",
+        parteTexto: parteTexto ? parteTexto.numero : null,
+        codificacaoTexto: parteTexto ? parteTexto.codificacao : "",
+        tipoTexto: parteTexto ? parteTexto.subtipo : "",
       });
     }
 
