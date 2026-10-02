@@ -104,25 +104,12 @@ export const imap: AdaptadorEmail = {
     try {
       await cliente.login(usuario, password);
 
-      // Diagnostico temporario: confirmar os nomes reais das pastas da
-      // caixa, para perceber se ha uma pasta separada (ex: "Faturas",
-      // "Fornecedores") para onde regras de email movem automaticamente
-      // mensagens de fornecedores antes desta sincronizacao (que so olha
-      // a INBOX) as conseguir ver.
-      try {
-        const pastas = await cliente.listarPastas();
-        console.log(`IMAP: pastas encontradas na caixa: ${pastas.join(" | ")}`);
-      } catch (e) {
-        console.error(`IMAP: falha a listar pastas: ${String(e)}`);
-      }
-
-      // Além da INBOX, lê também a Archive — muitos webmails (o desta
-      // caixa incluído, confirmado por diagnóstico) arquivam
-      // automaticamente mensagens lidas mais antigas para lá, o que fazia
-      // com que facturas de fornecedores de há mais de uns dias nunca
-      // fossem vistas por esta sincronização (só olhava a INBOX).
-      // Sent/Trash/Junk/spam/Drafts não interessam — não é lá que chegam
-      // facturas de fornecedores.
+      // Além da INBOX, lê também a Archive — esta caixa arquiva
+      // automaticamente mensagens lidas mais antigas para lá (confirmado
+      // por diagnóstico), o que fazia com que facturas de fornecedores de
+      // há mais de uns dias nunca fossem vistas por esta sincronização
+      // (só olhava a INBOX). Sent/Trash/Junk/spam/Drafts não interessam —
+      // não é lá que chegam facturas de fornecedores.
       const PASTAS_A_LER = ["INBOX", "INBOX.Archive"];
 
       // Verificação em lotes (ver ClienteIMAP.verificarMensagens) — um
@@ -184,8 +171,26 @@ export const imap: AdaptadorEmail = {
           if (info?.dataRecebido) ultimaDataExaminada = info.dataRecebido;
           if (!info || !info.temPdf) continue; // sem PDF, não interessa — condição obrigatória do filtro
 
-          const messageId = (info.messageId || "").trim();
-          if (!messageId) continue; // sem Message-ID não há forma fiável de identificar/deduplicar
+          let messageId = (info.messageId || "").trim();
+          if (!messageId) {
+            // ENVELOPE não trouxe o Message-ID (ver obterCabecalhoMessageId) —
+            // tenta pedi-lo directamente antes de desistir da mensagem.
+            try {
+              messageId = (await cliente.obterCabecalhoMessageId(uid)).trim();
+            } catch (e) {
+              console.error(`IMAP: falha a obter Message-ID em separado para UID ${uid}: ${String(e)}`);
+            }
+            if (!messageId) {
+              // Último recurso: o remetente simplesmente não gerou um
+              // cabeçalho Message-ID (confirmado — o pedido directo devolve
+              // só o CRLF final, não é falha nossa). Em vez de perder a
+              // factura, usa o UID do IMAP como identificador sintético —
+              // estável dentro desta caixa de correio (só muda se o
+              // servidor recriar a mailbox do zero, raro).
+              messageId = `imap-uid:${uid}`;
+              console.error(`IMAP: UID ${uid} sem Message-ID nenhum (nem ENVELOPE nem cabeçalho em separado) — a usar id sintético "${messageId}" (de "${info.remetenteNome}" <${info.remetente}>, assunto "${info.assunto}").`);
+            }
+          }
 
           const assunto = descodificarTextoCabecalho(info.assunto || "");
 

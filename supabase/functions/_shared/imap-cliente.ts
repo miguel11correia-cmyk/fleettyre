@@ -347,28 +347,16 @@ export class ClienteIMAP {
     if (!resp.ok) throw new Error(`SELECT ${nome} falhou: ${resp.linhas.join(" ")}`);
   }
 
-  // Diagnóstico: nomes reais das pastas na caixa (podem não corresponder
-  // ao que o webmail mostra — acentos/hierarquia às vezes vêm codificados
-  // em UTF-7 modificado). Cada linha de resposta é tipo:
-  // * LIST (\HasNoChildren) "/" "Faturas"
-  async listarPastas(): Promise<string[]> {
-    const resp = await this.#executar(`LIST "" "*"`);
-    if (!resp.ok) return [];
-    const nomes: string[] = [];
-    for (const linha of resp.linhas) {
-      const m = /^\* LIST \([^)]*\)\s+(?:"[^"]*"|NIL)\s+(?:"([^"]*)"|(\S+))/.exec(linha);
-      if (m) nomes.push(m[1] ?? m[2]);
-    }
-    return nomes;
-  }
-
   // Formato de data exigido pelo IMAP SEARCH: "01-Jan-2026" — só granularidade
   // de dia, mais grosseiro que o filtro do Graph, mas o dedup por Message-ID
   // evita duplicados nas sincronizações seguintes.
-  async pesquisarDesde(desde: Date): Promise<string[]> {
+  #dataImap(desde: Date): string {
     const meses = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const dataImap = `${String(desde.getUTCDate()).padStart(2, "0")}-${meses[desde.getUTCMonth()]}-${desde.getUTCFullYear()}`;
-    const resp = await this.#executar(`UID SEARCH SINCE ${dataImap}`);
+    return `${String(desde.getUTCDate()).padStart(2, "0")}-${meses[desde.getUTCMonth()]}-${desde.getUTCFullYear()}`;
+  }
+
+  async pesquisarDesde(desde: Date): Promise<string[]> {
+    const resp = await this.#executar(`UID SEARCH SINCE ${this.#dataImap(desde)}`);
     if (!resp.ok) throw new Error(`SEARCH falhou: ${resp.linhas.join(" ")}`);
 
     const linhaResultado = resp.linhas.find(l => l.startsWith("* SEARCH"));
@@ -392,6 +380,26 @@ export class ClienteIMAP {
     const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[${numeroParte}])`);
     if (!resp.ok || resp.literais.length === 0) throw new Error(`Não foi possível obter a parte ${numeroParte} da mensagem.`);
     return resp.literais[0];
+  }
+
+  // Rede de segurança para quando o ENVELOPE não trouxe o Message-ID —
+  // acontece para Message-IDs muito compridos, que alguns servidores
+  // devolvem como "literal" em vez de string simples dentro do ENVELOPE
+  // (o parser de tokenizar()/parsearValor() não cobre literais aninhados
+  // numa estrutura, ver comentário no topo do ficheiro). Pedido leve e
+  // raro — só quando mesmo precisamos do Message-ID e o ENVELOPE falhou.
+  async obterCabecalhoMessageId(uid: string): Promise<string> {
+    const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])`);
+    if (!resp.ok || resp.literais.length === 0) return "";
+    const texto = new TextDecoder("utf-8", { fatal: false }).decode(resp.literais[0]);
+    // Desfaz dobragem de cabeçalhos (RFC 5322) — um Message-ID muito
+    // comprido pode vir partido em duas linhas pelo servidor (CRLF +
+    // espaço/tab de continuação), o que quebraria uma regex de uma linha só.
+    const desdobrado = texto.replace(/\r\n[ \t]+/g, " ");
+    const m = /Message-ID:\s*(<[^>]+>)/i.exec(desdobrado);
+    if (m) return m[1].trim();
+    console.error(`IMAP: UID ${uid} — cabeçalho Message-ID pedido em separado mas regex não encontrou nada. Texto bruto: ${JSON.stringify(texto).slice(0, 300)}`);
+    return "";
   }
 
   // Verificação em LOTE — estrutura MIME (BODYSTRUCTURE), remetente e
