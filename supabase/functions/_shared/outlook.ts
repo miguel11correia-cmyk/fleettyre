@@ -105,7 +105,7 @@ export const outlook: AdaptadorEmail = {
     });
   },
 
-  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos): Promise<ResultadoListagem> {
+  async listarMensagensRecentes(tokens, desde, _dominiosConhecidos, _nomesFornecedores): Promise<ResultadoListagem> {
     // bodyPreview vem "de borla" no mesmo pedido — usado no filtro além
     // do assunto, para não deixar escapar facturas com assunto vago.
     const select = "id,internetMessageId,subject,from,receivedDateTime,hasAttachments,bodyPreview";
@@ -145,6 +145,7 @@ export const outlook: AdaptadorEmail = {
           id: m.internetMessageId,
           idInterno: m.id,
           remetente: m.from?.emailAddress?.address || "",
+          remetenteNome: m.from?.emailAddress?.name || "",
           assunto: m.subject || "",
           resumoCorpo: m.bodyPreview || "",
           dataRecebido: m.receivedDateTime,

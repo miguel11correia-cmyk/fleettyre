@@ -67,14 +67,25 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
     ? new Date(new Date(integ.ultima_sincronizacao).getTime() - SOBREPOSICAO_HORAS * 60 * 60 * 1000)
     : new Date(Date.now() - JANELA_PRIMEIRA_SINCRONIZACAO_DIAS * 24 * 60 * 60 * 1000);
 
-  const { data: fornecedores } = await sb
+  const { data: fornecedoresComDominio } = await sb
     .from("fornecedores")
     .select("dominios_email")
     .eq("empresa_id", integ.empresa_id)
     .not("dominios_email", "is", null);
-  const dominiosConhecidos: string[] = (fornecedores ?? []).flatMap((f: any) => f.dominios_email ?? []);
+  const dominiosConhecidos: string[] = (fornecedoresComDominio ?? []).flatMap((f: any) => f.dominios_email ?? []);
 
-  const { mensagens, completo, ateData, totalNaJanela, examinadas } = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos);
+  // Muitos fornecedores facturam através de plataformas terceiras (Moloni,
+  // InvoiceXpress, Vendus, ...) cujo domínio nada tem a ver com o do
+  // fornecedor — o nome de exibição do remetente continua a ser o nome
+  // do fornecedor nesses casos, por isso serve de segundo critério,
+  // independente do domínio/email (ver remetenteBateComFornecedorPorNome).
+  const { data: todosFornecedores } = await sb
+    .from("fornecedores")
+    .select("nome")
+    .eq("empresa_id", integ.empresa_id);
+  const nomesFornecedores: string[] = (todosFornecedores ?? []).map((f: any) => f.nome).filter(Boolean);
+
+  const { mensagens, completo, ateData, totalNaJanela, examinadas } = await adaptador.listarMensagensRecentes(tokens, desde, dominiosConhecidos, nomesFornecedores);
 
   // Quando o adaptador não conseguiu cobrir a janela toda numa só chamada
   // (ex: limite de segurança de CPU no IMAP, ver imap.ts), NÃO avança
@@ -91,7 +102,7 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
   // Verifica assunto, resumo do corpo e nomes dos anexos — não só o
   // assunto — para não deixar escapar facturas com assunto vago.
   const candidatas = mensagens.filter(m =>
-    pareceFatura(m.remetente, [m.assunto, m.resumoCorpo, ...m.anexosPdf.map(a => a.nome)], dominiosConhecidos)
+    pareceFatura(m.remetente, m.remetenteNome, [m.assunto, m.resumoCorpo, ...m.anexosPdf.map(a => a.nome)], dominiosConhecidos, nomesFornecedores)
   );
 
   if (candidatas.length === 0) {
@@ -135,6 +146,7 @@ export async function sincronizarIntegracao(sb: any, integ: IntegracaoEmail) {
       pdf_path: pdfPath,
     });
     if (!errIns) novos++;
+    else console.error(`Erro a inserir email pendente (mensagem_id ${m.id}):`, errIns.message);
   }
 
   if (proximaUltimaSincronizacao) {

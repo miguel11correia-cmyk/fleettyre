@@ -176,11 +176,24 @@ function extrairEnderecoDeEnvelope(enderecos: any): string {
   return `${mailbox}@${host}`;
 }
 
-function extrairDeEnvelope(envelope: any): { assunto: string; remetente: string; messageId: string } {
-  if (!ehLista(envelope)) return { assunto: "", remetente: "", messageId: "" };
+// Endereço em ENVELOPE: [nomePessoal, rotaOrigem, mailbox, host] — o
+// nome de exibição ("Sobral Pneus", por ex.) vem em texto já
+// descodificado de RFC 2047 pelo servidor em alguns casos, mas não
+// sempre; descodificarTextoCabecalho (chamado por quem usa isto) trata
+// disso, tal como já faz para o assunto.
+function extrairNomeDeEnvelope(enderecos: any): string {
+  if (!ehLista(enderecos) || enderecos.length === 0) return "";
+  const primeiro = enderecos[0];
+  if (!ehLista(primeiro)) return "";
+  return comoTexto(primeiro[0]);
+}
+
+function extrairDeEnvelope(envelope: any): { assunto: string; remetente: string; remetenteNome: string; messageId: string } {
+  if (!ehLista(envelope)) return { assunto: "", remetente: "", remetenteNome: "", messageId: "" };
   return {
     assunto: comoTexto(envelope[1]),
     remetente: extrairEnderecoDeEnvelope(envelope[2]),
+    remetenteNome: extrairNomeDeEnvelope(envelope[2]),
     messageId: comoTexto(envelope[9]),
   };
 }
@@ -255,6 +268,7 @@ export interface InfoMensagemIMAP {
   dataRecebido: Date | null;
   assunto: string;
   remetente: string;
+  remetenteNome: string;
   messageId: string;
   partePdf: string | null;   // número da parte MIME com o PDF, se identificada
   nomePdf: string;
@@ -328,13 +342,21 @@ export class ClienteIMAP {
     if (!resp.ok) throw new Error(`SELECT INBOX falhou: ${resp.linhas.join(" ")}`);
   }
 
+  async selecionarPasta(nome: string): Promise<void> {
+    const resp = await this.#executar(`SELECT ${this.#aspas(nome)}`);
+    if (!resp.ok) throw new Error(`SELECT ${nome} falhou: ${resp.linhas.join(" ")}`);
+  }
+
   // Formato de data exigido pelo IMAP SEARCH: "01-Jan-2026" — só granularidade
   // de dia, mais grosseiro que o filtro do Graph, mas o dedup por Message-ID
   // evita duplicados nas sincronizações seguintes.
-  async pesquisarDesde(desde: Date): Promise<string[]> {
+  #dataImap(desde: Date): string {
     const meses = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const dataImap = `${String(desde.getUTCDate()).padStart(2, "0")}-${meses[desde.getUTCMonth()]}-${desde.getUTCFullYear()}`;
-    const resp = await this.#executar(`UID SEARCH SINCE ${dataImap}`);
+    return `${String(desde.getUTCDate()).padStart(2, "0")}-${meses[desde.getUTCMonth()]}-${desde.getUTCFullYear()}`;
+  }
+
+  async pesquisarDesde(desde: Date): Promise<string[]> {
+    const resp = await this.#executar(`UID SEARCH SINCE ${this.#dataImap(desde)}`);
     if (!resp.ok) throw new Error(`SEARCH falhou: ${resp.linhas.join(" ")}`);
 
     const linhaResultado = resp.linhas.find(l => l.startsWith("* SEARCH"));
@@ -358,6 +380,26 @@ export class ClienteIMAP {
     const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[${numeroParte}])`);
     if (!resp.ok || resp.literais.length === 0) throw new Error(`Não foi possível obter a parte ${numeroParte} da mensagem.`);
     return resp.literais[0];
+  }
+
+  // Rede de segurança para quando o ENVELOPE não trouxe o Message-ID —
+  // acontece para Message-IDs muito compridos, que alguns servidores
+  // devolvem como "literal" em vez de string simples dentro do ENVELOPE
+  // (o parser de tokenizar()/parsearValor() não cobre literais aninhados
+  // numa estrutura, ver comentário no topo do ficheiro). Pedido leve e
+  // raro — só quando mesmo precisamos do Message-ID e o ENVELOPE falhou.
+  async obterCabecalhoMessageId(uid: string): Promise<string> {
+    const resp = await this.#executar(`UID FETCH ${uid} (BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])`);
+    if (!resp.ok || resp.literais.length === 0) return "";
+    const texto = new TextDecoder("utf-8", { fatal: false }).decode(resp.literais[0]);
+    // Desfaz dobragem de cabeçalhos (RFC 5322) — um Message-ID muito
+    // comprido pode vir partido em duas linhas pelo servidor (CRLF +
+    // espaço/tab de continuação), o que quebraria uma regex de uma linha só.
+    const desdobrado = texto.replace(/\r\n[ \t]+/g, " ");
+    const m = /Message-ID:\s*(<[^>]+>)/i.exec(desdobrado);
+    if (m) return m[1].trim();
+    console.error(`IMAP: UID ${uid} — cabeçalho Message-ID pedido em separado mas regex não encontrou nada. Texto bruto: ${JSON.stringify(texto).slice(0, 300)}`);
+    return "";
   }
 
   // Verificação em LOTE — estrutura MIME (BODYSTRUCTURE), remetente e
@@ -417,7 +459,7 @@ export class ClienteIMAP {
         ?? partes.find(p => p.tipo === "text" && p.subtipo === "html")
         ?? null;
 
-      const { assunto, remetente, messageId } = extrairDeEnvelope(envelope);
+      const { assunto, remetente, remetenteNome, messageId } = extrairDeEnvelope(envelope);
       // Sinal simples de reforço (texto contém "pdf" nalgum lado) — se o
       // parser de BODYSTRUCTURE não confirmar uma parte com confiança,
       // este sinal ainda avisa imap.ts para não desistir da mensagem.
@@ -428,6 +470,7 @@ export class ClienteIMAP {
         dataRecebido: extrairDataInterna(texto),
         assunto,
         remetente,
+        remetenteNome,
         messageId,
         partePdf: partePdf ? partePdf.numero : null,
         nomePdf: partePdf ? partePdf.nome : "",
