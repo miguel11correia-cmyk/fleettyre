@@ -17,7 +17,14 @@
 -- depois da primeira (que cobre os 6 meses todos).
 -- ══════════════════════════════════════════════════════════════════
 
-update cron.job set schedule = '*/15 * * * *' where jobname = 'email-sync-periodico';
+-- UPDATE directo em cron.job falha por permissões ("permission denied
+-- for table job") — a tabela só é editável pelas próprias funções do
+-- pg_cron. cron.alter_job() é o caminho correcto.
+--
+-- 1. Descobre o job_id:
+--    select jobid, jobname, schedule from cron.job where jobname = 'email-sync-periodico';
+-- 2. Aplica a alteração (substitui 8 pelo jobid devolvido acima):
+select cron.alter_job(job_id := 8, schedule := '*/15 * * * *');
 
 -- Para confirmar:
 -- select jobname, schedule from cron.job where jobname = 'email-sync-periodico';
