@@ -22,7 +22,12 @@ function preencherSelectores() {
     if (!el) return;
     const val = el.value;
     const placeholder = id === 'alo-forn' ? '— todos —' : '— selecionar —';
+    // "PARQUE" é uma opção fixa da app (não um fornecedor registado) —
+    // indica que o pneu já estava na frota antes de haver registo de
+    // fornecedor, por isso aparece sempre, a cinzento, e não entra na
+    // lista editável de fornecedores nem na análise (ver loadFornecedores).
     el.innerHTML = `<option value="">${placeholder}</option>` +
+      `<option value="PARQUE" data-muted="true" ${val === 'PARQUE' ? 'selected' : ''}>Parque (já na frota)</option>` +
       listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} — ${f.nome}</option>`).join('');
   });
 
@@ -47,6 +52,7 @@ async function loadFornecedores() {
   // Analytics
   const agg = {};
   data.forEach(r => {
+    if (r.fornecedor === 'PARQUE') return; // não é um fornecedor real — pneu que a empresa já tinha antes
     const k = r.fornecedor || '(sem registo)';
     if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
     agg[k].total++;

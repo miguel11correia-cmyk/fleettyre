@@ -481,6 +481,7 @@ input[type="number"].qty-spin::-webkit-outer-spin-button {
   transition: border-color .15s, box-shadow .15s;
 }
 .fsel-trigger[data-empty="true"] { color: var(--text3); }
+.fsel-trigger-muted { color: var(--text3); }
 .fsel-trigger:focus-visible, .fsel-trigger[aria-expanded="true"] {
   outline: none;
   border-color: #71717a;
@@ -519,6 +520,7 @@ input[type="number"].qty-spin::-webkit-outer-spin-button {
 .fsel-opt svg { width: 13px; height: 13px; flex-shrink: 0; color: var(--brand-red); visibility: hidden; }
 .fsel-opt[aria-selected="true"] svg { visibility: visible; }
 .fsel-opt[aria-selected="true"] { font-weight: 500; }
+.fsel-opt-muted { color: var(--text3); }
 .fsel-opt.hl { background: var(--bg2); }
 @media (hover: hover) and (pointer: fine) {
   .fsel-opt:hover { background: var(--bg2); }

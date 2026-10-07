@@ -66,6 +66,7 @@
       const opt = select.options[select.selectedIndex];
       trigger.textContent = opt ? opt.textContent : '';
       trigger.dataset.empty = (!opt || !opt.value) ? 'true' : 'false';
+      trigger.classList.toggle('fsel-trigger-muted', !!(opt && opt.dataset.muted));
     }
 
     function setValue(v, fireEvent) {
@@ -111,7 +112,7 @@
 
       items = Array.from(select.options).map((o, i) => {
         const item = document.createElement('div');
-        item.className = 'fsel-opt';
+        item.className = 'fsel-opt' + (o.dataset.muted ? ' fsel-opt-muted' : '');
         item.setAttribute('role', 'option');
         item.dataset.value = o.value;
         item.innerHTML = '<span>' + (o.textContent || ' ') + '</span>'
