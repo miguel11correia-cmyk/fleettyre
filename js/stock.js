@@ -220,7 +220,7 @@ function renderLinhasFatura() {
       + '</div>'
       + '<div class="g3" style="gap:8px;margin-bottom:8px">'
       + '<div class="frow" style="margin:0"><label>Marca</label><select id="f-linha-marca-' + i + '" data-fancy onchange="mudarMarcaLinhaFatura(' + i + ',this.value)">' + optsMarca(l.marca) + '</select></div>'
-      + '<div class="frow" style="margin:0"><label>Subtipo</label><select id="f-linha-subtipo-' + i + '" data-fancy onchange="linhasFatura[' + i + '].subtipo=this.value"><option value="">— nenhum —</option></select></div>'
+      + '<div class="frow" style="margin:0"><label>Modelo</label><select id="f-linha-subtipo-' + i + '" data-fancy onchange="linhasFatura[' + i + '].subtipo=this.value"><option value="">— nenhum —</option></select></div>'
       + '<div class="frow" style="margin:0"><label>Medida</label><input type="text" value="' + l.medida + '" oninput="linhasFatura[' + i + '].medida=this.value" placeholder="315/80"></div>'
       + '</div>'
       + '<div class="g3" style="gap:8px">'

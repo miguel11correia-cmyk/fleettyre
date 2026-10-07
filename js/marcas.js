@@ -127,7 +127,7 @@ async function renderGestaoMarcas() {
             <td>${m.nome}</td>
             <td>
               <div style="display:flex;gap:4px">
-                <button class="btn btn-sm" onclick="abrirSubtipos(${m.id},'${m.nome}')"><svg viewBox="0 0 24 24"><use href="#icon-tag"/></svg> Subtipos</button>
+                <button class="btn btn-sm" onclick="abrirSubtipos(${m.id},'${m.nome}')"><svg viewBox="0 0 24 24"><use href="#icon-tag"/></svg> Modelos</button>
                 <button class="btn btn-sm btn-icon btn-danger" onclick="apagarMarca(${m.id},'${m.nome}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
               </div>
             </td>
@@ -233,7 +233,7 @@ async function adicionarSubtipo() {
   loading(false);
 
   if (error) { showFeedback('subtipos-feedback', 'Erro: ' + error.message, true); return; }
-  showFeedback('subtipos-feedback', 'Subtipo adicionado.');
+  showFeedback('subtipos-feedback', 'Modelo adicionado.');
   document.getElementById('novo-subtipo-nome').value = '';
   await renderListaSubtipos();
   await carregarListaSubtipos();
