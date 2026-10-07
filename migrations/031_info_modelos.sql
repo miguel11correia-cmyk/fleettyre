@@ -133,8 +133,8 @@ update public.subtipos_marca sm
 set posicao = sc.posicao, descricao = sc.descricao
 from public.marcas m
 join public.marcas_catalogo mc on upper(mc.nome) = upper(m.nome)
-join public.subtipos_catalogo sc on sc.marca_catalogo_id = mc.id and upper(sc.nome) = upper(sm.nome)
-where sm.marca_id = m.id and sm.posicao is null;
+join public.subtipos_catalogo sc on sc.marca_catalogo_id = mc.id
+where sm.marca_id = m.id and upper(sc.nome) = upper(sm.nome) and sm.posicao is null;
 
 -- Para verificar:
 -- select nome, posicao, descricao from subtipos_marca where marca_id = (select id from marcas where nome = 'MICHELIN' and empresa_id = '<id-da-empresa>');
