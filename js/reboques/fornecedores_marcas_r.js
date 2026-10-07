@@ -8,6 +8,7 @@ async function loadFornecedoresReboques() {
 
   const agg = {};
   data.forEach(r => {
+    if (r.fornecedor === 'PARQUE') return; // não é um fornecedor real — pneu que a empresa já tinha antes
     const k = r.fornecedor || '(sem registo)';
     if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
     agg[k].total++;
