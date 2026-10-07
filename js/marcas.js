@@ -197,6 +197,8 @@ async function abrirSubtipos(marcaId, marcaNome) {
   subtipoMarcaId = marcaId;
   document.getElementById('subtipos-marca-nome').textContent = marcaNome;
   document.getElementById('novo-subtipo-nome').value = '';
+  document.getElementById('novo-subtipo-posicao').value = '';
+  document.getElementById('novo-subtipo-descricao').value = '';
   document.getElementById('subtipos-feedback').classList.add('hidden');
   await renderListaSubtipos();
   document.getElementById('painel-subtipos').classList.add('open');
@@ -218,29 +220,35 @@ async function renderListaSubtipos() {
   tbody.innerHTML = (data && data.length > 0)
     ? data.map(s => `<tr>
         <td>${s.nome}</td>
+        <td>${s.posicao || '—'}</td>
+        <td>${s.descricao || '—'}</td>
         <td><button class="btn btn-sm btn-icon btn-danger" onclick="apagarSubtipo(${s.id})" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button></td>
       </tr>`).join('')
-    : '<tr><td colspan="2" class="empty-msg" style="text-align:center;padding:10px">Ainda sem subtipos.</td></tr>';
+    : '<tr><td colspan="4" class="empty-msg" style="text-align:center;padding:10px">Ainda sem modelos.</td></tr>';
 }
 
 async function adicionarSubtipo() {
   if (subtipoMarcaId == null) return;
   const nome = document.getElementById('novo-subtipo-nome').value.trim().toUpperCase();
-  if (!nome) { showFeedback('subtipos-feedback', 'Indique o nome do subtipo.', true); return; }
+  const posicao = document.getElementById('novo-subtipo-posicao').value || null;
+  const descricao = document.getElementById('novo-subtipo-descricao').value.trim() || null;
+  if (!nome) { showFeedback('subtipos-feedback', 'Indique o nome do modelo.', true); return; }
 
   loading(true);
-  const { error } = await sb.from('subtipos_marca').insert([{ empresa_id: currentEmpresaId, marca_id: subtipoMarcaId, nome }]);
+  const { error } = await sb.from('subtipos_marca').insert([{ empresa_id: currentEmpresaId, marca_id: subtipoMarcaId, nome, posicao, descricao }]);
   loading(false);
 
   if (error) { showFeedback('subtipos-feedback', 'Erro: ' + error.message, true); return; }
   showFeedback('subtipos-feedback', 'Modelo adicionado.');
   document.getElementById('novo-subtipo-nome').value = '';
+  document.getElementById('novo-subtipo-posicao').value = '';
+  document.getElementById('novo-subtipo-descricao').value = '';
   await renderListaSubtipos();
   await carregarListaSubtipos();
 }
 
 async function apagarSubtipo(id) {
-  if (!confirm('Apagar este subtipo?')) return;
+  if (!confirm('Apagar este modelo?')) return;
   loading(true);
   const { error } = await sb.from('subtipos_marca').delete().eq('id', id);
   loading(false);
