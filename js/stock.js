@@ -154,7 +154,11 @@ function renderStockDesmontados(pneus, tabela) {
 
 // O "destino" (processo de oficina) e o "tipo" (estado do pneu) usam
 // palavras diferentes para a mesma coisa — ex: destino "Rechapar" (o
-// processo) vira tipo "Rechapado" (o que o pneu passou a ser).
+// processo) vira tipo "Rechapado" (o que o pneu passou a ser). Usado
+// só no momento de montar de stock (abrirSelStock/
+// selecionarDesmontadoDeStock) — o registo original em si NUNCA é
+// alterado, para "Desfazer" continuar a ser um desfazer completo e
+// fiel (sem campos a ficarem num estado inconsistente ao reverter).
 const DESTINO_PARA_TIPO = { 'Remix': 'Remix', 'Rechapar': 'Rechapado', 'Abrir Piso': 'Piso Aberto' };
 
 async function marcarProntoDesmontado(id, tabela, pronto) {
@@ -165,14 +169,6 @@ async function marcarProntoDesmontado(id, tabela, pronto) {
     if (Number.isFinite(val) && val >= 0) updates.custo_pronto = val;
     const selForn = document.getElementById('forn-pronto-' + id);
     if (selForn && selForn.value) updates.fornecedor_pronto = selForn.value;
-
-    // O pneu passou por um processo de oficina — já não é "Novo" como
-    // era antes de ser desmontado. Actualiza o tipo para o que ele é
-    // agora, para o ciclo de reutilização (montar de stock) partir do
-    // tipo certo, não do original.
-    const { data: atual } = await sb.from(tabela).select('destino, tipo').eq('id', id).single();
-    const novoTipo = atual ? DESTINO_PARA_TIPO[atual.destino] : null;
-    if (novoTipo && novoTipo !== atual.tipo) updates.tipo = novoTipo;
   }
   loading(true);
   const { error } = await sb.from(tabela).update(updates).eq('id', id);
@@ -373,14 +369,21 @@ async function abrirSelStock() {
         const rId = r.id;
         const rMarca = (r.marca || '').replace(/'/g, "\\'");
         const rMedida = (r.medida || '').replace(/'/g, "\\'");
-        const rTipo = r.tipo || '';
+        // O tipo original fica intacto no registo (ver nota em
+        // DESTINO_PARA_TIPO) — aqui, só para esta escolha, mostra-se e
+        // usa-se o tipo "depois" do processo de oficina, já que é isso
+        // que o pneu passa a ser ao ser montado de novo.
+        const rTipoNovo = DESTINO_PARA_TIPO[r.destino] || r.tipo || '';
         const rMat = r.matricula.replace(/'/g, "\\'");
         const rTab = r._tabela;
         const rCustoPronto = r.custo_pronto || 0;
         const rFornPronto = (r.fornecedor_pronto || 'PARQUE').replace(/'/g, "\\'");
-        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipo + '\',\'' + rMat + '\',\'' + rTab + '\',' + rCustoPronto + ',\'' + rFornPronto + '\')">';
+        html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipoNovo + '\',\'' + rMat + '\',\'' + rTab + '\',' + rCustoPronto + ',\'' + rFornPronto + '\')">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-        html += '<div><span style="font-weight:500;font-size:13px">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span><span style="margin-left:8px">' + tipoBadge(r.tipo) + '</span></div>';
+        const rTipoHtml = rTipoNovo !== r.tipo
+          ? tipoBadge(r.tipo) + ' <span style="color:var(--text3)">»</span> ' + tipoBadge(rTipoNovo)
+          : tipoBadge(r.tipo);
+        html += '<div><span style="font-weight:500;font-size:13px">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span><span style="margin-left:8px">' + rTipoHtml + '</span></div>';
         const rDestCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
         html += '<span class="badge ' + rDestCls + '">' + r.destino + '</span>';
         html += '</div>';
