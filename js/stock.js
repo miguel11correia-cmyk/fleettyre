@@ -152,6 +152,11 @@ function renderStockDesmontados(pneus, tabela) {
   container.innerHTML = html;
 }
 
+// O "destino" (processo de oficina) e o "tipo" (estado do pneu) usam
+// palavras diferentes para a mesma coisa — ex: destino "Rechapar" (o
+// processo) vira tipo "Rechapado" (o que o pneu passou a ser).
+const DESTINO_PARA_TIPO = { 'Remix': 'Remix', 'Rechapar': 'Rechapado', 'Abrir Piso': 'Piso Aberto' };
+
 async function marcarProntoDesmontado(id, tabela, pronto) {
   const updates = { pronto };
   if (pronto) {
@@ -160,6 +165,14 @@ async function marcarProntoDesmontado(id, tabela, pronto) {
     if (Number.isFinite(val) && val >= 0) updates.custo_pronto = val;
     const selForn = document.getElementById('forn-pronto-' + id);
     if (selForn && selForn.value) updates.fornecedor_pronto = selForn.value;
+
+    // O pneu passou por um processo de oficina — já não é "Novo" como
+    // era antes de ser desmontado. Actualiza o tipo para o que ele é
+    // agora, para o ciclo de reutilização (montar de stock) partir do
+    // tipo certo, não do original.
+    const { data: atual } = await sb.from(tabela).select('destino, tipo').eq('id', id).single();
+    const novoTipo = atual ? DESTINO_PARA_TIPO[atual.destino] : null;
+    if (novoTipo && novoTipo !== atual.tipo) updates.tipo = novoTipo;
   }
   loading(true);
   const { error } = await sb.from(tabela).update(updates).eq('id', id);
