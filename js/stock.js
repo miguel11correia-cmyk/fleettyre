@@ -109,7 +109,7 @@ async function loadStock() {
 // o pneu sai daqui e aparece na secção "Prontos a montar" em baixo.
 const DESTINOS_CARTAO = [
   { destino: 'Remix',      icone: '♻️', cls: 'b-remix' },
-  { destino: 'Rechapar',   icone: '🔄', cls: 'b-rechapado' },
+  { destino: 'Rechapar',   icone: '♻️', cls: 'b-rechapado' },
   { destino: 'Abrir Piso', icone: '🛞', cls: 'b-piso' },
   { destino: 'Stock',      icone: '📦', cls: 'b-novo' },
 ];
@@ -412,13 +412,16 @@ async function abrirSelStock() {
         const rCustoPronto = r.custo_pronto || 0;
         const rFornPronto = (r.fornecedor_pronto || 'PARQUE').replace(/'/g, "\\'");
         html += '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:8px;cursor:pointer" onclick="selecionarDesmontadoDeStock(' + rId + ',\'' + rMarca + '\',\'' + rMedida + '\',\'' + rTipoNovo + '\',\'' + rMat + '\',\'' + rTab + '\',' + rCustoPronto + ',\'' + rFornPronto + '\')">';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">';
         const rTipoHtml = rTipoNovo !== r.tipo
-          ? tipoBadge(r.tipo) + ' <span style="color:var(--text3)">»</span> ' + tipoBadge(rTipoNovo)
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap">' + tipoBadge(r.tipo) + '<span style="color:var(--text3)">»</span>' + tipoBadge(rTipoNovo) + '</span>'
           : tipoBadge(r.tipo);
-        html += '<div><span style="font-weight:500;font-size:13px">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span><span style="margin-left:8px">' + rTipoHtml + '</span></div>';
+        html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0">'
+          + '<span style="font-weight:500;font-size:13px;white-space:nowrap">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span>'
+          + rTipoHtml
+          + '</div>';
         const rDestCls = (DESTINOS_CARTAO.find(d => d.destino === r.destino) || {}).cls || 'b-remix';
-        html += '<span class="badge ' + rDestCls + '">' + r.destino + '</span>';
+        html += '<span class="badge ' + rDestCls + '" style="flex-shrink:0">' + r.destino + '</span>';
         html += '</div>';
         html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + (r.fornecedor_pronto ? ' · ' + r.fornecedor_pronto : '') + (rCustoPronto>0?' · <span style="color:var(--amber);font-weight:500">'+fmtEur(rCustoPronto)+'</span>':'') + '</div>';
         html += '</div>';
