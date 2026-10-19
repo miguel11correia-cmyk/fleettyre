@@ -49,7 +49,7 @@ async function loadStock() {
   document.getElementById('sk-pneus').textContent   = totalPneus + desmontados.length;
   document.getElementById('sk-valor').textContent   = totalValor > 0 ? fmtEur(totalValor) : '—';
   const skD = document.getElementById('sk-desmont');
-  if (skD) skD.textContent = desmontados.length;
+  if (skD) skD.textContent = desmontados.filter(r => !r.pronto).length;
 
   // Pneus desmontados
   renderStockDesmontados(desmontados, tabela);
@@ -102,38 +102,51 @@ async function loadStock() {
   container.innerHTML = html;
 }
 
+// Um cartão por destino (Remix/Rechapar/Abrir Piso/Stock), cada um só
+// com os pneus ainda pendentes desse destino — ao marcar "Pronto"
+// (fornecedor/custo opcionais, mesmo para Stock, que não implica
+// trabalho de oficina mas passa pela mesma confirmação explícita),
+// o pneu sai daqui e aparece na secção "Prontos a montar" em baixo.
+const DESTINOS_CARTAO = [
+  { destino: 'Remix',      icone: '♻️', cls: 'b-remix' },
+  { destino: 'Rechapar',   icone: '🔄', cls: 'b-rechapado' },
+  { destino: 'Abrir Piso', icone: '🛞', cls: 'b-piso' },
+  { destino: 'Stock',      icone: '📦', cls: 'b-novo' },
+];
+
 function renderStockDesmontados(pneus, tabela) {
-  const container = document.getElementById('stock-desmontados-container');
-  if (!container) return;
-  if (pneus.length === 0) {
-    container.innerHTML = '<p class="empty-msg">Nenhum pneu desmontado em armazém neste contexto.</p>';
+  const destinos  = document.getElementById('stock-destinos-container');
+  const prontosEl = document.getElementById('stock-prontos-container');
+  if (!destinos || !prontosEl) return;
+
+  const pendentes = pneus.filter(r => !r.pronto);
+  const prontos   = pneus.filter(r => r.pronto);
+  const optsForn = '<option value="">Fornecedor</option>' + (listaFornecedores || []).map(f => '<option value="' + f.nome + '">' + f.nome + '</option>').join('');
+
+  destinos.innerHTML = DESTINOS_CARTAO.map(d => {
+    const doDestino = pendentes.filter(r => r.destino === d.destino);
+    const linhas = doDestino.length === 0
+      ? '<p class="empty-msg" style="padding:8px 0">Nada pendente.</p>'
+      : doDestino.map(r => linhaPendenteStock(r, tabela, optsForn)).join('');
+    return '<div class="card" style="margin-bottom:0">'
+      + '<div class="ct">' + d.icone + ' ' + d.destino + ' <span class="badge ' + d.cls + '" style="margin-left:4px">' + doDestino.length + '</span></div>'
+      + linhas
+      + '</div>';
+  }).join('');
+
+  if (prontos.length === 0) {
+    prontosEl.innerHTML = '<p class="empty-msg">Nenhum pneu pronto a montar.</p>';
     return;
   }
 
-  let html = '<div class="table-wrap"><table style="min-width:1300px">';
-  html += '<thead><tr><th>Matrícula</th><th>Mês desmont.</th><th>Posição</th><th>Marca</th><th>Medida</th><th>Tipo</th><th>Escultura</th><th>Destino</th><th>Estado</th><th>Duração</th></tr></thead><tbody>';
-  pneus.forEach(r => {
+  let html = '<div class="table-wrap"><table style="min-width:1200px">';
+  html += '<thead><tr><th>Matrícula</th><th>Mês desmont.</th><th>Posição</th><th>Marca</th><th>Medida</th><th>Tipo</th><th>Destino</th><th>Fornecedor / Custo</th><th>Duração</th><th>Ação</th></tr></thead><tbody>';
+  prontos.forEach(r => {
     const duracao = tabela === 'pneus'
       ? (r.kms_desmont && r.kms_mont ? fmt(r.kms_desmont - r.kms_mont) + ' km' : '—')
       : (r.mes_desmont && r.mes_mont ? mesesEntre(r.mes_mont, r.mes_desmont) + ' meses' : '—');
-    const escStr  = r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—';
-    const destCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
-
-    let estadoHtml;
-    if (!DESTINOS_OFICINA.includes(r.destino)) {
-      estadoHtml = '<span class="badge b-ok">Pronto</span>';
-    } else if (r.pronto) {
-      estadoHtml = '<span class="badge b-ok">✓ Pronto</span> '
-        + (r.fornecedor_pronto ? '<span style="font-size:10px;color:var(--text3)">' + r.fornecedor_pronto + (r.custo_pronto > 0 ? ' · ' + fmtEur(r.custo_pronto) : '') + '</span> ' : (r.custo_pronto > 0 ? '<span style="font-size:10px;color:var(--text3)">(' + fmtEur(r.custo_pronto) + ')</span> ' : ''))
-        + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button>';
-    } else {
-      const optsForn = '<option value="">Fornecedor</option>' + (listaFornecedores || []).map(f => '<option value="' + f.nome + '">' + f.nome + '</option>').join('');
-      estadoHtml = '<span class="badge b-alert">Pendente</span> '
-        + '<select id="forn-pronto-' + r.id + '" style="height:22px;font-size:10px;padding:0 2px;margin:0 4px 0 4px;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle;max-width:100px">' + optsForn + '</select>'
-        + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:22px;font-size:10px;padding:0 4px;margin:0 4px 0 0;border:0.5px solid var(--border2);border-radius:4px;vertical-align:middle">'
-        + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:22px;padding:0 8px;font-size:10px"><svg viewBox="0 0 24 24" style="width:11px;height:11px"><use href="#icon-check"/></svg> Marcar pronto</button>';
-    }
-    estadoHtml += ' ' + pdfAnexoBtnHtml(tabela, r.id, r.pdf_path, 'loadStock', 'width:22px;height:22px;vertical-align:middle');
+    const destCls = (DESTINOS_CARTAO.find(d => d.destino === r.destino) || {}).cls || 'b-remix';
+    const fornCusto = (r.fornecedor_pronto ? r.fornecedor_pronto : '—') + (r.custo_pronto > 0 ? ' · ' + fmtEur(r.custo_pronto) : '');
 
     html += '<tr>'
       + '<td><strong>' + r.matricula + '</strong></td>'
@@ -142,14 +155,33 @@ function renderStockDesmontados(pneus, tabela) {
       + '<td>' + (r.marca || '—') + '</td>'
       + '<td>' + (r.medida || '—') + '</td>'
       + '<td>' + tipoBadge(r.tipo) + '</td>'
-      + '<td>' + escStr + '</td>'
       + '<td><span class="badge ' + destCls + '">' + r.destino + '</span></td>'
-      + '<td style="white-space:nowrap">' + estadoHtml + '</td>'
+      + '<td style="font-size:11px;color:var(--text2)">' + fornCusto + '</td>'
       + '<td>' + duracao + '</td>'
+      + '<td style="white-space:nowrap">'
+      + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button> '
+      + pdfAnexoBtnHtml(tabela, r.id, r.pdf_path, 'loadStock', 'width:22px;height:22px;vertical-align:middle')
+      + '</td>'
       + '</tr>';
   });
   html += '</tbody></table></div>';
-  container.innerHTML = html;
+  prontosEl.innerHTML = html;
+}
+
+function linhaPendenteStock(r, tabela, optsForn) {
+  const escStr = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  return '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:6px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px">'
+    + '<div style="font-size:12px;white-space:nowrap"><strong>' + r.matricula + '</strong> <span style="color:var(--text3)">· ' + (r.posicao || '—') + '</span></div>'
+    + '<div style="font-size:11px;color:var(--text2);text-align:right">' + (r.marca || '—') + ' ' + (r.medida || '') + (r.escultura_final != null ? ' · ' + escStr : '') + '</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">'
+    + '<select id="forn-pronto-' + r.id + '" style="height:24px;font-size:10px;padding:0 2px;border:0.5px solid var(--border2);border-radius:4px;flex:1;min-width:90px">' + optsForn + '</select>'
+    + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:24px;font-size:10px;padding:0 4px;border:0.5px solid var(--border2);border-radius:4px">'
+    + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:24px;padding:0 8px;font-size:10px;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:11px;height:11px"><use href="#icon-check"/></svg> Pronto</button>'
+    + pdfAnexoBtnHtml(tabela, r.id, r.pdf_path, 'loadStock', 'width:24px;height:24px')
+    + '</div>'
+    + '</div>';
 }
 
 // O "destino" (processo de oficina) e o "tipo" (estado do pneu) usam
@@ -314,8 +346,9 @@ async function abrirSelStock() {
 
   loading(false);
 
-  // Só entram no seletor os "Stock" (sempre prontos) e os de oficina já marcados como prontos.
-  const pronto = r => r.destino === 'Stock' || r.pronto;
+  // Só entram no seletor os já marcados como prontos (inclui "Stock",
+  // que agora também passa pela confirmação explícita no cartão próprio).
+  const pronto = r => r.pronto;
 
   const faturasV    = resV.data  || [];
   const faturasR    = resR.data  || [];
@@ -384,7 +417,7 @@ async function abrirSelStock() {
           ? tipoBadge(r.tipo) + ' <span style="color:var(--text3)">»</span> ' + tipoBadge(rTipoNovo)
           : tipoBadge(r.tipo);
         html += '<div><span style="font-weight:500;font-size:13px">' + (r.marca||'—') + ' ' + (r.medida||'') + '</span><span style="margin-left:8px">' + rTipoHtml + '</span></div>';
-        const rDestCls = r.destino === 'Abrir Piso' ? 'b-piso' : r.destino === 'Rechapar' ? 'b-rechapado' : 'b-remix';
+        const rDestCls = (DESTINOS_CARTAO.find(d => d.destino === r.destino) || {}).cls || 'b-remix';
         html += '<span class="badge ' + rDestCls + '">' + r.destino + '</span>';
         html += '</div>';
         html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + (r.fornecedor_pronto ? ' · ' + r.fornecedor_pronto : '') + (rCustoPronto>0?' · <span style="color:var(--amber);font-weight:500">'+fmtEur(rCustoPronto)+'</span>':'') + '</div>';
