@@ -632,6 +632,17 @@ td {
 tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: var(--bg); }
 
+/* Tabelas de histórico (secundárias, só para consulta) — linhas o
+   mais pequenas possível, incluindo os botões de ação, para não
+   competirem visualmente com a informação realmente relevante
+   (Posições/estado actual) nas páginas "Por matrícula"/"Por reboque". */
+.table-compact th,
+.table-compact td { padding: 3px 8px; font-size: 11px; }
+.table-compact td > div[style*="flex-wrap"] { flex-wrap: nowrap; }
+.table-compact .btn { height: 20px; padding: 0 8px; font-size: 10px; gap: 4px; }
+.table-compact .btn svg { width: 11px; height: 11px; }
+.table-compact .btn-icon { width: 20px; }
+
 /* ── BADGES ───────────────────────────────────────────────────── */
 .badge {
   display: inline-block;
