@@ -108,8 +108,8 @@ async function loadStock() {
 // trabalho de oficina mas passa pela mesma confirmação explícita),
 // o pneu sai daqui e aparece na secção "Prontos a montar" em baixo.
 const DESTINOS_CARTAO = [
-  { destino: 'Remix',      icone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-refresh"/></svg>', cls: 'b-remix' },
-  { destino: 'Rechapar',   icone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-refresh"/></svg>', cls: 'b-rechapado' },
+  { destino: 'Remix',      icone: '<svg viewBox="0 0 1792 1728" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-recycle"/></svg>', cls: 'b-remix' },
+  { destino: 'Rechapar',   icone: '<svg viewBox="0 0 1792 1728" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-recycle"/></svg>', cls: 'b-rechapado' },
   { destino: 'Abrir Piso', icone: '<svg viewBox="0 0 256 256" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-tire"/></svg>', cls: 'b-piso' },
   { destino: 'Stock',      icone: '<svg viewBox="0 0 640 640" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-warehouse"/></svg>', cls: 'b-novo' },
 ];
