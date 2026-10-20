@@ -110,8 +110,8 @@ async function loadStock() {
 const DESTINOS_CARTAO = [
   { destino: 'Remix',      icone: '♻️', cls: 'b-remix' },
   { destino: 'Rechapar',   icone: '♻️', cls: 'b-rechapado' },
-  { destino: 'Abrir Piso', icone: '🛞', cls: 'b-piso' },
-  { destino: 'Stock',      icone: '📦', cls: 'b-novo' },
+  { destino: 'Abrir Piso', icone: '<svg viewBox="0 0 256 256" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-tire"/></svg>', cls: 'b-piso' },
+  { destino: 'Stock',      icone: '<svg viewBox="0 0 640 640" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-warehouse"/></svg>', cls: 'b-novo' },
 ];
 
 function renderStockDesmontados(pneus, tabela) {
