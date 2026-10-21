@@ -73,6 +73,7 @@ async function loadStock() {
       const cor = pct <= 25 ? '#c93030' : pct <= 50 ? '#c47b0a' : '#15803d';
       linhasHTML += '<tr>'
         + '<td>' + (l.marca || '—') + '</td>'
+        + '<td>' + (l.subtipo || '—') + '</td>'
         + '<td>' + (l.medida || '—') + '</td>'
         + '<td>' + tipoBadge(l.tipo) + '</td>'
         + '<td style="text-align:center"><span style="color:' + cor + ';font-weight:500">' + l.quantidade_disp + '</span><span style="color:var(--text3)"> / ' + l.quantidade_ini + '</span></td>'
@@ -95,7 +96,7 @@ async function loadStock() {
     html += '</div></div>';
     if (f.notas) html += '<p style="font-size:11px;color:var(--text3);margin-bottom:10px;font-style:italic">' + f.notas + '</p>';
     html += '<div class="table-wrap"><table>';
-    html += '<thead><tr><th>Marca</th><th>Medida</th><th>Tipo</th><th style="text-align:center">Disponível / Total</th><th style="text-align:right">Preço unit. (€)</th><th style="text-align:right">Valor disp. (€)</th></tr></thead>';
+    html += '<thead><tr><th>Marca</th><th>Modelo</th><th>Medida</th><th>Tipo</th><th style="text-align:center">Disponível / Total</th><th style="text-align:right">Preço unit. (€)</th><th style="text-align:right">Valor disp. (€)</th></tr></thead>';
     html += '<tbody>' + linhasHTML + '</tbody></table></div></div>';
   });
 
