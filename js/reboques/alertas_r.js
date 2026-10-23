@@ -36,11 +36,13 @@ async function loadAlertasReboques() {
   const medios   = comMeses.filter(r => r.nivel === 'medio');
   const oks      = comMeses.filter(r => r.nivel === 'ok');
 
-  // Actualizar badge
+  // Actualizar badge — nº de reboques com pelo menos um pneu crítico,
+  // não o nº de pneus (evita um número grande e pouco legível).
+  const veiculosCriticos = new Set(criticos.map(r => r.matricula)).size;
   const badge = document.getElementById('badge-alertas-r');
   if (badge) {
-    badge.textContent = criticos.length;
-    badge.classList.toggle('hidden', criticos.length === 0);
+    badge.textContent = veiculosCriticos;
+    badge.classList.toggle('hidden', veiculosCriticos === 0);
   }
 
   // Agrupar por matrícula — cada reboque aparece em todos os níveis onde tem pelo menos um pneu

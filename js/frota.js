@@ -132,7 +132,7 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
   const escCls = (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
   const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do veículo — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
-      <button class="btn btn-s" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
+      <button class="btn btn-s btn-s-brand" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
       <button class="btn btn-sm btn-icon" onclick="abrirEdicao(${r.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
       ${pdfAnexoBtnHtml('pneus', r.id, r.pdf_path, 'loadFrota')}
       <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
@@ -165,7 +165,7 @@ function linhaHistorico(r, kmAtual) {
   const escCls= (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
   const custoTot = (r.custo_pneu || 0) + (r.custo_mo || 0);
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
-      ${!r.mes_desmont ? `<button class="btn btn-s" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>` : '<span style="color:var(--text3)" title="Desmontado"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#icon-check"/></svg></span>'}
+      ${!r.mes_desmont ? `<button class="btn btn-s btn-s-brand" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>` : '<span style="color:var(--text3)" title="Desmontado"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#icon-check"/></svg></span>'}
       <button class="btn btn-sm btn-icon" onclick="abrirEdicao(${r.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
       ${pdfAnexoBtnHtml('pneus', r.id, r.pdf_path, 'loadFrota')}
       <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>

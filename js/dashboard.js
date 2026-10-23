@@ -22,11 +22,13 @@ async function loadDashboard() {
   const registosAtivos = data.filter(r => !r.mes_desmont);
   const activos  = registosAtivos.length;
   const mats     = [...new Set(data.map(r => r.matricula))].length;
-  const alertas  = data.filter(r =>
+  const registosAlerta = data.filter(r =>
     r.escultura_final != null &&
     r.escultura_final >= 0 &&
     r.escultura_final <= 3
-  ).length;
+  );
+  const alertas  = registosAlerta.length;
+  const matsAlerta = new Set(registosAlerta.map(r => r.matricula)).size;
 
   // Custo total — só registos com custo_pneu preenchido
   const comCusto = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
@@ -40,10 +42,10 @@ async function loadDashboard() {
   document.getElementById('k-custo').textContent   = custoTotal > 0 ? fmtEur(custoTotal) : '—';
   document.getElementById('k-med').textContent     = custoMed   ? fmtEur(custoMed)   : '—';
 
-  // Badge alertas no menu
+  // Badge alertas no menu — nº de veículos, não de pneus
   const badge = document.getElementById('badge-alertas');
-  badge.textContent = alertas;
-  badge.classList.toggle('hidden', alertas === 0);
+  badge.textContent = matsAlerta;
+  badge.classList.toggle('hidden', matsAlerta === 0);
 
   // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(registosAtivos, 'tipo');

@@ -585,6 +585,12 @@ input[type="number"].qty-spin::-webkit-outer-spin-button {
 @media (hover: hover) and (pointer: fine) {
   .btn-s:hover { background: #dcfce7; }
 }
+/* Mesmo estilo "chip" do .btn-s, na cor principal da marca — usado
+   em ações de destaque específicas (ex: Desmontar). */
+.btn-s-brand { background: var(--brand-red-lt); color: var(--brand-red); border-color: var(--brand-red-md); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-s-brand:hover { background: var(--brand-red-md); }
+}
 .btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
 .btn-sm svg { width: 13px; height: 13px; }
 /* Ícone-só (editar, apagar em linhas de tabela) — compacto e quadrado */
