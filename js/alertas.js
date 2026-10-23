@@ -145,10 +145,12 @@ async function loadAlertas() {
   const medios   = estimativas.filter(r => r.nivel === 'medio');
   const oks      = estimativas.filter(r => r.nivel === 'ok');
 
-  // Badge da barra lateral
+  // Badge da barra lateral — nº de veículos com pelo menos um pneu
+  // crítico, não o nº de pneus (evita um número grande e pouco legível).
+  const veiculosCriticos = new Set(criticos.map(r => r.matricula)).size;
   const badge = document.getElementById('badge-alertas');
-  badge.textContent = criticos.length;
-  badge.classList.toggle('hidden', criticos.length === 0);
+  badge.textContent = veiculosCriticos;
+  badge.classList.toggle('hidden', veiculosCriticos === 0);
   document.getElementById('k-alerts').textContent = criticos.length;
 
   // Agrupar por veículo — cada veículo aparece em todos os níveis onde tem pelo menos um pneu

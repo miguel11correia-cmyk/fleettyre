@@ -40,11 +40,12 @@ async function loadDashboardReboques() {
   document.getElementById('rk-custo').textContent   = custoTotal > 0 ? fmtEur(custoTotal) : '—';
   document.getElementById('rk-med').textContent     = custoMed ? fmtEur(custoMed) : '—';
 
-  // Badge alertas reboques
+  // Badge alertas reboques — nº de reboques, não de pneus
+  const matsAlerta = new Set(alertas.map(r => r.matricula)).size;
   const badge = document.getElementById('badge-alertas-r');
   if (badge) {
-    badge.textContent = alertas.length;
-    badge.classList.toggle('hidden', alertas.length === 0);
+    badge.textContent = matsAlerta;
+    badge.classList.toggle('hidden', matsAlerta === 0);
   }
 
   // ── Gráfico tipo (só pneus ativos) ──
