@@ -28,7 +28,7 @@ function preencherSelectores() {
     // lista editável de fornecedores nem na análise (ver loadFornecedores).
     el.innerHTML = `<option value="">${placeholder}</option>` +
       `<option value="PARQUE" data-muted="true" ${val === 'PARQUE' ? 'selected' : ''}>Parque (já na frota)</option>` +
-      listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} — ${f.nome}</option>`).join('');
+      listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} · ${f.nome}</option>`).join('');
   });
 
   ['r-marca', 'rr-marca', 'e-marca', 're-marca', 'alo-marca'].forEach(id => {
@@ -37,7 +37,7 @@ function preencherSelectores() {
     const val = el.value;
     const placeholder = id === 'alo-marca' ? '— todas —' : '— selecionar —';
     el.innerHTML = `<option value="">${placeholder}</option>` +
-      listaMarcas.map(m => `<option value="${m.nome}" ${m.nome === val ? 'selected' : ''}>${m.codigo} — ${m.nome}</option>`).join('');
+      listaMarcas.map(m => `<option value="${m.nome}" ${m.nome === val ? 'selected' : ''}>${m.codigo} · ${m.nome}</option>`).join('');
   });
 }
 

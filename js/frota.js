@@ -106,7 +106,7 @@ async function loadFrota() {
     document.getElementById('frota-tbody').innerHTML = historicoArr.map(r => linhaHistorico(r, kmAtual)).join('');
   } else {
     lugaresCard.classList.add('hidden');
-    historicoCt.textContent = 'Histórico de pneus — clique em "Desmontar" para registar saída';
+    historicoCt.textContent = 'Histórico de pneus: clique em "Desmontar" para registar saída';
     document.getElementById('frota-tbody').innerHTML = data.map(r => linhaHistorico(r, kmAtual)).join('');
   }
 }
