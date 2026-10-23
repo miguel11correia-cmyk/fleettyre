@@ -251,7 +251,7 @@ function renderLinhasFatura() {
     return;
   }
   const optsMarca = val => '<option value="">— selecionar —</option>' +
-    (listaMarcas || []).map(m => '<option value="' + m.nome + '"' + (m.nome === val ? ' selected' : '') + '>' + m.codigo + ' — ' + m.nome + '</option>').join('');
+    (listaMarcas || []).map(m => '<option value="' + m.nome + '"' + (m.nome === val ? ' selected' : '') + '>' + m.codigo + ' · ' + m.nome + '</option>').join('');
 
   let html = '';
   linhasFatura.forEach((l, i) => {
@@ -508,7 +508,7 @@ function renderAlocResultados() {
   }
 
   const count = alocSelecionados.size;
-  let html = '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ' — seleciona os que correspondem à fatura</div>';
+  let html = '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ': seleciona os que correspondem à fatura</div>';
   html += '<div class="alo-list">';
   alocResultados.forEach(r => {
     const sel = alocSelecionados.has(r.id);
@@ -591,7 +591,7 @@ function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco, subt
   }
   stockLinhaSelId      = linhaId;
   stockDesmontadoSelId = null;
-  const msg = '✓ Pneu de fatura: ' + marca + ' ' + medida + ' ' + tipo + (preco > 0 ? ' — ' + fmtEur(preco) : '') + ' — ' + fornecedor;
+  const msg = '✓ Pneu de fatura: ' + marca + ' ' + medida + ' ' + tipo + (preco > 0 ? ' · ' + fmtEur(preco) : '') + ' · ' + fornecedor;
   ['r-stock-info','rr-stock-info'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = msg; el.classList.remove('hidden'); } });
   fecharSelStock();
 }
@@ -608,7 +608,7 @@ function selecionarDesmontadoDeStock(id, marca, medida, tipo, matriculaOrigem, t
   popularSelectorSubtipo('rr-marca', 'rr-subtipo');
   stockLinhaSelId      = null;
   stockDesmontadoSelId = { id, tabela };
-  const msg = '✓ Pneu de armazém: ' + marca + ' ' + medida + ' ' + tipo + (custoPronto > 0 ? ' — ' + fmtEur(custoPronto) : '') + ' — ' + (tabela === 'reboques' ? 'reboque' : 'veículo') + ' ' + matriculaOrigem;
+  const msg = '✓ Pneu de armazém: ' + marca + ' ' + medida + ' ' + tipo + (custoPronto > 0 ? ' · ' + fmtEur(custoPronto) : '') + ' · ' + (tabela === 'reboques' ? 'reboque' : 'veículo') + ' ' + matriculaOrigem;
   ['r-stock-info','rr-stock-info'].forEach(fid => { const el = document.getElementById(fid); if (el) { el.textContent = msg; el.classList.remove('hidden'); } });
   fecharSelStock();
 }

@@ -91,7 +91,7 @@ function handleContacto(req, res) {
       await enviarEmailResend({
         to: CONTACT_TO,
         replyTo: email,
-        subject: `Novo contacto FleetTyre — ${nome}`,
+        subject: `Novo contacto FleetTyre: ${nome}`,
         html: `<p><strong>Nome:</strong> ${escapeHtml(nome)}</p>
                <p><strong>Empresa:</strong> ${escapeHtml(empresa) || '—'}</p>
                <p><strong>Email:</strong> ${escapeHtml(email)}</p>
@@ -101,7 +101,7 @@ function handleContacto(req, res) {
 
       await enviarEmailResend({
         to: email,
-        subject: 'Recebemos o teu contacto — FleetTyre',
+        subject: 'Recebemos o teu contacto: FleetTyre',
         html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#18181b">
                  <h2 style="font-size:19px;font-weight:500;margin:0 0 14px">Obrigado pelo teu interesse na FleetTyre</h2>
                  <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 10px">Olá ${escapeHtml(nome)},</p>

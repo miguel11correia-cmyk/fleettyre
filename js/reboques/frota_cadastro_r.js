@@ -158,7 +158,7 @@ async function popularSelectorReboquesFrota() {
   sel.innerHTML = '<option value="">— selecionar —</option>' +
     mats.map(v => {
       const label = (v.marca || v.modelo)
-        ? `${v.matricula} — ${[v.marca, v.modelo].filter(Boolean).join(' ')}`
+        ? `${v.matricula} · ${[v.marca, v.modelo].filter(Boolean).join(' ')}`
         : v.matricula;
       return `<option value="${v.matricula}"${v.matricula === val ? ' selected' : ''}>${label}</option>`;
     }).join('');

@@ -84,7 +84,7 @@ async function loadFrotaReboques() {
     document.getElementById('rfrota-tbody').innerHTML = historicoArr.map(r => linhaHistoricoReboque(r, hoje)).join('');
   } else {
     lugaresCard.classList.add('hidden');
-    historicoCt.textContent = 'Histórico — clique em "Desmontar" para registar saída';
+    historicoCt.textContent = 'Histórico: clique em "Desmontar" para registar saída';
     document.getElementById('rfrota-tbody').innerHTML = data.map(r => linhaHistoricoReboque(r, hoje)).join('');
   }
 }

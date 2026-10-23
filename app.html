@@ -158,7 +158,7 @@
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18a8 8 0 1 1 16 0"/><line x1="12" y1="18" x2="15.5" y2="12.5"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
       </div>
       <div class="login-feature-title">Previsão inteligente</div>
-      <div class="login-feature-desc">Alertas antecipados de desgaste — sem surpresas de última hora.</div>
+      <div class="login-feature-desc">Alertas antecipados de desgaste, sem surpresas de última hora.</div>
     </div>
     <div class="login-feature">
       <div class="login-feature-icon">
@@ -391,7 +391,7 @@
       <div class="g2">
         <div class="card">
           <div class="ct">Taxa de desgaste por posição (mm/1000km)</div>
-          <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Direção vs. Tração — só com registos históricos completos (montagem, desmontagem e escultura final).</p>
+          <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Direção vs. Tração: só com registos históricos completos (montagem, desmontagem e escultura final).</p>
           <div class="cw-t"><canvas id="c-desgaste-pos" aria-label="Taxa de desgaste por posição"></canvas></div>
         </div>
         <div class="card">
@@ -633,7 +633,7 @@
         </div>
         <div class="card">
           <div class="ct" id="frota-historico-ct" onclick="toggleFrotaHistorico()" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">
-            <span id="frota-historico-label">Histórico de pneus — clique em "Desmontar" para registar saída</span>
+            <span id="frota-historico-label">Histórico de pneus: clique em "Desmontar" para registar saída</span>
             <span id="frota-historico-seta" style="font-size:11px;color:var(--text3);font-weight:400;flex-shrink:0;margin-left:8px">▸ Expandir</span>
           </div>
           <div class="table-wrap hidden" id="frota-historico-wrap">
@@ -788,7 +788,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="ct">Custo médio por pneu — por fornecedor (€)</div>
+        <div class="ct">Custo médio por pneu por fornecedor (€)</div>
         <div class="cw-t"><canvas id="c-forn-custo" aria-label="Custo médio por fornecedor"></canvas></div>
       </div>
     </div>
@@ -841,11 +841,11 @@
       <!-- PAINEL SUBTIPOS DA MARCA -->
       <div class="panel" id="painel-subtipos">
         <div class="panel-head">
-          <span>Modelos — <span id="subtipos-marca-nome"></span></span>
+          <span>Modelos: <span id="subtipos-marca-nome"></span></span>
           <button class="btn-close" onclick="fecharPainelSubtipos()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
         </div>
         <div class="panel-body">
-          <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Ex: XTRA LIFE, ENERGY, MULTIWAY — para detalhar o tipo de pneu no registo de montagem.</p>
+          <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Ex: XTRA LIFE, ENERGY, MULTIWAY, para detalhar o tipo de pneu no registo de montagem.</p>
           <div class="g3" style="gap:8px;margin-bottom:14px">
             <input type="text" id="novo-subtipo-nome" placeholder="ex: XTRA LIFE" oninput="this.value=this.value.toUpperCase()">
             <select id="novo-subtipo-posicao" data-fancy>
@@ -878,7 +878,7 @@
 
       <div class="card">
         <div class="ct">ROI por tipo de pneu</div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Histórico completo — só regista tipos com KMs de montagem, desmontagem e custo do pneu preenchidos.</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Histórico completo: só regista tipos com KMs de montagem, desmontagem e custo do pneu preenchidos.</p>
         <div class="table-wrap">
           <table>
             <thead><tr>
@@ -890,7 +890,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="ct">KMs por € investido — por tipo de pneu</div>
+        <div class="ct">KMs por € investido por tipo de pneu</div>
         <div class="cw-t"><canvas id="c-roi-tipo" aria-label="KMs por euro investido, por tipo de pneu"></canvas></div>
       </div>
 
@@ -996,7 +996,7 @@
     <!-- REBOQUES — DASHBOARD -->
     <div class="page hidden" id="page-dashboard-r">
       <div class="page-header">
-        <h2>Dashboard — Reboques</h2>
+        <h2>Dashboard Reboques</h2>
         <button class="btn btn-sm" onclick="loadDashboardReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="krow">
@@ -1014,7 +1014,7 @@
       <div class="g2">
         <div class="card"><div class="ct">Pneus por marca</div><div class="legend" id="rleg-marc"></div><div class="cw"><canvas id="rc-marc"></canvas></div></div>
         <div class="card">
-          <div class="ct">Gasto anual — reboques</div>
+          <div class="ct">Gasto anual (reboques)</div>
           <div class="table-wrap"><table>
             <thead><tr><th>Ano</th><th style="text-align:center">Pneus</th><th style="text-align:right">Custo total (€)</th><th style="text-align:right">Custo médio/pneu (€)</th></tr></thead>
             <tbody id="r-tabela-anual-tbody"></tbody>
@@ -1031,7 +1031,7 @@
 
     <!-- REBOQUES — REGISTAR -->
     <div class="page hidden" id="page-registar-r">
-      <div class="page-header"><h2>Registar pneu — Reboque</h2></div>
+      <div class="page-header"><h2>Registar pneu (Reboque)</h2></div>
       <div class="card">
         <div class="ct">Identificação</div>
         <div class="g2">
@@ -1043,9 +1043,9 @@
         <div class="g2">
           <div class="frow"><label>Eixo</label>
             <select id="rr-eixo" data-fancy>
-              <option value="Eixo 1">Eixo 1 (dianteiro) — 12/14 meses</option>
-              <option value="Eixo 2">Eixo 2 (meio) — 20/24 meses</option>
-              <option value="Eixo 3">Eixo 3 (traseiro) — 12/14 meses</option>
+              <option value="Eixo 1">Eixo 1 (dianteiro): 12/14 meses</option>
+              <option value="Eixo 2">Eixo 2 (meio): 20/24 meses</option>
+              <option value="Eixo 3">Eixo 3 (traseiro): 12/14 meses</option>
             </select>
           </div>
           <div class="frow"><label>Tipo</label><select id="rr-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
@@ -1091,7 +1091,7 @@
       </div>
       <div class="card">
         <div class="ct">Ligação ao sistema de telemetria/GPS</div>
-        <p style="font-size:11px;color:var(--text2);margin-bottom:12px">Preenche automaticamente o "KM actual" dos veículos (usado como referência em Por matrícula e nos alertas) — não substitui os KMs manuais dos registos de pneus.</p>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:12px">Preenche automaticamente o "KM actual" dos veículos (usado como referência em Por matrícula e nos alertas). Não substitui os KMs manuais dos registos de pneus.</p>
         <div id="telemetria-status"><p class="empty-msg">A carregar...</p></div>
         <div id="telemetria-feedback" class="feedback hidden"></div>
       </div>
@@ -1130,7 +1130,7 @@
     <!-- REBOQUES — FROTA — GESTÃO -->
     <div class="page hidden" id="page-frota-cadastro-r" style="position:relative">
       <div class="page-header">
-        <h2>Frota — Reboques</h2>
+        <h2>Frota (Reboques)</h2>
         <button class="btn btn-sm" onclick="loadFrotaCadastroReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
       <div class="card">
@@ -1319,7 +1319,7 @@
         </div>
         <div class="card">
           <div class="ct" id="rfrota-historico-ct" onclick="toggleRfrotaHistorico()" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center">
-            <span id="rfrota-historico-label">Histórico — clique em "Desmontar" para registar saída</span>
+            <span id="rfrota-historico-label">Histórico: clique em "Desmontar" para registar saída</span>
             <span id="rfrota-historico-seta" style="font-size:11px;color:var(--text3);font-weight:400;flex-shrink:0;margin-left:8px">▸ Expandir</span>
           </div>
           <div class="table-wrap hidden" id="rfrota-historico-wrap"><table class="table-compact">
@@ -1331,7 +1331,7 @@
 
       <!-- PAINEL DESMONTAGEM -->
       <div class="panel" id="rpainel-desmont">
-        <div class="panel-head"><span>Registar desmontagem — Reboque</span><button class="btn-close" onclick="fecharPainelReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
+        <div class="panel-head"><span>Registar desmontagem (Reboque)</span><button class="btn-close" onclick="fecharPainelReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
         <div class="panel-body">
           <div class="panel-info" id="rpainel-info"></div>
           <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="rd-mes" placeholder="ex: 2026-07" maxlength="7"></div>
@@ -1345,7 +1345,7 @@
 
       <!-- PAINEL EDIÇÃO -->
       <div class="panel" id="rpainel-editar">
-        <div class="panel-head"><span>Editar registo — Reboque</span><button class="btn-close" onclick="fecharEdicaoReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
+        <div class="panel-head"><span>Editar registo (Reboque)</span><button class="btn-close" onclick="fecharEdicaoReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7"></div>
@@ -1368,13 +1368,13 @@
 
     <!-- REBOQUES — ALERTAS -->
     <div class="page hidden" id="page-alertas-r">
-      <div class="page-header"><h2>Alertas — Reboques</h2><button class="btn btn-sm" onclick="loadAlertasReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
+      <div class="page-header"><h2>Alertas (Reboques)</h2><button class="btn btn-sm" onclick="loadAlertasReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
       <div class="card">
-        <div class="ct">📐 Limites por eixo — Semirreboque 3 eixos c/ suspensão pneumática</div>
+        <div class="ct">📐 Limites por eixo (Semirreboque 3 eixos c/ suspensão pneumática)</div>
         <div class="info-box">
-          <p><strong>Eixo 1 (dianteiro)</strong> — Aviso: 12 meses · Crítico: 14 meses</p>
-          <p><strong>Eixo 2 (meio)</strong> — Aviso: 20 meses · Crítico: 24 meses</p>
-          <p><strong>Eixo 3 (traseiro)</strong> — Aviso: 12 meses · Crítico: 14 meses</p>
+          <p><strong>Eixo 1 (dianteiro):</strong> Aviso: 12 meses · Crítico: 14 meses</p>
+          <p><strong>Eixo 2 (meio):</strong> Aviso: 20 meses · Crítico: 24 meses</p>
+          <p><strong>Eixo 3 (traseiro):</strong> Aviso: 12 meses · Crítico: 14 meses</p>
         </div>
       </div>
       <div class="alertas-stats">
@@ -1409,7 +1409,7 @@
 
     <!-- REBOQUES — FORNECEDORES -->
     <div class="page hidden" id="page-fornecedores-r">
-      <div class="page-header"><h2>Fornecedores — Reboques</h2><button class="btn btn-sm" onclick="loadFornecedoresReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
+      <div class="page-header"><h2>Fornecedores (Reboques)</h2><button class="btn btn-sm" onclick="loadFornecedoresReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
       <div class="card">
         <div class="ct">Resumo por fornecedor</div>
         <div class="table-wrap"><table>
@@ -1422,7 +1422,7 @@
 
     <!-- REBOQUES — MARCAS -->
     <div class="page hidden" id="page-marcas-r">
-      <div class="page-header"><h2>Marcas — Reboques</h2><button class="btn btn-sm" onclick="loadMarcasReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
+      <div class="page-header"><h2>Marcas (Reboques)</h2><button class="btn btn-sm" onclick="loadMarcasReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
       <div class="card">
         <div class="ct">Desempenho por marca</div>
         <div class="table-wrap"><table>
@@ -1436,13 +1436,13 @@
     <!-- REBOQUES — ANALYTICS -->
     <div class="page hidden" id="page-analytics-r">
       <div class="page-header">
-        <h2>Análise — Reboques</h2>
+        <h2>Análise (Reboques)</h2>
         <button class="btn btn-sm" onclick="loadAnalyticsReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
 
       <div class="card">
         <div class="ct">ROI por tipo de pneu</div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Histórico completo — só regista tipos com meses de duração e custo do pneu preenchidos.</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Histórico completo: só regista tipos com meses de duração e custo do pneu preenchidos.</p>
         <div class="table-wrap">
           <table>
             <thead><tr>
@@ -1454,7 +1454,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="ct">Meses por € investido — por tipo de pneu</div>
+        <div class="ct">Meses por € investido por tipo de pneu</div>
         <div class="cw-t"><canvas id="rc-roi-tipo" aria-label="Meses por euro investido, por tipo de pneu"></canvas></div>
       </div>
 

@@ -34,7 +34,7 @@ async function carregarStatusTelemetria() {
 
   if (!status.ligado) {
     el.innerHTML = `
-      <p style="font-size:11px;color:var(--text2);margin-bottom:10px">Não é o login normal do portal Cartrack — é o utilizador/password gerados na secção "Definições da API" (API Settings) da conta Cartrack.</p>
+      <p style="font-size:11px;color:var(--text2);margin-bottom:10px">Não é o login normal do portal Cartrack: é o utilizador/password gerados na secção "Definições da API" (API Settings) da conta Cartrack.</p>
       <div class="g2">
         <div class="frow"><label>Utilizador da API</label><input type="text" id="tel-username" placeholder="ex: TRAN00108"></div>
         <div class="frow"><label>Password da API</label><input type="password" id="tel-password"></div>
@@ -93,7 +93,7 @@ async function sincronizarTelemetriaAgora() {
   const resultado = await chamarFuncaoTelemetria('telemetria-sync-manual', { method: 'POST' });
 
   if (resultado.ok) {
-    showFeedback('telemetria-feedback', `Sincronizado — ${resultado.total ?? 0} veículo(s) verificado(s).`, false);
+    showFeedback('telemetria-feedback', `Sincronizado: ${resultado.total ?? 0} veículo(s) verificado(s).`, false);
   } else {
     showFeedback('telemetria-feedback', resultado.erro || 'Erro ao sincronizar.', true);
   }
