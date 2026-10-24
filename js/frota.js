@@ -140,9 +140,9 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
   return `<tr>
     <td>${lugar}${avisoIcon}</td>
     <td>${r.marca || '—'}</td>
-    <td>${r.fornecedor || '—'}</td>
-    <td>${r.medida || '—'}</td>
     <td>${r.subtipo || '—'}</td>
+    <td>${r.medida || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
     <td>${tipoBadge(r.tipo)}</td>
     <td style="text-align:right">${fmt(r.kms_mont)}</td>
     <td>${r.mes_mont || '—'}</td>
@@ -174,9 +174,9 @@ function linhaHistorico(r, kmAtual) {
     <td>${r.mes_mont || '—'}</td>
     <td>${r.posicao  || '—'}</td>
     <td>${r.marca    || '—'}</td>
-    <td>${r.fornecedor || '—'}</td>
-    <td>${r.medida   || '—'}</td>
     <td>${r.subtipo  || '—'}</td>
+    <td>${r.medida   || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
     <td>${tipoBadge(r.tipo)}</td>
     <td style="text-align:right">${fmt(r.kms_mont)}</td>
     <td>${r.mes_desmont || '—'}</td>

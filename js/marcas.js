@@ -35,7 +35,7 @@ async function loadMarcas() {
 
   // €/km desta marca = custo médio ÷ KMs médios, usando o histórico
   // COMPLETO da marca (activos + já substituídos, de todos os
-  // veículos) — ao contrário de "Por matrícula"/"Análise", aqui não há
+  // veículos) — ao contrário de "Por veículo"/"Análise", aqui não há
   // uma entidade única a acumular histórico para sempre; é uma média
   // estatística entre vários pneus independentes, por isso mais
   // amostras (o histórico todo) dão uma média mais robusta.

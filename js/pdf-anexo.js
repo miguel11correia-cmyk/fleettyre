@@ -1,5 +1,5 @@
 // ── ANEXAR PDF (registo, fatura ou pneu em oficina) ─────────────────
-// Botão partilhado por 3 sítios da app: registos em "Por matrícula",
+// Botão partilhado por 3 sítios da app: registos em "Por veículo",
 // faturas de stock, e pneus em armazém a aguardar oficina — todos são
 // apenas linhas de "pneus"/"reboques"/"stock_faturas" com uma coluna
 // pdf_path, por isso um único mecanismo de upload/visualização serve

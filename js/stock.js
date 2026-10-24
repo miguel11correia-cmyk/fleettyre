@@ -438,7 +438,7 @@ async function abrirSelStock() {
 // ── APLICAR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS ──────────────
 // Fluxo: o utilizador tem uma fatura em papel (marca/medida/fornecedor/
 // mês) sem veículo associado, porque foi comprada avulso. Em vez de
-// procurar manualmente em "Por matrícula" pneu a pneu, pesquisa aqui
+// procurar manualmente em "Por veículo" pneu a pneu, pesquisa aqui
 // os registos de montagem que batem com essas condições e aplica o
 // preço da fatura a todos os selecionados de uma só vez.
 
