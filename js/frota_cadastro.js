@@ -34,7 +34,7 @@ function logoScaleVeiculo(nome) {
   return (m && m.scale) || 1;
 }
 
-// HTML da marca com mini-logo à frente, para o cartão de "Por matrícula"
+// HTML da marca com mini-logo à frente, para o cartão de "Por veículo"
 function renderMarcaComLogo(nome) {
   if (!nome) return '—';
   const src = logoMarcaVeiculo(nome);

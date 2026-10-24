@@ -112,7 +112,7 @@ function mesAtual() {
 //
 // Lista fixa de lugares de pneu por configuração de eixos. Cada
 // veículo/reboque com uma configuração conhecida mostra sempre estas
-// linhas em "Por matrícula"/"Por reboque" — preenchidas ou vazias.
+// linhas em "Por veículo"/"Por reboque" — preenchidas ou vazias.
 // A ordem de cada lista é também a ordem em que a quantidade do
 // registo é distribuída pelos lugares livres dessa categoria.
 

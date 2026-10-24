@@ -641,7 +641,7 @@ tbody tr:hover td { background: var(--bg); }
 /* Tabelas de histórico (secundárias, só para consulta) — linhas o
    mais pequenas possível, incluindo os botões de ação, para não
    competirem visualmente com a informação realmente relevante
-   (Posições/estado actual) nas páginas "Por matrícula"/"Por reboque". */
+   (Posições/estado actual) nas páginas "Por veículo"/"Por reboque". */
 .table-compact th,
 .table-compact td { padding: 3px 8px; font-size: 11px; }
 .table-compact td > div[style*="flex-wrap"] { flex-wrap: nowrap; }

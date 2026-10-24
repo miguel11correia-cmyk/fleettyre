@@ -118,9 +118,9 @@ function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
   return `<tr>
     <td>${lugar}${avisoIcon}</td>
     <td>${r.marca    || '—'}</td>
-    <td>${r.fornecedor || '—'}</td>
-    <td>${r.medida   || '—'}</td>
     <td>${r.subtipo  || '—'}</td>
+    <td>${r.medida   || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
     <td>${tipoBadge(r.tipo)}</td>
     <td>${r.mes_mont || '—'}</td>
     <td>${mesesStr}</td>
@@ -157,9 +157,9 @@ function linhaHistoricoReboque(r, hoje) {
     <td>${r.mes_mont || '—'}</td>
     <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
     <td>${r.marca    || '—'}</td>
-    <td>${r.fornecedor || '—'}</td>
-    <td>${r.medida   || '—'}</td>
     <td>${r.subtipo  || '—'}</td>
+    <td>${r.medida   || '—'}</td>
+    <td>${r.fornecedor || '—'}</td>
     <td>${tipoBadge(r.tipo)}</td>
     <td>${mesesStr}</td>
     <td>${r.mes_desmont || '—'}</td>
