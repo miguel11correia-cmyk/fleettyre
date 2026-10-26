@@ -43,16 +43,19 @@ async function loadFrotaReboques() {
   if (error || !data) return;
 
   const activos    = data.filter(r => !r.mes_desmont);
-  const comMeses   = data.filter(r => r.mes_desmont && r.mes_mont);
-  const mesesArr   = comMeses.map(r => mesesEntre(r.mes_mont, r.mes_desmont));
-  const mesesMed   = mesesArr.length > 0 ? Math.round(mesesArr.reduce((s,v) => s+v, 0) / mesesArr.length) : null;
+  // Duração dos pneus ACTIVOS (meses desde a montagem até hoje) — é esta
+  // que entra no €/mês, não a duração dos já desmontados (esses já não
+  // estão a gerar custo nenhum agora).
+  const mesesAtivosArr = activos.filter(r => r.mes_mont).map(r => mesesEntre(r.mes_mont, hoje));
+  const mesesMedAtivos = mesesAtivosArr.length > 0
+    ? Math.round(mesesAtivosArr.reduce((s,v) => s+v, 0) / mesesAtivosArr.length) : null;
   const comCusto       = data.filter(r => r.custo_pneu > 0);
   const custoHistorico = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
   // Só os pneus activos (montados agora) — o histórico completo faria o
   // valor crescer sempre, mesmo sem o custo real por mês ter mudado.
   const custoAtivos    = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
-  const custoMes = (custoAtivos > 0 && mesesMed && mesesMed > 0)
-    ? fmtEur(custoAtivos / mesesMed) : '—';
+  const custoMes = (custoAtivos > 0 && mesesMedAtivos && mesesMedAtivos > 0)
+    ? fmtEur(custoAtivos / mesesMedAtivos) : '—';
 
   // 5 cartões finais — cada um a responder a uma pergunta real de quem
   // gere a frota (ver README, secção "Cálculos").
@@ -60,7 +63,7 @@ async function loadFrotaReboques() {
   document.getElementById('rfk2').textContent = custoMes;
   document.getElementById('rfk3').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
   document.getElementById('rfk4').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
-  document.getElementById('rfk5').textContent = mesesMed ? mesesMed + ' meses' : '—';
+  document.getElementById('rfk5').textContent = mesesMedAtivos ? mesesMedAtivos + ' meses' : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_REBOQUE[reboque?.num_eixos];
