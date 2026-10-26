@@ -58,13 +58,6 @@ async function loadFrota() {
     ? Math.round(kmsAtivosArr.reduce((s, v) => s + v, 0) / kmsAtivosArr.length)
     : null;
 
-  // KMs médios do histórico completo (activos + já desmontados) — só
-  // para referência, não entra na fórmula do €/km.
-  const kmsEfArr = data.map(r => kmsEfectuados(r, kmAtual)).filter(x => x != null).map(x => x.km);
-  const kmsHistorico = kmsEfArr.length > 0
-    ? Math.round(kmsEfArr.reduce((s, v) => s + v, 0) / kmsEfArr.length)
-    : null;
-
   const comCusto        = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
   const custoHistorico  = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
   // Só os pneus activos (montados agora) — o histórico completo faria o
@@ -82,7 +75,7 @@ async function loadFrota() {
   document.getElementById('fk2').textContent = eurKm ? '€ ' + eurKm : '—';
   document.getElementById('fk3').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
   document.getElementById('fk4').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
-  document.getElementById('fk5').textContent = kmsHistorico ? fmt(kmsHistorico) : '—';
+  document.getElementById('fk5').textContent = kmsmedios ? fmt(kmsmedios) : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_VEICULO[veiculo?.num_eixos];
