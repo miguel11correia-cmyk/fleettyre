@@ -112,7 +112,7 @@ function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
   const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
   const escStr   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
   const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do reboque — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
-  const acBtn = `<div style="display:flex;gap:4px;flex-wrap:wrap">
+  const acBtn = `<div style="display:flex;gap:4px;flex-wrap:nowrap">
       <button class="btn btn-s btn-s-brand" onclick="abrirPainelReboque(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
       <button class="btn btn-sm btn-icon" onclick="abrirEdicaoReboque(${r.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
       ${pdfAnexoBtnHtml('reboques', r.id, r.pdf_path, 'loadFrotaReboques')}
@@ -144,13 +144,13 @@ function linhaHistoricoReboque(r, hoje) {
   const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
   const escStr   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
   const acBtn    = !r.mes_desmont
-    ? `<div style="display:flex;gap:4px;flex-wrap:wrap">
+    ? `<div style="display:flex;gap:4px;flex-wrap:nowrap">
          <button class="btn btn-s btn-s-brand" onclick="abrirPainelReboque(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
          <button class="btn btn-sm btn-icon" onclick="abrirEdicaoReboque(${r.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
          ${pdfAnexoBtnHtml('reboques', r.id, r.pdf_path, 'loadFrotaReboques')}
          <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
        </div>`
-    : `<div style="display:flex;gap:4px;flex-wrap:wrap">
+    : `<div style="display:flex;gap:4px;flex-wrap:nowrap">
          <span style="color:var(--text3)" title="Desmontado"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#icon-check"/></svg></span>
          <button class="btn btn-sm btn-icon" onclick="abrirEdicaoReboque(${r.id})" title="Editar"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg></button>
          ${pdfAnexoBtnHtml('reboques', r.id, r.pdf_path, 'loadFrotaReboques')}
