@@ -83,7 +83,8 @@ function renderDuracaoPorEixo(data) {
     if (!r.mes_desmont || !r.mes_mont) return;
     const meses = mesesEntre(r.mes_mont, r.mes_desmont);
     if (meses <= 0) return;
-    const k = r.eixo ? `Eixo ${r.eixo}` : '(sem eixo)';
+    if (!r.eixo) return;
+    const k = `Eixo ${r.eixo}`;
     if (!agg[k]) agg[k] = [];
     agg[k].push(meses);
   });
