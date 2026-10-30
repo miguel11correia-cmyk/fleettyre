@@ -114,7 +114,8 @@ async function loadDashboard() {
   data.forEach(r => {
     const taxa = taxaDesgaste(r);
     if (taxa === null) return;
-    const k = categoriaPosicao(r.posicao) || '(sem posição)';
+    const k = categoriaPosicao(r.posicao);
+    if (!k) return;
     if (!posAgg[k]) posAgg[k] = { taxaArr: [], kmsArr: [] };
     posAgg[k].taxaArr.push(taxa);
     posAgg[k].kmsArr.push(r.kms_desmont - r.kms_mont);
