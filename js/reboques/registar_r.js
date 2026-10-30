@@ -12,22 +12,33 @@ async function guardarRegistoReboque() {
   if (!resolucao.ok) { showFeedback('rr-feedback', resolucao.erro, true); return; }
   const posicoes = resolucao.posicoes;
 
-  if (quantidade > 1) {
-    let erros = 0;
-    for (let i = 0; i < quantidade; i++) {
-      const ok = await _guardarRegistoReboqueUnico(posicoes[i]);
-      if (!ok) { erros++; }
-    }
-    if (erros === 0) {
-      showFeedback('rr-feedback', quantidade + ' registos guardados com sucesso.');
-      limparFormReboque();
-    } else {
-      showFeedback('rr-feedback', 'Erro em ' + erros + ' de ' + quantidade + ' registos.', true);
-    }
-    return;
+  // Guardar um registo por lugar calculado (1 ou mais). O stock (fatura
+  // ou pneu desmontado) só é descontado UMA vez no fim, pelo nº de
+  // registos realmente guardados — descontar dentro do loop esvaziaria
+  // a mesma linha de stock só no 1º registo (stockLinhaSelId já ficava
+  // a null a meio do loop, perdendo o desconto dos seguintes).
+  let sucessos = 0, erros = 0;
+  for (let i = 0; i < quantidade; i++) {
+    const ok = await _guardarRegistoReboqueUnico(posicoes[i]);
+    if (ok) sucessos++; else erros++;
   }
-  const ok = await _guardarRegistoReboqueUnico(posicoes[0]);
-  if (ok) { showFeedback('rr-feedback', 'Montagem guardada com sucesso.'); limparFormReboque(); }
+
+  if (sucessos > 0) {
+    if (stockLinhaSelId) await descontarStock(stockLinhaSelId, sucessos);
+    if (stockDesmontadoSelId) {
+      const { id, tabela } = stockDesmontadoSelId;
+      await sb.from(tabela).update({ remontado: true }).eq('id', id);
+    }
+  }
+  stockLinhaSelId      = null;
+  stockDesmontadoSelId = null;
+
+  if (erros === 0) {
+    showFeedback('rr-feedback', quantidade > 1 ? quantidade + ' registos guardados com sucesso.' : 'Montagem guardada com sucesso.');
+    limparFormReboque();
+  } else {
+    showFeedback('rr-feedback', sucessos > 0 ? 'Erro em ' + erros + ' de ' + quantidade + ' registos.' : 'Erro ao guardar.', true);
+  }
 }
 
 async function _guardarRegistoReboqueUnico(pos) {
@@ -71,19 +82,6 @@ async function _guardarRegistoReboqueUnico(pos) {
   loading(false);
 
   if (error) { showFeedback('rr-feedback', 'Erro ao guardar: ' + error.message, true); return false; }
-
-  // Descontar stock de fatura se foi selecionado
-  if (stockLinhaSelId) {
-    await descontarStock(stockLinhaSelId);
-    stockLinhaSelId = null;
-  }
-
-  // Marcar pneu desmontado como remontado — na tabela correta (pneus ou reboques)
-  if (stockDesmontadoSelId) {
-    const { id, tabela } = stockDesmontadoSelId;
-    await sb.from(tabela).update({ remontado: true }).eq('id', id);
-    stockDesmontadoSelId = null;
-  }
 
   return true;
 }

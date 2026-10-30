@@ -613,9 +613,10 @@ function selecionarDesmontadoDeStock(id, marca, medida, tipo, matriculaOrigem, t
   fecharSelStock();
 }
 
-async function descontarStock(linhaId) {
+async function descontarStock(linhaId, qtd) {
   if (!linhaId) return;
+  qtd = qtd || 1;
   const { data: linha } = await sb.from('stock_linhas').select('quantidade_disp').eq('id', linhaId).single();
   if (!linha) return;
-  await sb.from('stock_linhas').update({ quantidade_disp: Math.max(0, linha.quantidade_disp - 1) }).eq('id', linhaId);
+  await sb.from('stock_linhas').update({ quantidade_disp: Math.max(0, linha.quantidade_disp - qtd) }).eq('id', linhaId);
 }
