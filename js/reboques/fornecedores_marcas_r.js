@@ -2,7 +2,7 @@
 
 async function loadFornecedoresReboques() {
   loading(true);
-  const { data, error } = await sb.from('reboques').select('*');
+  const { data, error } = await sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId);
   loading(false);
   if (error || !data) return;
 
@@ -47,7 +47,7 @@ async function loadFornecedoresReboques() {
 
 async function loadMarcasReboques() {
   loading(true);
-  const { data, error } = await sb.from('reboques').select('*');
+  const { data, error } = await sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId);
   loading(false);
   if (error || !data) return;
   const hoje = mesAtual();

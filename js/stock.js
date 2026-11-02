@@ -19,12 +19,14 @@ async function loadStock() {
     sb.from('stock_faturas')
       .select('*, stock_linhas(*)')
       .eq('contexto', stockContexto)
+      .eq('empresa_id', currentEmpresaId)
       .order('created_at', { ascending: false }),
     sb.from(tabela)
       .select('*')
       .in('destino', [...DESTINOS_OFICINA, 'Stock'])
       .not('mes_desmont', 'is', null)
       .eq('remontado', false)
+      .eq('empresa_id', currentEmpresaId)
       .order('mes_desmont', { ascending: false })
   ]);
 
@@ -339,10 +341,10 @@ async function abrirSelStock() {
 
   // Buscar de AMBOS os contextos — pneus circulam entre veículos e reboques
   const [resV, resR, resDV, resDR] = await Promise.all([
-    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','veiculos').order('created_at',{ascending:false}),
-    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','reboques').order('created_at',{ascending:false}),
-    sb.from('pneus').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false),
-    sb.from('reboques').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false),
+    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','veiculos').eq('empresa_id', currentEmpresaId).order('created_at',{ascending:false}),
+    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','reboques').eq('empresa_id', currentEmpresaId).order('created_at',{ascending:false}),
+    sb.from('pneus').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false).eq('empresa_id', currentEmpresaId),
+    sb.from('reboques').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false).eq('empresa_id', currentEmpresaId),
   ]);
 
   loading(false);
@@ -477,7 +479,7 @@ async function procurarPneusAlocar() {
   }
 
   const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
-  let query = sb.from(tabela).select('*');
+  let query = sb.from(tabela).select('*').eq('empresa_id', currentEmpresaId);
   if (marca)  query = query.ilike('marca', marca);
   if (medida) query = query.ilike('medida', '%' + medida + '%');
   if (forn)   query = query.ilike('fornecedor', forn);

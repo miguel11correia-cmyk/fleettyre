@@ -7,8 +7,8 @@ let subtipoMarcaId      = null;
 async function loadMarcas() {
   loading(true);
   const [{ data, error }, { data: veiculosData }] = await Promise.all([
-    sb.from('pneus').select('*'),
-    sb.from('veiculos').select('matricula, km_atual'),
+    sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId),
+    sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
   ]);
   loading(false);
   if (error || !data) return;
@@ -94,7 +94,7 @@ async function loadMarcas() {
 }
 
 async function renderGestaoMarcas() {
-  const { data } = await sb.from('marcas').select('*').order('codigo');
+  const { data } = await sb.from('marcas').select('*').eq('empresa_id', currentEmpresaId).order('codigo');
   const container = document.getElementById('gestao-marcas');
   if (!container) return;
 
@@ -171,7 +171,7 @@ async function apagarMarca(id, nome) {
 // ── SUBTIPOS DE MARCA (ex: Michelin -> "XTRA LIFE") ────────────────
 
 async function carregarListaSubtipos() {
-  const { data } = await sb.from('subtipos_marca').select('*').order('nome');
+  const { data } = await sb.from('subtipos_marca').select('*').eq('empresa_id', currentEmpresaId).order('nome');
   listaSubtipos = data || [];
   popularSelectorSubtipo('g-marca', 'g-subtipo');
 }
@@ -211,7 +211,7 @@ function fecharPainelSubtipos() {
 async function renderListaSubtipos() {
   if (subtipoMarcaId == null) return;
   loading(true);
-  const { data } = await sb.from('subtipos_marca').select('*').eq('marca_id', subtipoMarcaId).order('nome');
+  const { data } = await sb.from('subtipos_marca').select('*').eq('marca_id', subtipoMarcaId).eq('empresa_id', currentEmpresaId).order('nome');
   loading(false);
 
   const tbody = document.getElementById('subtipos-tbody');

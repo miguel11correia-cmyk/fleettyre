@@ -7,8 +7,8 @@ let fornGestaoExpandida = false;
 // Carregar fornecedores e marcas para os selectores
 async function carregarListasFornMarca() {
   const [resForn, resMarca] = await Promise.all([
-    sb.from('fornecedores').select('*').order('codigo'),
-    sb.from('marcas').select('*').order('codigo')
+    sb.from('fornecedores').select('*').eq('empresa_id', currentEmpresaId).order('codigo'),
+    sb.from('marcas').select('*').eq('empresa_id', currentEmpresaId).order('codigo')
   ]);
   listaFornecedores = resForn.data || [];
   listaMarcas       = resMarca.data || [];
@@ -45,7 +45,7 @@ function preencherSelectores() {
 
 async function loadFornecedores() {
   loading(true);
-  const { data, error } = await sb.from('pneus').select('*');
+  const { data, error } = await sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId);
   loading(false);
   if (error || !data) return;
 
@@ -90,7 +90,7 @@ async function loadFornecedores() {
 }
 
 async function renderGestaoFornecedores() {
-  const { data } = await sb.from('fornecedores').select('*').order('codigo');
+  const { data } = await sb.from('fornecedores').select('*').eq('empresa_id', currentEmpresaId).order('codigo');
   const container = document.getElementById('gestao-fornecedores');
   if (!container) return;
 
@@ -173,7 +173,7 @@ async function adicionarDominioFornecedor(id) {
   const novo = input.value.trim().toLowerCase();
   if (!novo) return;
 
-  const { data: atual } = await sb.from('fornecedores').select('dominios_email').eq('id', id).single();
+  const { data: atual } = await sb.from('fornecedores').select('dominios_email').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   const atuais = atual?.dominios_email || [];
   if (atuais.includes(novo)) { input.value = ''; return; }
 
@@ -183,7 +183,7 @@ async function adicionarDominioFornecedor(id) {
 }
 
 async function removerDominioFornecedor(id, dominio) {
-  const { data: atual } = await sb.from('fornecedores').select('dominios_email').eq('id', id).single();
+  const { data: atual } = await sb.from('fornecedores').select('dominios_email').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   const restantes = (atual?.dominios_email || []).filter(d => d !== dominio);
 
   const { error } = await sb.from('fornecedores').update({ dominios_email: restantes.length ? restantes : null }).eq('id', id);

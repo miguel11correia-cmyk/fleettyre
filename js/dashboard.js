@@ -3,8 +3,8 @@
 async function loadDashboard() {
   loading(true);
   const [{ data, error }, { data: veiculosData }] = await Promise.all([
-    sb.from('pneus').select('*').order('mes_mont', { ascending: true }),
-    sb.from('veiculos').select('matricula, km_atual'),
+    sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('mes_mont', { ascending: true }),
+    sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
   ]);
   loading(false);
 

@@ -13,6 +13,7 @@ async function loadDashboardReboques() {
   const { data, error } = await sb
     .from('reboques')
     .select('*')
+    .eq('empresa_id', currentEmpresaId)
     .order('mes_mont', { ascending: true });
   loading(false);
   if (error || !data) return;

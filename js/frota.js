@@ -15,6 +15,7 @@ async function initFrotaSelect() {
   const { data, error } = await sb
     .from('pneus')
     .select('matricula')
+    .eq('empresa_id', currentEmpresaId)
     .order('matricula');
   loading(false);
 
@@ -34,8 +35,8 @@ async function loadFrota() {
 
   loading(true);
   const [{ data, error }, { data: veiculo }] = await Promise.all([
-    sb.from('pneus').select('*').eq('matricula', mat).order('mes_mont', { ascending: true }),
-    sb.from('veiculos').select('*').eq('matricula', mat).maybeSingle()
+    sb.from('pneus').select('*').eq('matricula', mat).eq('empresa_id', currentEmpresaId).order('mes_mont', { ascending: true }),
+    sb.from('veiculos').select('*').eq('matricula', mat).eq('empresa_id', currentEmpresaId).maybeSingle()
   ]);
   loading(false);
 
@@ -233,7 +234,7 @@ function relativo(isoDate) {
 
 async function abrirPainel(id) {
   // Buscar registo para mostrar info
-  const { data } = await sb.from('pneus').select('*').eq('id', id).single();
+  const { data } = await sb.from('pneus').select('*').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   if (!data) return;
   painelId = id;
 
@@ -279,7 +280,7 @@ async function guardarDesmontagem() {
   }
 
   // Buscar registo original para validar KMs
-  const { data: orig } = await sb.from('pneus').select('kms_mont, tipo, custo_pneu').eq('id', painelId).single();
+  const { data: orig } = await sb.from('pneus').select('kms_mont, tipo, custo_pneu').eq('id', painelId).eq('empresa_id', currentEmpresaId).single();
   if (orig && orig.kms_mont && kms <= orig.kms_mont) {
     showFeedback('d-feedback', `KMs de desmontagem (${fmt(kms)}) têm de ser maiores que os de montagem (${fmt(orig.kms_mont)}).`, true);
     return;
@@ -291,7 +292,7 @@ async function guardarDesmontagem() {
   // Custo total = custo pneu (já existente) + mão obra desmontagem
 
   // Buscar custo_pneu original para calcular custo_total
-  const { data: orig2 } = await sb.from('pneus').select('custo_pneu').eq('id', painelId).single();
+  const { data: orig2 } = await sb.from('pneus').select('custo_pneu').eq('id', painelId).eq('empresa_id', currentEmpresaId).single();
   const custoTotalDesm = ((orig2?.custo_pneu || 0) + (mo || 0)) || null;
 
   const updates = {
@@ -320,7 +321,7 @@ async function guardarDesmontagem() {
 
 async function abrirEdicao(id) {
   loading(true);
-  const { data, error } = await sb.from('pneus').select('*').eq('id', id).single();
+  const { data, error } = await sb.from('pneus').select('*').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   loading(false);
   if (error || !data) return;
 

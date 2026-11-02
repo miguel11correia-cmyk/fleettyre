@@ -5,7 +5,7 @@
 
 async function loadAnalyticsReboques() {
   loading(true);
-  const { data, error } = await sb.from('reboques').select('*');
+  const { data, error } = await sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId);
   loading(false);
   if (error || !data) return;
 

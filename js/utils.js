@@ -244,7 +244,7 @@ async function atualizarLugaresEdicao(selPosId, tabela, matricula, posAtual, num
   }
 
   const { data } = await sb.from(tabela).select('id,posicao')
-    .eq('matricula', matricula).is('mes_desmont', null);
+    .eq('matricula', matricula).eq('empresa_id', currentEmpresaId).is('mes_desmont', null);
   const ocupados = new Set((data || []).filter(r => r.id !== idExcluir).map(r => r.posicao));
   const opcoes = slots.filter(p => !ocupados.has(p) || p === posAtual);
 
@@ -267,7 +267,7 @@ async function resolverLugaresRegisto(tabela, matricula, categoria, quantidade, 
   }
 
   const { data } = await sb.from(tabela).select('posicao')
-    .eq('matricula', matricula).is('mes_desmont', null);
+    .eq('matricula', matricula).eq('empresa_id', currentEmpresaId).is('mes_desmont', null);
   const ocupados = new Set((data || []).map(r => r.posicao));
   const livres = lugaresCategoria.filter(p => !ocupados.has(p));
 
