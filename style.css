@@ -1005,6 +1005,7 @@ tbody tr:hover td { background: var(--bg); }
 .alo-daterange input:focus { outline: none; box-shadow: none; border-color: transparent; }
 .alo-daterange-sep { font-size: 11px; flex-shrink: 0; }
 .alo-summary { font-size: 11.5px; color: var(--text2); margin-bottom: 8px; }
+.alo-summary-aviso { color: var(--amber); font-weight: 500; }
 .alo-list {
   display: flex;
   flex-direction: column;

@@ -135,8 +135,8 @@ function calcularEstimativasDesgaste(data, kmAtualPorMat) {
 async function loadAlertas() {
   loading(true);
   const [{ data, error }, { data: veiculosData }] = await Promise.all([
-    sb.from('pneus').select('*'),
-    sb.from('veiculos').select('matricula, km_atual'),
+    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id')),
+    sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
   ]);
   loading(false);
   if (error || !data) return;

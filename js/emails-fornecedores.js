@@ -158,6 +158,7 @@ async function carregarEmailsPendentes() {
     .from('emails_fornecedores_pendentes')
     .select('*')
     .eq('estado', 'pendente')
+    .eq('empresa_id', currentEmpresaId)
     .order('data_recebido', { ascending: false });
 
   if (error || !data || data.length === 0) {
@@ -181,6 +182,7 @@ async function verMensagemEmailFornecedor(id) {
     .from('emails_fornecedores_pendentes')
     .select('remetente, assunto, resumo_corpo')
     .eq('id', id)
+    .eq('empresa_id', currentEmpresaId)
     .single();
   if (error || !data) return;
 
@@ -198,7 +200,7 @@ function fecharPainelMsgEmail() {
 }
 
 async function abrirPdfEmailFornecedor(id) {
-  const { data, error } = await sb.from('emails_fornecedores_pendentes').select('pdf_path').eq('id', id).single();
+  const { data, error } = await sb.from('emails_fornecedores_pendentes').select('pdf_path').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   if (error || !data?.pdf_path) return;
 
   const { data: urlData } = await sb.storage.from('faturas-pdf').createSignedUrl(data.pdf_path, 60);

@@ -3,8 +3,8 @@
 async function loadDashboard() {
   loading(true);
   const [{ data, error }, { data: veiculosData }] = await Promise.all([
-    sb.from('pneus').select('*').order('mes_mont', { ascending: true }),
-    sb.from('veiculos').select('matricula, km_atual'),
+    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('mes_mont', { ascending: true })),
+    sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
   ]);
   loading(false);
 
@@ -53,13 +53,15 @@ async function loadDashboard() {
   const tLabels = Object.keys(tipos);
   mkChart('c-tipo', 'bar', tLabels, tLabels.map(k => tipos[k]), CHART_NEUTRAL, { topLabels: true });
 
-  // ── Gráfico fornecedor (só pneus ativos) ──
+  // ── Gráfico fornecedor (só pneus ativos — todos, não só os 8 maiores,
+  // para a soma das barras bater sempre certo com "Pneus ativos") ──
   const forns   = countBy(registosAtivos, 'fornecedor');
-  const fKeys   = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
+  const fKeys   = Object.keys(forns).sort((a, b) => forns[b] - forns[a]);
   mkChart('c-forn', 'bar', fKeys, fKeys.map(k => forns[k]), CHART_NEUTRAL, { topLabels: true });
 
-  // ── Gráfico marca (só pneus ativos) ──
-  const marcs   = countBy(registosAtivos.filter(r => r.marca), 'marca');
+  // ── Gráfico marca (só pneus ativos — todos, incluindo sem marca
+  // registada, pela mesma razão do fornecedor acima) ──
+  const marcs   = countBy(registosAtivos, 'marca');
   const mKeys   = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
   mkChart('c-marc', 'bar', mKeys, mKeys.map(k => marcs[k]), CHART_NEUTRAL, { topLabels: true });
 

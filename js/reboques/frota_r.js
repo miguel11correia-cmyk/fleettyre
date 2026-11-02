@@ -14,7 +14,7 @@ function toggleRfrotaHistorico() {
 
 async function initFrotaSelectReboques() {
   loading(true);
-  const { data, error } = await sb.from('reboques').select('matricula').order('matricula');
+  const { data, error } = await fetchAllRows(() => sb.from('reboques').select('matricula').eq('empresa_id', currentEmpresaId).order('matricula'));
   loading(false);
   if (error || !data) return;
 
@@ -33,8 +33,8 @@ async function loadFrotaReboques() {
 
   loading(true);
   const [{ data, error }, { data: reboque }] = await Promise.all([
-    sb.from('reboques').select('*').eq('matricula', mat).order('mes_mont', { ascending: true }),
-    sb.from('reboques_frota').select('*').eq('matricula', mat).maybeSingle()
+    sb.from('reboques').select('*').eq('matricula', mat).eq('empresa_id', currentEmpresaId).order('mes_mont', { ascending: true }),
+    sb.from('reboques_frota').select('*').eq('matricula', mat).eq('empresa_id', currentEmpresaId).maybeSingle()
   ]);
   loading(false);
 
@@ -212,7 +212,7 @@ function renderInfoReboque(v, mat) {
 // ── PAINEL DESMONTAGEM ────────────────────────────────────────────
 
 async function abrirPainelReboque(id) {
-  const { data } = await sb.from('reboques').select('*').eq('id', id).single();
+  const { data } = await sb.from('reboques').select('*').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   if (!data) return;
   painelRId = id;
   const hoje = mesAtual();
@@ -268,7 +268,7 @@ async function guardarDesmontazemReboque() {
 
 async function abrirEdicaoReboque(id) {
   loading(true);
-  const { data } = await sb.from('reboques').select('*').eq('id', id).single();
+  const { data } = await sb.from('reboques').select('*').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   loading(false);
   if (!data) return;
   editRId = id;

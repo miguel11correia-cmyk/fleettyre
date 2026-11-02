@@ -11,9 +11,9 @@ async function loadInicio() {
 
   loading(true);
   const [{ data: pneusData }, { data: veiculosData }, { data: reboquesData }] = await Promise.all([
-    sb.from('pneus').select('*'),
-    sb.from('veiculos').select('matricula, km_atual'),
-    sb.from('reboques').select('*'),
+    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id')),
+    sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
+    fetchAllRows(() => sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId).order('id')),
   ]);
   loading(false);
 
@@ -133,7 +133,7 @@ async function popularSelectorMatriculaGeral() {
   const lista  = veic ? listaVeiculos : listaReboquesFrota;
   const tabela = veic ? 'pneus' : 'reboques';
 
-  const { data: extra } = await sb.from(tabela).select('matricula');
+  const { data: extra } = await fetchAllRows(() => sb.from(tabela).select('matricula').eq('empresa_id', currentEmpresaId));
   const matsExtra = [...new Set((extra || []).map(r => r.matricula))];
 
   const mapa = {};

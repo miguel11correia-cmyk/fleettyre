@@ -1,3 +1,30 @@
+// ── SUPABASE ──────────────────────────────────────────────────────
+
+// O Supabase nunca devolve mais do que isto de uma vez (limite por
+// pedido, configurável no projecto mas 1000 por omissão) — sem
+// paginar, uma tabela com mais linhas do que isto ficava com o resto
+// silenciosamente em falta, sem erro nenhum.
+const SUPABASE_PAGE_SIZE = 1000;
+
+// Corre uma query Supabase paginando automaticamente em blocos de
+// SUPABASE_PAGE_SIZE, até não vir mais nenhuma linha, e devolve a
+// lista completa — para listagens que podem um dia crescer além do
+// limite por pedido. `construirQuery` é chamada de novo a cada página
+// (os query builders do Supabase não são reutilizáveis), por isso
+// recebe uma função, não a query já construída.
+async function fetchAllRows(construirQuery) {
+  let todas = [];
+  let desde = 0;
+  while (true) {
+    const { data, error } = await construirQuery().range(desde, desde + SUPABASE_PAGE_SIZE - 1);
+    if (error) return { data: null, error };
+    todas = todas.concat(data || []);
+    if (!data || data.length < SUPABASE_PAGE_SIZE) break;
+    desde += SUPABASE_PAGE_SIZE;
+  }
+  return { data: todas, error: null };
+}
+
 // ── FORMATAÇÃO ────────────────────────────────────────────────────
 
 function fmt(n) {
@@ -244,7 +271,7 @@ async function atualizarLugaresEdicao(selPosId, tabela, matricula, posAtual, num
   }
 
   const { data } = await sb.from(tabela).select('id,posicao')
-    .eq('matricula', matricula).is('mes_desmont', null);
+    .eq('matricula', matricula).eq('empresa_id', currentEmpresaId).is('mes_desmont', null);
   const ocupados = new Set((data || []).filter(r => r.id !== idExcluir).map(r => r.posicao));
   const opcoes = slots.filter(p => !ocupados.has(p) || p === posAtual);
 
@@ -267,7 +294,7 @@ async function resolverLugaresRegisto(tabela, matricula, categoria, quantidade, 
   }
 
   const { data } = await sb.from(tabela).select('posicao')
-    .eq('matricula', matricula).is('mes_desmont', null);
+    .eq('matricula', matricula).eq('empresa_id', currentEmpresaId).is('mes_desmont', null);
   const ocupados = new Set((data || []).map(r => r.posicao));
   const livres = lugaresCategoria.filter(p => !ocupados.has(p));
 

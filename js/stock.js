@@ -19,12 +19,14 @@ async function loadStock() {
     sb.from('stock_faturas')
       .select('*, stock_linhas(*)')
       .eq('contexto', stockContexto)
+      .eq('empresa_id', currentEmpresaId)
       .order('created_at', { ascending: false }),
     sb.from(tabela)
       .select('*')
       .in('destino', [...DESTINOS_OFICINA, 'Stock'])
       .not('mes_desmont', 'is', null)
       .eq('remontado', false)
+      .eq('empresa_id', currentEmpresaId)
       .order('mes_desmont', { ascending: false })
   ]);
 
@@ -339,10 +341,10 @@ async function abrirSelStock() {
 
   // Buscar de AMBOS os contextos — pneus circulam entre veículos e reboques
   const [resV, resR, resDV, resDR] = await Promise.all([
-    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','veiculos').order('created_at',{ascending:false}),
-    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','reboques').order('created_at',{ascending:false}),
-    sb.from('pneus').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false),
-    sb.from('reboques').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false),
+    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','veiculos').eq('empresa_id', currentEmpresaId).order('created_at',{ascending:false}),
+    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto','reboques').eq('empresa_id', currentEmpresaId).order('created_at',{ascending:false}),
+    sb.from('pneus').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false).eq('empresa_id', currentEmpresaId),
+    sb.from('reboques').select('*').in('destino',[...DESTINOS_OFICINA,'Stock']).not('mes_desmont','is',null).eq('remontado',false).eq('empresa_id', currentEmpresaId),
   ]);
 
   loading(false);
@@ -445,6 +447,12 @@ async function abrirSelStock() {
 let alocResultados = [];
 let alocSelecionados = new Set();
 
+// Tecto intencional de resultados — isto é uma pesquisa para
+// selecionar à mão, não uma listagem que tenha de estar sempre
+// completa (ao contrário dos gráficos/totais do Dashboard). Mas se o
+// tecto for mesmo atingido, é preciso avisar — ver renderAlocResultados.
+const ALOC_LIMITE_RESULTADOS = 300;
+
 function cancelarAlocacao() {
   ['alo-marca', 'alo-medida', 'alo-forn', 'alo-mes-de', 'alo-mes-ate'].forEach(id => {
     const el = document.getElementById(id);
@@ -477,7 +485,7 @@ async function procurarPneusAlocar() {
   }
 
   const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
-  let query = sb.from(tabela).select('*');
+  let query = sb.from(tabela).select('*').eq('empresa_id', currentEmpresaId);
   if (marca)  query = query.ilike('marca', marca);
   if (medida) query = query.ilike('medida', '%' + medida + '%');
   if (forn)   query = query.ilike('fornecedor', forn);
@@ -490,7 +498,7 @@ async function procurarPneusAlocar() {
   }
 
   loading(true);
-  const { data, error } = await query.order('mes_mont', { ascending: false }).limit(300);
+  const { data, error } = await query.order('mes_mont', { ascending: false }).limit(ALOC_LIMITE_RESULTADOS);
   loading(false);
 
   if (error) { showFeedback('alo-feedback', 'Erro na pesquisa.', true); return; }
@@ -508,7 +516,10 @@ function renderAlocResultados() {
   }
 
   const count = alocSelecionados.size;
-  let html = '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ': seleciona os que correspondem à fatura</div>';
+  const atingiuTecto = alocResultados.length >= ALOC_LIMITE_RESULTADOS;
+  let html = atingiuTecto
+    ? '<div class="alo-summary alo-summary-aviso">⚠ ' + alocResultados.length + '+ pneus encontrados — a mostrar só os ' + ALOC_LIMITE_RESULTADOS + ' mais recentes. Restringe a pesquisa (ex: um intervalo de meses mais curto) para veres os restantes.</div>'
+    : '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ': seleciona os que correspondem à fatura</div>';
   html += '<div class="alo-list">';
   alocResultados.forEach(r => {
     const sel = alocSelecionados.has(r.id);

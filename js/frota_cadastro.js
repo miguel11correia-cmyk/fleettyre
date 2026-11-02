@@ -100,7 +100,7 @@ function definirMarcaVeiculo(selectId, nomeActual) {
 }
 
 async function carregarListaVeiculos() {
-  const { data } = await sb.from('veiculos').select('*').eq('ativo', true).order('matricula');
+  const { data } = await sb.from('veiculos').select('*').eq('ativo', true).eq('empresa_id', currentEmpresaId).order('matricula');
   listaVeiculos = data || [];
 }
 
@@ -113,8 +113,8 @@ async function initFrotaCadastro() {
 async function loadFrotaCadastro() {
   loading(true);
   const [{ data, error }, { data: pneusData }] = await Promise.all([
-    sb.from('veiculos').select('*').eq('ativo', true).order('matricula'),
-    sb.from('pneus').select('matricula, mes_desmont'),
+    sb.from('veiculos').select('*').eq('ativo', true).eq('empresa_id', currentEmpresaId).order('matricula'),
+    fetchAllRows(() => sb.from('pneus').select('matricula, mes_desmont').eq('empresa_id', currentEmpresaId).order('id')),
   ]);
   loading(false);
   if (error || !data) return;

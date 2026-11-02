@@ -132,7 +132,7 @@ function definirMarcaReboque(selectId, nomeAtual) {
 }
 
 async function carregarListaReboquesFrota() {
-  const { data } = await sb.from('reboques_frota').select('*').eq('ativo', true).order('matricula');
+  const { data } = await sb.from('reboques_frota').select('*').eq('ativo', true).eq('empresa_id', currentEmpresaId).order('matricula');
   listaReboquesFrota = data || [];
 }
 
@@ -145,8 +145,8 @@ async function initFrotaCadastroReboques() {
 async function loadFrotaCadastroReboques() {
   loading(true);
   const [{ data, error }, { data: reboquesData }] = await Promise.all([
-    sb.from('reboques_frota').select('*').eq('ativo', true).order('matricula'),
-    sb.from('reboques').select('matricula, mes_desmont'),
+    sb.from('reboques_frota').select('*').eq('ativo', true).eq('empresa_id', currentEmpresaId).order('matricula'),
+    fetchAllRows(() => sb.from('reboques').select('matricula, mes_desmont').eq('empresa_id', currentEmpresaId).order('id')),
   ]);
   loading(false);
   if (error || !data) return;
