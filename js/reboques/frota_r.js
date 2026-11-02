@@ -1,6 +1,6 @@
 // ── REBOQUES/FROTA.JS ────────────────────────────────────────────
 
-const ICON_REBOQUE = '<svg viewBox="0 0 15 15" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><use href="#icon-trailer"/></svg>';
+const ICON_REBOQUE = '<svg viewBox="0 0 512 512" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><use href="#icon-trailer"/></svg>';
 
 let painelRId = null;
 let editRId   = null;
