@@ -386,6 +386,13 @@ function mkChart(id, type, labels, data, colors, extraOpts = {}) {
     borderRadius: type === 'bar' ? 4 : 0,
   };
 
+  // Barras com rótulo em cima (substitutas dos circulares): mais finas,
+  // para não pesarem visualmente ao lado do texto na diagonal.
+  if (type === 'bar' && extraOpts.topLabels) {
+    dataset.barPercentage     = 0.5;
+    dataset.categoryPercentage = 0.6;
+  }
+
   if (type === 'line') {
     dataset.borderColor         = colors[0];
     dataset.backgroundColor     = 'transparent';

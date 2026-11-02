@@ -5,11 +5,13 @@ const SUPABASE_KEY = window.__SUPABASE_KEY__;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── PALETA DE CORES ───────────────────────────────────────────────
-// Todos os gráficos usam só o vermelho da marca FleetTyre (igual ao
-// --brand-red do CSS, Manual de Identidade v1.0) — sem paleta categórica
-// à parte. Como cada barra tem sempre o seu próprio rótulo (ver
-// mkChart/topLabels), não é preciso uma cor diferente por categoria.
-const CHART_NEUTRAL = '#E7101A';
+// Todos os gráficos usam a cor de apoio da marca (Aço, igual ao
+// --text2 do CSS) — o vermelho é só um acento no manual ("quando
+// ocupa mais de um décimo da peça, deixa de destacar e passa a
+// gritar"), por isso não enche barras inteiras. Como cada barra tem
+// sempre o seu próprio rótulo (ver mkChart/topLabels), também não é
+// preciso uma cor diferente por categoria para se distinguirem.
+const CHART_NEUTRAL = '#5B6770';
 
 // ── ESTADO GLOBAL ─────────────────────────────────────────────────
 let currentUser       = null;
