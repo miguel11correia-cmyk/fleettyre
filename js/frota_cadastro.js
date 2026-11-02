@@ -114,7 +114,7 @@ async function loadFrotaCadastro() {
   loading(true);
   const [{ data, error }, { data: pneusData }] = await Promise.all([
     sb.from('veiculos').select('*').eq('ativo', true).eq('empresa_id', currentEmpresaId).order('matricula'),
-    sb.from('pneus').select('matricula, mes_desmont').eq('empresa_id', currentEmpresaId),
+    fetchAllRows(() => sb.from('pneus').select('matricula, mes_desmont').eq('empresa_id', currentEmpresaId).order('id')),
   ]);
   loading(false);
   if (error || !data) return;

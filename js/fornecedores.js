@@ -45,7 +45,7 @@ function preencherSelectores() {
 
 async function loadFornecedores() {
   loading(true);
-  const { data, error } = await sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId);
+  const { data, error } = await fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id'));
   loading(false);
   if (error || !data) return;
 

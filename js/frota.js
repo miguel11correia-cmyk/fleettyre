@@ -12,11 +12,11 @@ function toggleFrotaHistorico() {
 
 async function initFrotaSelect() {
   loading(true);
-  const { data, error } = await sb
+  const { data, error } = await fetchAllRows(() => sb
     .from('pneus')
     .select('matricula')
     .eq('empresa_id', currentEmpresaId)
-    .order('matricula');
+    .order('matricula'));
   loading(false);
 
   if (error || !data) return;

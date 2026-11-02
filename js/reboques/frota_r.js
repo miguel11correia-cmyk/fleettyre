@@ -14,7 +14,7 @@ function toggleRfrotaHistorico() {
 
 async function initFrotaSelectReboques() {
   loading(true);
-  const { data, error } = await sb.from('reboques').select('matricula').eq('empresa_id', currentEmpresaId).order('matricula');
+  const { data, error } = await fetchAllRows(() => sb.from('reboques').select('matricula').eq('empresa_id', currentEmpresaId).order('matricula'));
   loading(false);
   if (error || !data) return;
 

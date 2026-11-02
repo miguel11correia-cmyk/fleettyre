@@ -10,11 +10,11 @@ const LIMITES_EIXO = {
 
 async function loadDashboardReboques() {
   loading(true);
-  const { data, error } = await sb
+  const { data, error } = await fetchAllRows(() => sb
     .from('reboques')
     .select('*')
     .eq('empresa_id', currentEmpresaId)
-    .order('mes_mont', { ascending: true });
+    .order('mes_mont', { ascending: true }));
   loading(false);
   if (error || !data) return;
 
