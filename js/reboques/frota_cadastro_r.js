@@ -134,34 +134,6 @@ function definirMarcaReboque(selectId, nomeAtual) {
 async function carregarListaReboquesFrota() {
   const { data } = await sb.from('reboques_frota').select('*').eq('ativo', true).order('matricula');
   listaReboquesFrota = data || [];
-  await popularSelectorReboquesFrota();
-}
-
-// Selector de matrícula do formulário de registo — combina os reboques da
-// tabela `reboques_frota` com matrículas que só existem em `reboques`
-// (registos antigos, sem ficha de reboque criada ainda), mantendo-as a
-// funcionar normalmente (mostradas só com a matrícula).
-async function popularSelectorReboquesFrota() {
-  const sel = document.getElementById('rr-mat');
-  if (!sel) return;
-
-  const { data: reboquesData } = await sb.from('reboques').select('matricula');
-  const matsReboques = [...new Set((reboquesData || []).map(r => r.matricula))];
-
-  const mapa = {};
-  listaReboquesFrota.forEach(v => { mapa[v.matricula] = v; });
-  matsReboques.forEach(m => { if (!mapa[m]) mapa[m] = { matricula: m }; });
-
-  const mats = Object.values(mapa).sort((a, b) => a.matricula.localeCompare(b.matricula));
-
-  const val = sel.value;
-  sel.innerHTML = '<option value="">— selecionar —</option>' +
-    mats.map(v => {
-      const label = (v.marca || v.modelo)
-        ? `${v.matricula} · ${[v.marca, v.modelo].filter(Boolean).join(' ')}`
-        : v.matricula;
-      return `<option value="${v.matricula}"${v.matricula === val ? ' selected' : ''}>${label}</option>`;
-    }).join('');
 }
 
 // ── PÁGINA FROTA — REBOQUES (GESTÃO) ──────────────────────────────

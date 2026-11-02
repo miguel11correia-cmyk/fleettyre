@@ -21,6 +21,15 @@ function tipoBadge(t) {
   return `<span class="badge">${t}</span>`;
 }
 
+// Auto-formata um campo de mês enquanto se escreve: só dígitos, com o
+// traço inserido sozinho a partir do 5º ("202611" → "2026-11"), para
+// facilitar o formato AAAA-MM sem precisar de um seletor/calendário.
+function maskMesInput(el) {
+  let v = el.value.replace(/[^\d]/g, '').slice(0, 6);
+  if (v.length > 4) v = v.slice(0, 4) + '-' + v.slice(4);
+  el.value = v;
+}
+
 function countBy(arr, key) {
   return arr.reduce((m, r) => {
     const k = r[key] || '(sem registo)';

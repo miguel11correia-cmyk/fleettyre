@@ -45,8 +45,6 @@ async function loadDashboardReboques() {
     badge.classList.toggle('hidden', matsAlerta === 0);
   }
 
-  renderDashAtencaoReboques(matsAlerta, criticos);
-
   // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(activos, 'tipo');
   const tLabels = Object.keys(tipos);
@@ -154,42 +152,3 @@ function renderTabelaAnualReboques(data) {
   }).join('');
 }
 
-// Cartão "Precisa da tua atenção" — equivalente ao dos veículos, mas por
-// duração activa (meses) em vez de escultura estimada.
-function renderDashAtencaoReboques(nReboques, criticos) {
-  const icon = document.getElementById('dash-atencao-r-icon');
-  const tit  = document.getElementById('dash-atencao-r-titulo');
-  const sub  = document.getElementById('dash-atencao-r-sub');
-  const btn  = document.getElementById('dash-atencao-r-btn');
-  if (!icon || !tit || !sub || !btn) return;
-
-  if (nReboques === 0) {
-    icon.textContent = '🟢';
-    tit.textContent   = 'Nenhum alerta crítico';
-    sub.textContent   = 'Todos os pneus activos estão em bom estado.';
-    btn.classList.add('hidden');
-    return;
-  }
-
-  const piorPorVeiculo = {};
-  criticos.forEach(r => {
-    if (piorPorVeiculo[r.matricula] == null || r.mesesActivo > piorPorVeiculo[r.matricula]) {
-      piorPorVeiculo[r.matricula] = r.mesesActivo;
-    }
-  });
-  const piores = Object.keys(piorPorVeiculo).sort((a, b) => piorPorVeiculo[b] - piorPorVeiculo[a]).slice(0, 3);
-  const resto  = nReboques - piores.length;
-
-  icon.textContent = '🔴';
-  tit.textContent   = nReboques === 1 ? '1 reboque com pneus críticos' : nReboques + ' reboques com pneus críticos';
-  sub.textContent   = piores.map(mat => `${mat} (${piorPorVeiculo[mat]} meses)`).join(' · ') + (resto > 0 ? ` · +${resto}` : '');
-  btn.classList.remove('hidden');
-}
-
-function irParaAlertasReboquesDashboard() {
-  navR('alertas-r', document.querySelector('.ni[data-page="alertas-r"]'));
-}
-
-function irParaRegistarReboqueDashboard() {
-  navR('registar-r', document.querySelector('.ni[data-page="registar-r"]'));
-}
