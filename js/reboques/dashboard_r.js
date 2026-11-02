@@ -56,8 +56,9 @@ async function loadDashboardReboques() {
   const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]);
   mkChart('rc-forn', 'bar', fKeys, fKeys.map(k => forns[k]), CHART_NEUTRAL, { topLabels: true });
 
-  // ── Gráfico marca (só pneus ativos) ──
-  const marcs = countBy(activos.filter(r => r.marca), 'marca');
+  // ── Gráfico marca (só pneus ativos — todos, incluindo sem marca
+  // registada, pela mesma razão do fornecedor acima) ──
+  const marcs = countBy(activos, 'marca');
   const mKeys = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
   mkChart('rc-marc', 'bar', mKeys, mKeys.map(k => marcs[k]), CHART_NEUTRAL, { topLabels: true });
 
