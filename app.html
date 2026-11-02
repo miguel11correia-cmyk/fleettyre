@@ -207,17 +207,18 @@
       <p id="user-email"></p>
     </div>
     <div class="nav">
+      <!-- CONFIGURAÇÃO — mesma dimensão do Início, por cima -->
+      <button id="btn-registos" class="nav-inicio-btn" onclick="toggleSecao('registos')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg>
+        Configuração
+      </button>
       <!-- INÍCIO — comum a veículos e reboques, fora da troca de secção -->
       <button id="btn-inicio" class="nav-inicio-btn active" onclick="navInicio()">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 10 3l7 6.5"/><path d="M5 8v8.5a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8"/><path d="M8 17.5V12h4v5.5"/></svg>
         Início
       </button>
-      <!-- SELECTOR DE SECÇÃO -->
+      <!-- SELECTOR CAMIÕES/REBOQUES -->
       <div class="secao-btns">
-        <button id="btn-registos" class="secao-btn" onclick="toggleSecao('registos')">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="1"/><line x1="7" y1="7" x2="13" y2="7"/><line x1="7" y1="10.5" x2="13" y2="10.5"/><line x1="7" y1="14" x2="11" y2="14"/></svg>
-          Configuração
-        </button>
         <button id="btn-veiculos" class="secao-btn secao-active" onclick="toggleSecao('veiculos')">
           <svg viewBox="0 0 512.001 512.001" fill="currentColor"><use href="#icon-truck"/></svg>
           Camiões

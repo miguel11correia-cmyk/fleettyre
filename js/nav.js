@@ -24,7 +24,7 @@ function toggleSecaoSemCarregar(secao) {
   document.getElementById('menu-registos').classList.toggle('hidden', secao !== 'registos');
   document.getElementById('menu-veiculos').classList.toggle('hidden', secao !== 'veiculos');
   document.getElementById('menu-reboques').classList.toggle('hidden', secao !== 'reboques');
-  document.getElementById('btn-registos').classList.toggle('secao-active', secao === 'registos');
+  document.getElementById('btn-registos').classList.toggle('active', secao === 'registos');
   document.getElementById('btn-veiculos').classList.toggle('secao-active', secao === 'veiculos');
   document.getElementById('btn-reboques').classList.toggle('secao-active', secao === 'reboques');
   document.getElementById('btn-inicio')?.classList.remove('active');
@@ -49,6 +49,7 @@ function navInicio() {
   toggleMobileSidebar(false);
   fecharPainel();
   document.getElementById('btn-inicio').classList.add('active');
+  document.getElementById('btn-registos')?.classList.remove('active');
   document.getElementById('page-inicio').classList.remove('hidden');
   loadInicio();
 }

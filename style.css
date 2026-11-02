@@ -327,9 +327,9 @@ body {
 /* ── SECÇÃO VEÍCULOS/REBOQUES ─────────────────────────────────── */
 .secao-btns {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 3px;
-  padding: 10px 5px 8px;
+  padding: 6px 5px 8px;
   border-bottom: 0.5px solid var(--border);
   margin-bottom: 4px;
 }
@@ -412,6 +412,9 @@ body {
   border-radius: 12px;
   padding: 16px 18px;
   margin-bottom: 14px;
+  min-width: 0; /* sem isto, um filho com scroll horizontal (ver
+    .bar-scroll-inner) força o cartão — e a coluna da grid onde vive —
+    a crescer para o conteúdo largo em vez de o conter com scroll. */
   transition: box-shadow .15s;
 }
 .card:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
