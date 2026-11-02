@@ -428,7 +428,7 @@
           <div class="frow"><label>Matrícula do camião *</label>
             <select id="r-mat" data-fancy onchange="atualizarCategoriasPosicao('r-mat','r-pos',listaVeiculos,SLOTS_VEICULO); autoPreencherKms('r-mat','r-kms')"><option value="">— selecionar —</option></select>
           </div>
-          <div class="frow"><label>Mês de montagem *</label><input type="month" id="r-mes"></div>
+          <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="r-mes" placeholder="ex: 2026-07" maxlength="7" oninput="maskMesInput(this)"></div>
         </div>
         <div class="g2">
           <div class="frow"><label>KMs no conta-quilómetros *</label><input type="number" id="r-kms" placeholder="ex: 638591" min="0"></div>
@@ -671,7 +671,7 @@
         </div>
         <div class="panel-body">
           <div class="panel-info" id="painel-info"></div>
-          <div class="frow"><label>Mês de desmontagem *</label><input type="month" id="d-mes"></div>
+          <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="d-mes" placeholder="ex: 2026-07" maxlength="7" oninput="maskMesInput(this)"></div>
           <div class="frow"><label>KMs conta-quilómetros *</label><input type="number" id="d-kms" placeholder="ex: 785000" min="0"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="d-esc" placeholder="—" min="0" max="20" step="0.5"></div>
           <div class="frow"><label>Destino do pneu</label>
@@ -696,7 +696,7 @@
         <p style="font-size:11px;color:var(--text3);margin-bottom:12px">É possível editar qualquer campo. Os custos são os mais comuns de atualizar depois.</p>
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Montagem</div>
         <div class="frow"><label>Matrícula *</label><input type="text" id="e-mat" oninput="this.value=this.value.toUpperCase()"></div>
-        <div class="frow"><label>Mês montagem *</label><input type="month" id="e-mes"></div>
+        <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="e-mes" maxlength="7" oninput="maskMesInput(this)"></div>
         <div class="frow"><label>KMs montagem *</label><input type="number" id="e-kms" min="0"></div>
         <div class="frow"><label>Posição</label>
           <select id="e-pos" data-fancy>
@@ -716,7 +716,7 @@
         <div class="frow"><label>Custo pneu (€)</label><input type="number" id="e-custo" min="0" step="0.01"></div>
         <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="e-mo" min="0" step="0.01"></div>
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Desmontagem</div>
-        <div class="frow"><label>Mês desmontagem</label><input type="month" id="e-mes-d"></div>
+        <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="e-mes-d" maxlength="7" oninput="maskMesInput(this)"></div>
         <div class="frow"><label>KMs desmontagem</label><input type="number" id="e-kms-d" min="0"></div>
         <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="e-esc" placeholder="—" min="0" max="20" step="0.5"></div>
         <div class="frow"><label>Destino</label>
@@ -954,9 +954,9 @@
           <label>Mês de montagem</label>
           <div class="alo-daterange">
             <svg viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
-            <input type="month" id="alo-mes-de">
+            <input type="text" id="alo-mes-de" placeholder="AAAA-MM" maxlength="7" oninput="maskMesInput(this)">
             <span class="alo-daterange-sep">até</span>
-            <input type="month" id="alo-mes-ate" title="Vazio = até ao mês atual">
+            <input type="text" id="alo-mes-ate" placeholder="atual" maxlength="7" oninput="maskMesInput(this)">
           </div>
         </div>
         <div style="display:flex;gap:8px">
@@ -991,7 +991,7 @@
           <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Dados da fatura</div>
           <div class="frow"><label>Nº Fatura *</label><input type="text" id="f-num" placeholder="ex: FT2026/1234" oninput="this.value=this.value.toUpperCase()"></div>
           <div class="frow"><label>Fornecedor *</label><select id="f-forn" data-fancy><option value="">— selecionar —</option></select></div>
-          <div class="frow"><label>Data da fatura</label><input type="month" id="f-data"></div>
+          <div class="frow"><label>Data da fatura (AAAA-MM)</label><input type="text" id="f-data" placeholder="ex: 2026-07" maxlength="7" oninput="maskMesInput(this)"></div>
           <div class="frow"><label>Notas</label><input type="text" id="f-notas" placeholder="opcional"></div>
           <div style="font-size:12px;font-weight:500;color:var(--text2);margin:14px 0 10px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">
             Pneus na fatura
@@ -1064,7 +1064,7 @@
           <div class="frow"><label>Matrícula do reboque *</label>
             <select id="rr-mat" data-fancy onchange="atualizarCategoriasPosicao('rr-mat','rr-eixo',listaReboquesFrota,SLOTS_REBOQUE)"><option value="">— selecionar —</option></select>
           </div>
-          <div class="frow"><label>Mês de montagem *</label><input type="month" id="rr-mes"></div>
+          <div class="frow"><label>Mês de montagem * (AAAA-MM)</label><input type="text" id="rr-mes" placeholder="ex: 2026-07" maxlength="7" oninput="maskMesInput(this)"></div>
         </div>
         <div class="g2">
           <div class="frow"><label>Eixo</label>
@@ -1360,7 +1360,7 @@
         <div class="panel-head"><span>Registar desmontagem (Reboque)</span><button class="btn-close" onclick="fecharPainelReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
         <div class="panel-body">
           <div class="panel-info" id="rpainel-info"></div>
-          <div class="frow"><label>Mês de desmontagem *</label><input type="month" id="rd-mes"></div>
+          <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="rd-mes" placeholder="ex: 2026-07" maxlength="7" oninput="maskMesInput(this)"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="rd-esc" placeholder="—" min="0" max="20" step="0.5"></div>
           <div class="frow"><label>Destino</label><select id="rd-dest" data-fancy><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="rd-mo" min="0" step="0.01"></div>
@@ -1374,7 +1374,7 @@
         <div class="panel-head"><span>Editar registo (Reboque)</span><button class="btn-close" onclick="fecharEdicaoReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button></div>
         <div class="panel-body">
           <div class="frow"><label>Matrícula *</label><input type="text" id="re-mat" oninput="this.value=this.value.toUpperCase()"></div>
-          <div class="frow"><label>Mês montagem *</label><input type="month" id="re-mes"></div>
+          <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="re-mes" maxlength="7" oninput="maskMesInput(this)"></div>
           <div class="frow"><label>Posição</label><select id="re-pos" data-fancy><option value="Eixo 1">Eixo 1</option><option value="Eixo 2">Eixo 2</option><option value="Eixo 3">Eixo 3</option></select></div>
           <div class="frow"><label>Marca</label><select id="re-marca" data-fancy onchange="popularSelectorSubtipo('re-marca','re-subtipo')"><option value="">— selecionar —</option></select></div>
           <div class="frow"><label>Modelo</label><select id="re-subtipo" data-fancy><option value="">— nenhum —</option></select></div>
@@ -1383,7 +1383,7 @@
           <div class="frow"><label>Tipo</label><select id="re-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
-          <div class="frow"><label>Mês desmontagem</label><input type="month" id="re-mes-d"></div>
+          <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7" oninput="maskMesInput(this)"></div>
           <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="re-esc" placeholder="—" min="0" max="20" step="0.5"></div>
           <div class="frow"><label>Destino</label><select id="re-dest" data-fancy><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
