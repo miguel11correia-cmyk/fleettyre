@@ -32,13 +32,18 @@ js/                                — lógica da secção "Veículos" + partilh
   config.js                        — cria o cliente Supabase (sb)
   auth.js                          — login, logout, mudar password (2 passos), esqueci-me da
                                      password
-  nav.js                           — troca de página dentro da app (nav/navR/navReg)
+  nav.js                           — troca de página dentro da app (nav/navR/navReg/navInicio)
   utils.js                         — helpers partilhados: formatação, cálculos de desgaste,
                                      SLOTS_VEICULO/SLOTS_REBOQUE (lugares fixos), loading()
                                      (com atraso de 200ms, para não "piscar" em operações rápidas)
   frota_cadastro.js                — ficha de veículos (marca/modelo/nº eixos), lista de marcas
   frota.js                         — "Por matrícula": lugares fixos + histórico de um veículo
-  registar.js                      — formulário de registo de montagem
+  inicio.js                        — página "Início": resumo de alertas críticos (veículos +
+                                     reboques juntos) e o formulário único de registo de
+                                     montagem — um selector Camião/Reboque no topo decide a
+                                     tabela de destino (`pneus`/`reboques`) e que campos mostrar
+                                     (ex.: KMs só em camiões); substituiu os antigos registar.js/
+                                     registar_r.js, que só serviam uma secção de cada vez
   dashboard.js, alertas.js,
   analytics.js, marcas.js,
   fornecedores.js, stock.js        — cada página da app, um ficheiro por secção
@@ -53,10 +58,11 @@ js/                                — lógica da secção "Veículos" + partilh
                                      integração de telemetria da própria empresa (self-service)
 
 js/reboques/                       — equivalentes dos ficheiros acima, para a secção "Reboques"
-                                     (frota_cadastro_r.js, frota_r.js, registar_r.js, …) — não é
-                                     um espelho perfeito: fornecedores_marcas_r.js junta o que em
-                                     "Veículos" são dois ficheiros separados (fornecedores.js +
-                                     marcas.js)
+                                     (frota_cadastro_r.js, frota_r.js, dashboard_r.js, …) — não
+                                     tem registar_r.js próprio (ver inicio.js, partilhado pelas
+                                     duas secções); não é um espelho perfeito: fornecedores_
+                                     marcas_r.js junta o que em "Veículos" são dois ficheiros
+                                     separados (fornecedores.js + marcas.js)
 
 migrations/                        — alterações à base de dados, ficheiros .sql numerados por
                                      ordem, corridos manualmente no SQL Editor do Supabase
@@ -125,7 +131,7 @@ Cada veículo/reboque com uma configuração de eixos conhecida (`num_eixos` nã
 
 `veiculos.km_atual`/`km_atual_em` é preenchido automaticamente (quando configurado) a partir do sistema de GPS/telemetria de cada empresa, e usado como fallback para estimar KMs percorridos quando um pneu ainda não foi desmontado. É só informativo — nunca substitui os KMs manuais dos registos de pneus.
 
-**Self-service**: página "Telemetria (KMs)" (Registos), `js/telemetria.js` — qualquer empresa introduz as suas próprias credenciais do fornecedor e liga a integração sem intervenção manual na base de dados. `integracoes_telemetria` é só-admin (RLS), por isso a página nunca lê a tabela directamente — só chama as Edge Functions autenticadas abaixo, que derivam sempre a `empresa_id` do JWT de quem chama:
+**Self-service**: página "Telemetria (KMs)" (Configuração), `js/telemetria.js` — qualquer empresa introduz as suas próprias credenciais do fornecedor e liga a integração sem intervenção manual na base de dados. `integracoes_telemetria` é só-admin (RLS), por isso a página nunca lê a tabela directamente — só chama as Edge Functions autenticadas abaixo, que derivam sempre a `empresa_id` do JWT de quem chama:
 
 - `telemetria-ligar` — valida as credenciais com uma chamada leve à API do fornecedor (`testarCredenciais`) antes de gravar.
 - `telemetria-status` — devolve só `{ligado, fornecedor, ultima_sincronizacao}`, nunca as credenciais.
@@ -142,7 +148,7 @@ Cada fornecedor é um adaptador em `supabase/functions/_shared/<fornecedor>.ts`,
 
 Problema real que resolve: a oficina regista montagens/desmontagens em papel; o valor em € só chega semanas depois, por email, da parte do fornecedor — e encontrar essa factura no meio de centenas de emails não relacionados é o trabalho manual. Esta funcionalidade liga-se à caixa de email da empresa, filtra os emails que parecem facturas de pneus e deixa-os prontos (com o PDF já descarregado) para o utilizador consultar. **Não extrai valores automaticamente** — o utilizador continua a introduzir o custo manualmente no "Editar" de sempre, usando o PDF só como referência.
 
-Página "Faturas por email" (Registos), `js/emails-fornecedores.js`. `integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
+Página "Faturas por email" (Configuração), `js/emails-fornecedores.js`. `integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
 
 - `email-status` — `{ligado, conta_email, ultima_sincronizacao}`, nunca os tokens.
 - `email-oauth-iniciar` / `email-oauth-callback` / `email-oauth-desligar` — fluxo OAuth partilhado por qualquer fornecedor OAuth (`?fornecedor=outlook` ou `?fornecedor=google`): "Ligar Outlook"/"Ligar Google" chama `-iniciar` (autenticado, gera um `state` assinado por HMAC com `empresa_id`+`fornecedor`+expiração curta) e o browser é redireccionado para o fornecedor; `-callback` (pública, sem verificação de JWT — é o fornecedor que a chama, nunca o utilizador directamente) lê o `fornecedor` do `state`, valida-o, troca o código pelos tokens através do adaptador certo e grava a integração — mesma função para os dois fornecedores, nunca precisou de ramificação por fornecedor.
