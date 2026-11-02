@@ -86,9 +86,12 @@ async function mostrarApp() {
   carregarListasFornMarca();
   carregarListaSubtipos();
   // "Início" precisa de listaVeiculos/listaReboquesFrota já carregadas
-  // para popular a matrícula do formulário de registo.
+  // para popular a matrícula do formulário de registo. Usa navInicio(),
+  // não loadInicio() directamente — também limpa o estado "Camiões"
+  // activo por omissão no HTML estático, senão os dois ficam marcados
+  // como activos ao mesmo tempo logo a seguir ao login.
   await Promise.all([carregarListaVeiculos(), carregarListaReboquesFrota()]);
-  loadInicio();
+  navInicio();
 
   // Voltar de "Ligar Outlook" (email-oauth-callback) — abre logo a
   // página de Faturas por email com o resultado, e limpa o URL.
