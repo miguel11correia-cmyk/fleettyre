@@ -102,23 +102,23 @@ function handleContacto(req, res) {
       await enviarEmailResend({
         to: email,
         subject: 'Recebemos o teu contacto: FleetTyre',
-        html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#18181b">
+        html: `<div style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#1a242b">
                  <h2 style="font-size:19px;font-weight:500;margin:0 0 14px">Obrigado pelo teu interesse na FleetTyre</h2>
-                 <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 10px">Olá ${escapeHtml(nome)},</p>
-                 <p style="font-size:14px;line-height:1.6;color:#3f3f46;margin:0 0 28px">Recebemos a tua mensagem e entraremos em contacto brevemente.</p>
-                 <hr style="border:none;border-top:1px solid #e4e2dd;margin:0 0 20px">
+                 <p style="font-size:14px;line-height:1.6;color:#5b6770;margin:0 0 10px">Olá ${escapeHtml(nome)},</p>
+                 <p style="font-size:14px;line-height:1.6;color:#5b6770;margin:0 0 28px">Recebemos a tua mensagem e entraremos em contacto brevemente.</p>
+                 <hr style="border:none;border-top:1px solid #e2e3e5;margin:0 0 20px">
                  <table cellpadding="0" cellspacing="0" role="presentation">
                    <tr>
-                     <td style="padding-right:16px;border-right:2px solid #c0392b;vertical-align:middle">
+                     <td style="padding-right:16px;border-right:2px solid #E7101A;vertical-align:middle">
                        <img src="https://fleet-tyre.com/assets/logo-horizontal.png" alt="FleetTyre" style="height:40px;display:block">
                      </td>
                      <td style="padding-left:16px;vertical-align:middle">
-                       <p style="font-size:14px;font-weight:600;color:#18181b;margin:0">FleetTyre</p>
-                       <p style="font-size:12px;color:#71717a;margin:3px 0 0">Gestão de pneus para frotas pesadas</p>
+                       <p style="font-size:14px;font-weight:600;color:#1a242b;margin:0">FleetTyre</p>
+                       <p style="font-size:12px;color:#5b6770;margin:3px 0 0">Gestão de pneus para frotas pesadas</p>
                        <p style="font-size:12px;margin:8px 0 0">
-                         <a href="https://fleet-tyre.com" style="color:#c0392b;text-decoration:none">fleet-tyre.com</a>
+                         <a href="https://fleet-tyre.com" style="color:#C40E17;text-decoration:none">fleet-tyre.com</a>
                          &nbsp;·&nbsp;
-                         <a href="mailto:miguel.dscorreia@outlook.pt" style="color:#71717a;text-decoration:none">miguel.dscorreia@outlook.pt</a>
+                         <a href="mailto:miguel.dscorreia@outlook.pt" style="color:#5b6770;text-decoration:none">miguel.dscorreia@outlook.pt</a>
                        </p>
                      </td>
                    </tr>

@@ -8,9 +8,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,800;1,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#DC2626">
+<meta name="theme-color" content="#E7101A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="FleetTyre">
@@ -456,20 +459,17 @@
       <div class="g2">
         <div class="card">
           <div class="ct">Pneus por tipo</div>
-          <div class="legend" id="leg-tipo"></div>
-          <div class="cw"><canvas id="c-tipo" aria-label="Distribuição por tipo de pneu"></canvas></div>
+          <div class="cw-t"><canvas id="c-tipo" aria-label="Distribuição por tipo de pneu"></canvas></div>
         </div>
         <div class="card">
           <div class="ct">Pneus por fornecedor</div>
-          <div class="legend" id="leg-forn"></div>
-          <div class="cw"><canvas id="c-forn" aria-label="Pneus por fornecedor"></canvas></div>
+          <div class="cw-t"><canvas id="c-forn" aria-label="Pneus por fornecedor"></canvas></div>
         </div>
       </div>
       <div class="g2">
         <div class="card">
           <div class="ct">Pneus por marca</div>
-          <div class="legend" id="leg-marc"></div>
-          <div class="cw"><canvas id="c-marc" aria-label="Pneus por marca"></canvas></div>
+          <div class="cw-t"><canvas id="c-marc" aria-label="Pneus por marca"></canvas></div>
         </div>
         <div class="card">
           <div class="ct">Gasto anual em pneus</div>
@@ -1040,11 +1040,11 @@
         <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="rk-med">—</div><div class="kpi-s">só com custo preenchido</div></div>
       </div>
       <div class="g2">
-        <div class="card"><div class="ct">Pneus por tipo</div><div class="legend" id="rleg-tipo"></div><div class="cw"><canvas id="rc-tipo"></canvas></div></div>
-        <div class="card"><div class="ct">Pneus por fornecedor</div><div class="legend" id="rleg-forn"></div><div class="cw"><canvas id="rc-forn"></canvas></div></div>
+        <div class="card"><div class="ct">Pneus por tipo</div><div class="cw-t"><canvas id="rc-tipo"></canvas></div></div>
+        <div class="card"><div class="ct">Pneus por fornecedor</div><div class="cw-t"><canvas id="rc-forn"></canvas></div></div>
       </div>
       <div class="g2">
-        <div class="card"><div class="ct">Pneus por marca</div><div class="legend" id="rleg-marc"></div><div class="cw"><canvas id="rc-marc"></canvas></div></div>
+        <div class="card"><div class="ct">Pneus por marca</div><div class="cw-t"><canvas id="rc-marc"></canvas></div></div>
         <div class="card">
           <div class="ct">Gasto anual (reboques)</div>
           <div class="table-wrap"><table>
