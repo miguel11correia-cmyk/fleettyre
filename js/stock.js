@@ -447,6 +447,12 @@ async function abrirSelStock() {
 let alocResultados = [];
 let alocSelecionados = new Set();
 
+// Tecto intencional de resultados — isto é uma pesquisa para
+// selecionar à mão, não uma listagem que tenha de estar sempre
+// completa (ao contrário dos gráficos/totais do Dashboard). Mas se o
+// tecto for mesmo atingido, é preciso avisar — ver renderAlocResultados.
+const ALOC_LIMITE_RESULTADOS = 300;
+
 function cancelarAlocacao() {
   ['alo-marca', 'alo-medida', 'alo-forn', 'alo-mes-de', 'alo-mes-ate'].forEach(id => {
     const el = document.getElementById(id);
@@ -492,7 +498,7 @@ async function procurarPneusAlocar() {
   }
 
   loading(true);
-  const { data, error } = await query.order('mes_mont', { ascending: false }).limit(300);
+  const { data, error } = await query.order('mes_mont', { ascending: false }).limit(ALOC_LIMITE_RESULTADOS);
   loading(false);
 
   if (error) { showFeedback('alo-feedback', 'Erro na pesquisa.', true); return; }
@@ -510,7 +516,10 @@ function renderAlocResultados() {
   }
 
   const count = alocSelecionados.size;
-  let html = '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ': seleciona os que correspondem à fatura</div>';
+  const atingiuTecto = alocResultados.length >= ALOC_LIMITE_RESULTADOS;
+  let html = atingiuTecto
+    ? '<div class="alo-summary alo-summary-aviso">⚠ ' + alocResultados.length + '+ pneus encontrados — a mostrar só os ' + ALOC_LIMITE_RESULTADOS + ' mais recentes. Restringe a pesquisa (ex: um intervalo de meses mais curto) para veres os restantes.</div>'
+    : '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ': seleciona os que correspondem à fatura</div>';
   html += '<div class="alo-list">';
   alocResultados.forEach(r => {
     const sel = alocSelecionados.has(r.id);
