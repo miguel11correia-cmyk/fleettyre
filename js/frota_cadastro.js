@@ -102,34 +102,6 @@ function definirMarcaVeiculo(selectId, nomeActual) {
 async function carregarListaVeiculos() {
   const { data } = await sb.from('veiculos').select('*').eq('ativo', true).order('matricula');
   listaVeiculos = data || [];
-  await popularSelectorVeiculos();
-}
-
-// Selector de matrícula do formulário de registo — combina os veículos da
-// tabela `veiculos` com matrículas que só existem em `pneus` (registos
-// antigos, sem ficha de veículo criada ainda), mantendo-as a funcionar
-// normalmente (mostradas só com a matrícula, sem dados de marca/modelo).
-async function popularSelectorVeiculos() {
-  const sel = document.getElementById('r-mat');
-  if (!sel) return;
-
-  const { data: pneusData } = await sb.from('pneus').select('matricula');
-  const matsPneus = [...new Set((pneusData || []).map(r => r.matricula))];
-
-  const mapa = {};
-  listaVeiculos.forEach(v => { mapa[v.matricula] = v; });
-  matsPneus.forEach(m => { if (!mapa[m]) mapa[m] = { matricula: m }; });
-
-  const mats = Object.values(mapa).sort((a, b) => a.matricula.localeCompare(b.matricula));
-
-  const val = sel.value;
-  sel.innerHTML = '<option value="">— selecionar —</option>' +
-    mats.map(v => {
-      const label = (v.marca || v.modelo)
-        ? `${v.matricula} · ${[v.marca, v.modelo].filter(Boolean).join(' ')}`
-        : v.matricula;
-      return `<option value="${v.matricula}"${v.matricula === val ? ' selected' : ''}>${label}</option>`;
-    }).join('');
 }
 
 // ── PÁGINA FROTA (GESTÃO) ─────────────────────────────────────────

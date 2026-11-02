@@ -173,8 +173,7 @@ async function apagarMarca(id, nome) {
 async function carregarListaSubtipos() {
   const { data } = await sb.from('subtipos_marca').select('*').order('nome');
   listaSubtipos = data || [];
-  popularSelectorSubtipo('r-marca', 'r-subtipo');
-  popularSelectorSubtipo('rr-marca', 'rr-subtipo');
+  popularSelectorSubtipo('g-marca', 'g-subtipo');
 }
 
 // Popula o select de subtipos consoante a marca atualmente selecionada no select de marca indicado

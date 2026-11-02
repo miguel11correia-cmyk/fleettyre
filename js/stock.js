@@ -576,40 +576,33 @@ function fecharSelStock() {
 }
 
 function selecionarDeStock(linhaId, marca, medida, tipo, fornecedor, preco, subtipo) {
-  // Preencher campos — suporta tanto veículos (r-*) como reboques (rr-*)
-  [['r-marca','rr-marca'], ['r-medida','rr-medida'], ['r-tipo','rr-tipo'], ['r-forn','rr-forn']].forEach(([v, r]) => {
-    const elV = document.getElementById(v); if (elV) elV.value = v === 'r-tipo' ? tipo : (v === 'r-forn' ? fornecedor : (v === 'r-marca' ? marca : medida));
-    const elR = document.getElementById(r); if (elR) elR.value = r === 'rr-tipo' ? tipo : (r === 'rr-forn' ? fornecedor : (r === 'rr-marca' ? marca : medida));
-  });
-  const elCustoV = document.getElementById('r-custo');  if (elCustoV) elCustoV.value = preco > 0 ? preco : '';
-  const elCustoR = document.getElementById('rr-custo'); if (elCustoR) elCustoR.value = preco > 0 ? preco : '';
-  popularSelectorSubtipo('r-marca', 'r-subtipo');
-  popularSelectorSubtipo('rr-marca', 'rr-subtipo');
-  if (subtipo) {
-    const elSubV = document.getElementById('r-subtipo');  if (elSubV) elSubV.value = subtipo;
-    const elSubR = document.getElementById('rr-subtipo'); if (elSubR) elSubR.value = subtipo;
-  }
+  document.getElementById('g-marca').value = marca;
+  document.getElementById('g-medida').value = medida;
+  document.getElementById('g-tipo').value = tipo;
+  document.getElementById('g-forn').value = fornecedor;
+  document.getElementById('g-custo').value = preco > 0 ? preco : '';
+  popularSelectorSubtipo('g-marca', 'g-subtipo');
+  if (subtipo) document.getElementById('g-subtipo').value = subtipo;
   stockLinhaSelId      = linhaId;
   stockDesmontadoSelId = null;
   const msg = '✓ Pneu de fatura: ' + marca + ' ' + medida + ' ' + tipo + (preco > 0 ? ' · ' + fmtEur(preco) : '') + ' · ' + fornecedor;
-  ['r-stock-info','rr-stock-info'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = msg; el.classList.remove('hidden'); } });
+  document.getElementById('g-stock-info').textContent = msg;
+  document.getElementById('g-stock-info').classList.remove('hidden');
   fecharSelStock();
 }
 
 function selecionarDesmontadoDeStock(id, marca, medida, tipo, matriculaOrigem, tabela, custoPronto, fornecedorPronto) {
-  // Preencher campos — suporta tanto veículos (r-*) como reboques (rr-*)
-  const custoVal = custoPronto > 0 ? custoPronto : '';
-  const fornVal  = fornecedorPronto || 'PARQUE';
-  [['r-marca','rr-marca',marca], ['r-medida','rr-medida',medida], ['r-tipo','rr-tipo',tipo], ['r-forn','rr-forn',fornVal], ['r-custo','rr-custo',custoVal]].forEach(([v,r,val]) => {
-    const elV = document.getElementById(v); if (elV) elV.value = val;
-    const elR = document.getElementById(r); if (elR) elR.value = val;
-  });
-  popularSelectorSubtipo('r-marca', 'r-subtipo');
-  popularSelectorSubtipo('rr-marca', 'rr-subtipo');
+  document.getElementById('g-marca').value = marca;
+  document.getElementById('g-medida').value = medida;
+  document.getElementById('g-tipo').value = tipo;
+  document.getElementById('g-forn').value = fornecedorPronto || 'PARQUE';
+  document.getElementById('g-custo').value = custoPronto > 0 ? custoPronto : '';
+  popularSelectorSubtipo('g-marca', 'g-subtipo');
   stockLinhaSelId      = null;
   stockDesmontadoSelId = { id, tabela };
   const msg = '✓ Pneu de armazém: ' + marca + ' ' + medida + ' ' + tipo + (custoPronto > 0 ? ' · ' + fmtEur(custoPronto) : '') + ' · ' + (tabela === 'reboques' ? 'reboque' : 'veículo') + ' ' + matriculaOrigem;
-  ['r-stock-info','rr-stock-info'].forEach(fid => { const el = document.getElementById(fid); if (el) { el.textContent = msg; el.classList.remove('hidden'); } });
+  document.getElementById('g-stock-info').textContent = msg;
+  document.getElementById('g-stock-info').classList.remove('hidden');
   fecharSelStock();
 }
 

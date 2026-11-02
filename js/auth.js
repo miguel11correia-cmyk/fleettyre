@@ -79,15 +79,16 @@ function confirmarEmpresaLogin() {
   mostrarApp();
 }
 
-function mostrarApp() {
+async function mostrarApp() {
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('user-email').textContent = currentUser.email;
   carregarListasFornMarca();
-  carregarListaVeiculos();
-  carregarListaReboquesFrota();
   carregarListaSubtipos();
-  loadDashboard();
+  // "Início" precisa de listaVeiculos/listaReboquesFrota já carregadas
+  // para popular a matrícula do formulário de registo.
+  await Promise.all([carregarListaVeiculos(), carregarListaReboquesFrota()]);
+  loadInicio();
 
   // Voltar de "Ligar Outlook" (email-oauth-callback) — abre logo a
   // página de Faturas por email com o resultado, e limpa o URL.

@@ -175,15 +175,15 @@ function linhaHistoricoReboque(r, hoje) {
   </tr>`;
 }
 
-// Atalho do botão "+ Montar" de um lugar vazio: abre "Registar pneu"
-// (reboques) com a matrícula e a categoria desse lugar já preenchidas.
-function montarNoLugarReboque(matricula, lugar) {
-  navR('registar-r', document.querySelector('[data-page="registar-r"]'));
-  const selMat = document.getElementById('rr-mat');
-  selMat.value = matricula;
-  atualizarCategoriasPosicao('rr-mat', 'rr-eixo', listaReboquesFrota, SLOTS_REBOQUE);
-  document.getElementById('rr-eixo').value = categoriaPosicao(lugar);
-  document.getElementById('rr-mes').focus();
+// Atalho do botão "+ Montar" de um lugar vazio: abre "Início" já no
+// modo Reboque, com a matrícula e a categoria desse lugar preenchidas.
+async function montarNoLugarReboque(matricula, lugar) {
+  navInicio();
+  await toggleSegmentoRegisto('reboque', true);
+  document.getElementById('g-mat').value = matricula;
+  atualizarCategoriasPosicao('g-mat', 'g-eixo', listaReboquesFrota, SLOTS_REBOQUE);
+  document.getElementById('g-eixo').value = categoriaPosicao(lugar);
+  document.getElementById('g-mes').focus();
 }
 
 function renderInfoReboque(v, mat) {

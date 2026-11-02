@@ -266,6 +266,54 @@ body {
 .btn-logout:hover { background: var(--bg2); }
 .btn-logout:active { transform: scale(0.97); }
 
+/* ── INÍCIO (atalho central, acima da secção veículos/reboques) ── */
+.nav-inicio-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 10px);
+  margin: 10px 5px 2px;
+  padding: 9px 10px;
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .1s, color .1s;
+}
+.nav-inicio-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-inicio-btn:hover { background: var(--bg2); color: var(--text); }
+.nav-inicio-btn.active {
+  background: var(--brand-red-lt);
+  color: var(--brand-red);
+  border-color: var(--brand-red-md);
+}
+
+/* Par de botões "Camião / Reboque" do formulário unificado de registo */
+.btn-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  height: 34px;
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .1s, color .1s;
+}
+.btn-seg svg { flex-shrink: 0; }
+.btn-seg:hover { background: var(--bg2); }
+.btn-seg.active { background: #3f3f46; color: #fff; border-color: #3f3f46; }
+
 /* ── SECÇÃO VEÍCULOS/REBOQUES ─────────────────────────────────── */
 .secao-btns {
   display: grid;

@@ -184,15 +184,15 @@ function linhaHistorico(r, kmAtual) {
   </tr>`;
 }
 
-// Atalho do botão "+ Montar" de um lugar vazio: abre "Registar pneu"
-// com a matrícula e a categoria desse lugar já preenchidas.
-function montarNoLugar(matricula, lugar) {
-  nav('registar', document.querySelector('[data-page="registar"]'));
-  const selMat = document.getElementById('r-mat');
-  selMat.value = matricula;
-  atualizarCategoriasPosicao('r-mat', 'r-pos', listaVeiculos, SLOTS_VEICULO);
-  document.getElementById('r-pos').value = categoriaPosicao(lugar);
-  document.getElementById('r-mes').focus();
+// Atalho do botão "+ Montar" de um lugar vazio: abre "Início" já no
+// modo Camião, com a matrícula e a categoria desse lugar preenchidas.
+async function montarNoLugar(matricula, lugar) {
+  navInicio();
+  await toggleSegmentoRegisto('veiculo', true);
+  document.getElementById('g-mat').value = matricula;
+  atualizarCategoriasPosicao('g-mat', 'g-pos', listaVeiculos, SLOTS_VEICULO);
+  document.getElementById('g-pos').value = categoriaPosicao(lugar);
+  document.getElementById('g-mes').focus();
 }
 
 function renderInfoVeiculo(v, mat) {

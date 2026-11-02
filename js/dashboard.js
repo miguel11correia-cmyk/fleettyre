@@ -16,7 +16,6 @@ async function loadDashboard() {
     document.getElementById('k-alerts').textContent  = '0';
     document.getElementById('k-custo').textContent   = '—';
     document.getElementById('k-med').textContent     = '—';
-    renderDashAtencao(0, []);
     return;
   }
 
@@ -48,8 +47,6 @@ async function loadDashboard() {
   const badge = document.getElementById('badge-alertas');
   badge.textContent = matsAlerta;
   badge.classList.toggle('hidden', matsAlerta === 0);
-
-  renderDashAtencao(matsAlerta, criticos);
 
   // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(registosAtivos, 'tipo');
@@ -150,45 +147,5 @@ async function loadDashboard() {
     const vals = posKeys.map(k => Number((posAgg[k].taxaArr.reduce((s, v) => s + v, 0) / posAgg[k].taxaArr.length).toFixed(3)));
     mkChart('c-desgaste-pos', 'bar', posKeys, vals, CHART_NEUTRAL);
   }
-}
-
-// Cartão "Precisa da tua atenção" — resumo de alertas críticos e atalho
-// directo para registar, para dar um primeiro passo óbvio ao abrir a app.
-function renderDashAtencao(nVeiculos, criticos) {
-  const icon = document.getElementById('dash-atencao-icon');
-  const tit  = document.getElementById('dash-atencao-titulo');
-  const sub  = document.getElementById('dash-atencao-sub');
-  const btn  = document.getElementById('dash-atencao-btn');
-  if (!icon || !tit || !sub || !btn) return;
-
-  if (nVeiculos === 0) {
-    icon.textContent = '🟢';
-    tit.textContent   = 'Nenhum alerta crítico';
-    sub.textContent   = 'Todos os pneus activos estão em bom estado.';
-    btn.classList.add('hidden');
-    return;
-  }
-
-  const piorPorVeiculo = {};
-  criticos.forEach(r => {
-    if (piorPorVeiculo[r.matricula] == null || r.escEstimada < piorPorVeiculo[r.matricula]) {
-      piorPorVeiculo[r.matricula] = r.escEstimada;
-    }
-  });
-  const piores = Object.keys(piorPorVeiculo).sort((a, b) => piorPorVeiculo[a] - piorPorVeiculo[b]).slice(0, 3);
-  const resto  = nVeiculos - piores.length;
-
-  icon.textContent = '🔴';
-  tit.textContent   = nVeiculos === 1 ? '1 veículo com pneus críticos' : nVeiculos + ' veículos com pneus críticos';
-  sub.textContent   = piores.map(mat => `${mat} (${piorPorVeiculo[mat]}mm)`).join(' · ') + (resto > 0 ? ` · +${resto}` : '');
-  btn.classList.remove('hidden');
-}
-
-function irParaAlertasDashboard() {
-  nav('alertas', document.querySelector('.ni[data-page="alertas"]'));
-}
-
-function irParaRegistarDashboard() {
-  nav('registar', document.querySelector('.ni[data-page="registar"]'));
 }
 

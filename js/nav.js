@@ -16,7 +16,10 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') toggleMobileSidebar(false);
 });
 
-function toggleSecao(secao) {
+// Só a troca de estado da barra lateral (menu visível + botão realçado),
+// sem carregar a página por omissão de cada secção — usada quando se quer
+// ir direto a uma página específica dessa secção (ver inicio.js).
+function toggleSecaoSemCarregar(secao) {
   secaoActiva = secao;
   document.getElementById('menu-registos').classList.toggle('hidden', secao !== 'registos');
   document.getElementById('menu-veiculos').classList.toggle('hidden', secao !== 'veiculos');
@@ -24,6 +27,11 @@ function toggleSecao(secao) {
   document.getElementById('btn-registos').classList.toggle('secao-active', secao === 'registos');
   document.getElementById('btn-veiculos').classList.toggle('secao-active', secao === 'veiculos');
   document.getElementById('btn-reboques').classList.toggle('secao-active', secao === 'reboques');
+  document.getElementById('btn-inicio')?.classList.remove('active');
+}
+
+function toggleSecao(secao) {
+  toggleSecaoSemCarregar(secao);
   if (secao === 'registos') {
     navReg('fornecedores-registo', document.querySelector('[data-page="fornecedores-registo"]'));
   } else if (secao === 'veiculos') {
@@ -33,12 +41,25 @@ function toggleSecao(secao) {
   }
 }
 
+// Página central, fora da troca Registos/Camiões/Reboques — sempre
+// acessível, independentemente da secção onde se está.
+function navInicio() {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  toggleMobileSidebar(false);
+  fecharPainel();
+  document.getElementById('btn-inicio').classList.add('active');
+  document.getElementById('page-inicio').classList.remove('hidden');
+  loadInicio();
+}
+
 // Secção "Registos" — partilhada entre veículos e reboques (fornecedores,
 // marcas, e as fichas de frota), para não ficar escondida dentro de um
 // dos dois modos.
 function navReg(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  document.getElementById('btn-inicio')?.classList.remove('active');
   toggleMobileSidebar(false);
   const page = document.getElementById('page-' + id);
   if (!page) return;
@@ -56,6 +77,7 @@ function navReg(id, el) {
 function nav(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  document.getElementById('btn-inicio')?.classList.remove('active');
   toggleMobileSidebar(false);
   const page = document.getElementById('page-' + id);
   if (!page) return;
@@ -64,7 +86,6 @@ function nav(id, el) {
   fecharPainel();
 
   if      (id === 'dashboard')     loadDashboard();
-  else if (id === 'registar')      { /* formulário, sem load */ }
   else if (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
   else if (id === 'fornecedores')  loadFornecedores();
@@ -76,6 +97,7 @@ function nav(id, el) {
 function navR(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  document.getElementById('btn-inicio')?.classList.remove('active');
   toggleMobileSidebar(false);
 
   // Stock é partilhado — usa page-stock com contexto reboques
@@ -86,7 +108,6 @@ function navR(id, el) {
   if (el) el.classList.add('active');
 
   if      (id === 'dashboard-r')    loadDashboardReboques();
-  else if (id === 'registar-r')     { /* formulário, sem load */ }
   else if (id === 'frota-r')        initFrotaSelectReboques();
   else if (id === 'alertas-r')      loadAlertasReboques();
   else if (id === 'fornecedores-r') loadFornecedoresReboques();
