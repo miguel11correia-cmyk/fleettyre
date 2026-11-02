@@ -386,11 +386,19 @@ function mkChart(id, type, labels, data, colors, extraOpts = {}) {
     borderRadius: type === 'bar' ? 4 : 0,
   };
 
-  // Barras com rótulo em cima (substitutas dos circulares): mais finas,
-  // para não pesarem visualmente ao lado do texto na diagonal.
+  // Barras com rótulo em cima (substitutas dos circulares): quanto menos
+  // categorias, mais grossas (menos espaço vazio); com muitas, afinam
+  // progressivamente e, a partir de LIMIAR_SCROLL, o gráfico ganha
+  // scroll horizontal com uma largura mínima por barra — ver
+  // prepararCanvasBarras — em vez de espremer tudo até ficar ilegível.
+  const LIMIAR_SCROLL = 14;
+  const PX_POR_BARRA_SCROLL = 46;
   if (type === 'bar' && extraOpts.topLabels) {
-    dataset.barPercentage     = 0.5;
-    dataset.categoryPercentage = 0.6;
+    const n = labels.length;
+    if      (n <= 4)  { dataset.barPercentage = 0.6;  dataset.categoryPercentage = 0.9; }
+    else if (n <= 8)  { dataset.barPercentage = 0.6;  dataset.categoryPercentage = 0.8; }
+    else if (n <= LIMIAR_SCROLL) { dataset.barPercentage = 0.55; dataset.categoryPercentage = 0.7; }
+    else              { dataset.barPercentage = 0.6;  dataset.categoryPercentage = 0.7; }
   }
 
   if (type === 'line') {
@@ -404,10 +412,38 @@ function mkChart(id, type, labels, data, colors, extraOpts = {}) {
     dataset.backgroundColor = colors;
   }
 
+  if (type === 'bar' && extraOpts.topLabels) {
+    prepararCanvasBarras(el, labels.length, LIMIAR_SCROLL, PX_POR_BARRA_SCROLL);
+  }
+
   charts[id] = new Chart(el, {
     type,
     data: { labels, datasets: [dataset] },
     options: { ...opts, ...extraOpts },
     plugins: extraOpts.topLabels ? [barTopLabelsPlugin] : [],
   });
+}
+
+// Com muitas categorias, em vez de espremer as barras até ficarem
+// ilegíveis, o gráfico ganha scroll horizontal: envolve o canvas num
+// wrapper com uma largura mínima por barra, dentro de um contentor com
+// overflow-x. Idempotente — reutiliza o wrapper se já existir (o mesmo
+// gráfico é recriado sempre que a página recarrega).
+function prepararCanvasBarras(canvas, numCategorias, limiarScroll, pxPorBarra) {
+  let inner = canvas.parentElement;
+  let outer;
+
+  if (inner.classList.contains('bar-scroll-inner')) {
+    outer = inner.parentElement;
+  } else {
+    outer = inner;
+    inner = document.createElement('div');
+    inner.className = 'bar-scroll-inner';
+    outer.insertBefore(inner, canvas);
+    inner.appendChild(canvas);
+  }
+
+  const precisaScroll = numCategorias > limiarScroll;
+  outer.classList.toggle('bar-scroll-outer', precisaScroll);
+  inner.style.width = precisaScroll ? (numCategorias * pxPorBarra) + 'px' : '100%';
 }
