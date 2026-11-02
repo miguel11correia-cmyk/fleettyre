@@ -15,22 +15,28 @@ const ALERTASR_NIVEL_INFO = {
 let alertasRFiltro = 'critico';
 let alertasRPorVeiculo = [];
 
+// Classificação por duração activa de cada pneu de reboque — extraído de
+// loadAlertasReboques() para ser reutilizável pelo Dashboard, assim o
+// badge/KPI de alertas usa sempre o mesmo critério (nível "crítico").
+function calcularAlertasReboques(data) {
+  const hoje    = mesAtual();
+  const activos = data.filter(r => !r.mes_desmont && r.mes_mont);
+
+  return activos.map(r => {
+    const meses = mesesEntre(r.mes_mont, hoje);
+    const lim   = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
+    const nivel = nivelDuracao(meses, lim);
+    return { ...r, mesesActivo: meses, lim, nivel };
+  }).sort((a, b) => b.mesesActivo - a.mesesActivo);
+}
+
 async function loadAlertasReboques() {
   loading(true);
   const { data, error } = await sb.from('reboques').select('*');
   loading(false);
   if (error || !data) return;
 
-  const hoje    = mesAtual();
-  const activos = data.filter(r => !r.mes_desmont && r.mes_mont);
-
-  // Calcular meses ativos e classificar
-  const comMeses = activos.map(r => {
-    const meses = mesesEntre(r.mes_mont, hoje);
-    const lim   = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
-    const nivel = nivelDuracao(meses, lim);
-    return { ...r, mesesActivo: meses, lim, nivel };
-  }).sort((a, b) => b.mesesActivo - a.mesesActivo);
+  const comMeses = calcularAlertasReboques(data);
 
   const criticos = comMeses.filter(r => r.nivel === 'critico');
   const medios   = comMeses.filter(r => r.nivel === 'medio');

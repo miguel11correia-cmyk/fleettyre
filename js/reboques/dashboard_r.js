@@ -17,16 +17,13 @@ async function loadDashboardReboques() {
   loading(false);
   if (error || !data) return;
 
-  const hoje = mesAtual();
   const activos = data.filter(r => !r.mes_desmont);
   const mats    = [...new Set(data.map(r => r.matricula))];
 
-  // Alertas — pneus ativos com meses >= limite de aviso
-  const alertas = activos.filter(r => {
-    const meses = mesesEntre(r.mes_mont, hoje);
-    const lim   = LIMITES_EIXO[r.eixo] || LIMITES_EIXO[null];
-    return meses >= lim.aviso;
-  });
+  // Mesma classificação usada na página "Alertas" — não uma contagem à
+  // parte, para o número nunca mudar consoante a página.
+  const comMeses = calcularAlertasReboques(data);
+  const criticos = comMeses.filter(r => r.nivel === 'critico');
 
   // Custos
   const comCusto   = data.filter(r => r.custo_pneu > 0);
@@ -36,17 +33,19 @@ async function loadDashboardReboques() {
   document.getElementById('rk-activos').textContent = activos.length;
   document.getElementById('rk-total').textContent   = data.length;
   document.getElementById('rk-mats').textContent    = mats.length;
-  document.getElementById('rk-alerts').textContent  = alertas.length;
+  document.getElementById('rk-alerts').textContent  = criticos.length;
   document.getElementById('rk-custo').textContent   = custoTotal > 0 ? fmtEur(custoTotal) : '—';
   document.getElementById('rk-med').textContent     = custoMed ? fmtEur(custoMed) : '—';
 
   // Badge alertas reboques — nº de reboques, não de pneus
-  const matsAlerta = new Set(alertas.map(r => r.matricula)).size;
+  const matsAlerta = new Set(criticos.map(r => r.matricula)).size;
   const badge = document.getElementById('badge-alertas-r');
   if (badge) {
     badge.textContent = matsAlerta;
     badge.classList.toggle('hidden', matsAlerta === 0);
   }
+
+  renderDashAtencaoReboques(matsAlerta, criticos);
 
   // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(activos, 'tipo');
@@ -153,4 +152,44 @@ function renderTabelaAnualReboques(data) {
       <td style="text-align:right">${med}</td>
     </tr>`;
   }).join('');
+}
+
+// Cartão "Precisa da tua atenção" — equivalente ao dos veículos, mas por
+// duração activa (meses) em vez de escultura estimada.
+function renderDashAtencaoReboques(nReboques, criticos) {
+  const icon = document.getElementById('dash-atencao-r-icon');
+  const tit  = document.getElementById('dash-atencao-r-titulo');
+  const sub  = document.getElementById('dash-atencao-r-sub');
+  const btn  = document.getElementById('dash-atencao-r-btn');
+  if (!icon || !tit || !sub || !btn) return;
+
+  if (nReboques === 0) {
+    icon.textContent = '🟢';
+    tit.textContent   = 'Nenhum alerta crítico';
+    sub.textContent   = 'Todos os pneus activos estão em bom estado.';
+    btn.classList.add('hidden');
+    return;
+  }
+
+  const piorPorVeiculo = {};
+  criticos.forEach(r => {
+    if (piorPorVeiculo[r.matricula] == null || r.mesesActivo > piorPorVeiculo[r.matricula]) {
+      piorPorVeiculo[r.matricula] = r.mesesActivo;
+    }
+  });
+  const piores = Object.keys(piorPorVeiculo).sort((a, b) => piorPorVeiculo[b] - piorPorVeiculo[a]).slice(0, 3);
+  const resto  = nReboques - piores.length;
+
+  icon.textContent = '🔴';
+  tit.textContent   = nReboques === 1 ? '1 reboque com pneus críticos' : nReboques + ' reboques com pneus críticos';
+  sub.textContent   = piores.map(mat => `${mat} (${piorPorVeiculo[mat]} meses)`).join(' · ') + (resto > 0 ? ` · +${resto}` : '');
+  btn.classList.remove('hidden');
+}
+
+function irParaAlertasReboquesDashboard() {
+  navR('alertas-r', document.querySelector('.ni[data-page="alertas-r"]'));
+}
+
+function irParaRegistarReboqueDashboard() {
+  navR('registar-r', document.querySelector('.ni[data-page="registar-r"]'));
 }

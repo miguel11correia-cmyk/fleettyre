@@ -99,6 +99,39 @@ const ALERTAS_NIVEL_INFO = {
 let alertasFiltro = 'critico';
 let alertasPorVeiculo = [];
 
+// Estimativa de escultura actual de cada pneu activo, pela mesma cascata
+// usada em toda a app (ver taxaEstimada/kmsReaisOuEstimados). Extraído de
+// loadAlertas() para ser reutilizável — o Dashboard usa a mesma função,
+// em vez de uma contagem diferente, para que o número de alertas nunca
+// mude consoante a página onde é mostrado.
+function calcularEstimativasDesgaste(data, kmAtualPorMat) {
+  const taxasPorMTP = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}|${categoriaPosicao(r.posicao) || 'DESCONHECIDA'}`);
+  const taxasPorMT  = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}`);
+  const taxasPorM   = calcularTaxasPor(data, r => r.marca || 'DESCONHECIDA');
+  const todasTaxas  = data.map(r => taxaDesgaste(r)).filter(t => t !== null);
+
+  const porMat = {};
+  data.forEach(r => {
+    if (!porMat[r.matricula]) porMat[r.matricula] = [];
+    porMat[r.matricula].push(r);
+  });
+
+  const activos = data.filter(r => !r.mes_desmont && r.mes_mont && r.kms_mont);
+  const estimativas = activos.map(r => {
+    const kmAtualV  = kmAtualPorMat[r.matricula];
+    const kmsFeitos = kmsReaisOuEstimados(r, porMat[r.matricula] || [r], kmAtualV);
+    const kmReal    = kmAtualV != null && r.kms_mont && kmAtualV > r.kms_mont;
+    const taxa      = taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas);
+    const escInicial = escIni(r.tipo);
+    const escEstimada = Math.max(0, Math.round((escInicial - (kmsFeitos / 1000 * taxa)) * 10) / 10);
+    const nivel = nivelDesgaste(escEstimada);
+    return { ...r, kmsFeitos, kmReal, taxa, escEstimada, nivel };
+  });
+
+  estimativas.sort((a, b) => a.escEstimada - b.escEstimada);
+  return estimativas;
+}
+
 async function loadAlertas() {
   loading(true);
   const [{ data, error }, { data: veiculosData }] = await Promise.all([
@@ -111,35 +144,7 @@ async function loadAlertas() {
   const kmAtualPorMat = {};
   (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
 
-  const taxasPorMTP = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}|${categoriaPosicao(r.posicao) || 'DESCONHECIDA'}`);
-  const taxasPorMT  = calcularTaxasPor(data, r => `${r.marca || 'DESCONHECIDA'}|${r.tipo || 'Novo'}`);
-  const taxasPorM   = calcularTaxasPor(data, r => r.marca || 'DESCONHECIDA');
-  const todasTaxas  = data.map(r => taxaDesgaste(r)).filter(t => t !== null);
-
-  // Agrupar por matrícula
-  const porMat = {};
-  data.forEach(r => {
-    if (!porMat[r.matricula]) porMat[r.matricula] = [];
-    porMat[r.matricula].push(r);
-  });
-
-  // Para cada pneu ativo, calcular KMs reais ou estimados
-  const estimativas = [];
-  const activos = data.filter(r => !r.mes_desmont && r.mes_mont && r.kms_mont);
-
-  activos.forEach(r => {
-    const kmAtualV  = kmAtualPorMat[r.matricula];
-    const kmsFeitos = kmsReaisOuEstimados(r, porMat[r.matricula] || [r], kmAtualV);
-    const kmReal    = kmAtualV != null && r.kms_mont && kmAtualV > r.kms_mont;
-    const taxa      = taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas);
-    const escInicial = escIni(r.tipo);
-    const escEstimada = Math.max(0, Math.round((escInicial - (kmsFeitos / 1000 * taxa)) * 10) / 10);
-    const nivel = nivelDesgaste(escEstimada);
-
-    estimativas.push({ ...r, kmsFeitos, kmReal, taxa, escEstimada, nivel });
-  });
-
-  estimativas.sort((a, b) => a.escEstimada - b.escEstimada);
+  const estimativas = calcularEstimativasDesgaste(data, kmAtualPorMat);
 
   const criticos = estimativas.filter(r => r.nivel === 'critico');
   const medios   = estimativas.filter(r => r.nivel === 'medio');
