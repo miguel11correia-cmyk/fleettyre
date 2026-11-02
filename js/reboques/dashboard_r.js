@@ -48,21 +48,17 @@ async function loadDashboardReboques() {
   // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(activos, 'tipo');
   const tLabels = Object.keys(tipos);
-  const tColors = tLabels.map(l => l === 'Novo' ? '#5f8f62' : l === 'Remix' ? '#4f7396' : l === 'Rechapado' ? '#8a5a75' : '#c2a13f');
-  document.getElementById('rleg-tipo').innerHTML = makeLegend(tLabels, tColors);
-  mkChart('rc-tipo', 'doughnut', tLabels, tLabels.map(k => tipos[k]), tColors);
+  mkChart('rc-tipo', 'bar', tLabels, tLabels.map(k => tipos[k]), CHART_NEUTRAL, { topLabels: true });
 
   // ── Gráfico fornecedor (só pneus ativos) ──
   const forns = countBy(activos, 'fornecedor');
   const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
-  document.getElementById('rleg-forn').innerHTML = makeLegend(fKeys, COLORS);
-  mkChart('rc-forn', 'doughnut', fKeys, fKeys.map(k => forns[k]), COLORS.slice(0, fKeys.length));
+  mkChart('rc-forn', 'bar', fKeys, fKeys.map(k => forns[k]), CHART_NEUTRAL, { topLabels: true });
 
   // ── Gráfico marca (só pneus ativos) ──
   const marcs = countBy(activos.filter(r => r.marca), 'marca');
   const mKeys = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
-  document.getElementById('rleg-marc').innerHTML = makeLegend(mKeys, COLORS);
-  mkChart('rc-marc', 'doughnut', mKeys, mKeys.map(k => marcs[k]), COLORS.slice(0, mKeys.length));
+  mkChart('rc-marc', 'bar', mKeys, mKeys.map(k => marcs[k]), CHART_NEUTRAL, { topLabels: true });
 
   // ── Gráfico evolução mensal (linha) ──
   renderGraficoMensalReboques(data);

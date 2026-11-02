@@ -2,25 +2,30 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Paleta da marca */
-  --brand-red:    #DC2626;
-  --brand-red-dk: #B91C1C;
-  --brand-red-lt: #fdf2f2;
-  --brand-red-md: #fecaca;
+  /* Paleta da marca — Manual de Identidade Visual FleetTyre v1.0.
+     Vermelho FleetTyre (acento) e Vermelho profundo (texto), medidos
+     directamente dos ficheiros do logótipo. */
+  --brand-red:    #E7101A;
+  --brand-red-dk: #C40E17;
+  --brand-red-lt: #fdeced;
+  --brand-red-md: #f5b9bc;
 
-  /* Neutros claros */
-  --bg:        #f7f6f4;
-  --bg2:       #efede9;
+  /* Neutros — mesmo matiz frio do antracite da marca, não o tom de
+     areia que a app usava antes (ver cap. "Alinhamento" do manual). */
+  --bg:        #f3f5f6;
+  --bg2:       #e8e9ea;
   --surface:   #ffffff;
-  --border:    #e4e2dd;
-  --border2:   #d0cec9;
+  --border:    #e2e3e5;
+  --border2:   #cfd1d3;
 
-  /* Texto */
-  --text:      #18181b;
-  --text2:     #52525b;
-  --text3:     #a1a1aa;
+  /* Texto — Antracite (cor primária da marca) e Aço (cor de apoio) */
+  --text:      #1a242b;
+  --text2:     #5b6770;
+  --text3:     #a3a7aa;
 
-  /* Acentos funcionais sóbrios */
+  /* Cores funcionais — já medidas do manual a partir da app actual;
+     não usam o vermelho da marca, para um alerta nunca se confundir
+     com identidade. */
   --blue:      #1d4ed8;
   --blue-bg:   #eff6ff;
   --green:     #15803d;
@@ -29,11 +34,6 @@
   --amber-bg:  #fffbeb;
   --red:       #991b1b;
   --red-bg:    #fef2f2;
-  --teal:      #0f766e;
-  --teal-bg:   #f0fdfa;
-  --violet:    #6d28d9;
-  --violet-bg: #f5f3ff;
-  --slate:     #475569;
 
   --radius: 8px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -51,11 +51,21 @@
 html, body { overflow-x: hidden; touch-action: pan-y; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   font-size: 13px;
   color: var(--text);
   background: var(--bg);
   line-height: 1.5;
+}
+
+/* Letra de impacto da marca (manual: Archivo 800/900 itálico, maiúsculas)
+   — só para display/títulos de destaque em peças de marketing, nunca na
+   interface corrente (essa usa sempre Inter, ver corpo/títulos acima). */
+.font-display {
+  font-family: 'Archivo', -apple-system, sans-serif;
+  font-style: italic;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .hidden { display: none !important; }
@@ -239,8 +249,8 @@ body {
 
 .badge-n {
   margin-left: auto;
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--brand-red-lt);
+  color: var(--brand-red-dk);
   border-radius: 10px;
   padding: 1px 7px;
   font-size: 10px;
@@ -411,7 +421,7 @@ body {
   color: var(--text2);
   margin-bottom: 12px;
 }
-.alert-title { color: #b91c1c; }
+.alert-title { color: var(--brand-red-dk); }
 .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .cw  { position: relative; width: 100%; height: 180px; }
@@ -711,7 +721,7 @@ tbody tr:hover td { background: var(--bg); }
 .b-novo      { background: var(--green-bg);  color: var(--green); }
 .b-remix     { background: var(--blue-bg);   color: var(--blue); }
 .b-piso      { background: var(--amber-bg);  color: var(--amber); }
-.b-rechapado { background: var(--violet-bg); color: var(--violet); }
+.b-rechapado { background: #f4f4f4; color: var(--text2); }
 .b-ok        { background: var(--green-bg);  color: var(--green); }
 .b-alert { background: #fef2f2; color: #991b1b; }
 .b-warn  { background: #fffbeb; color: #b45309; }

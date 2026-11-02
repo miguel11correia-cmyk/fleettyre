@@ -38,12 +38,6 @@ function countBy(arr, key) {
   }, {});
 }
 
-function makeLegend(labels, colors) {
-  return labels
-    .map((l, i) => `<span><span class="lsq" style="background:${colors[i % colors.length]}"></span>${l}</span>`)
-    .join('');
-}
-
 // ── CÁLCULOS DE DESGASTE ──────────────────────────────────────────
 
 function escIni(tipo) {
@@ -312,6 +306,43 @@ function showFeedback(id, msg, isError = false) {
 
 // ── GRÁFICOS ──────────────────────────────────────────────────────
 
+function truncarRotuloGrafico(s, max = 14) {
+  s = String(s ?? '');
+  return s.length > max ? s.slice(0, max - 1) + '…' : s;
+}
+
+// Desenha o nome de cada categoria em pequeno, na diagonal, mesmo por
+// cima da respetiva barra — usado nos gráficos que substituíram os
+// circulares (ver mkChart, extraOpts.topLabels), para não precisarem
+// de legenda à parte.
+const barTopLabelsPlugin = {
+  id: 'barTopLabels',
+  afterDatasetsDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    if (!meta || !meta.data) return;
+    const { ctx } = chart;
+    const labels = chart.data.labels;
+
+    ctx.save();
+    ctx.font = "10px 'Inter', -apple-system, sans-serif";
+    ctx.fillStyle = '#5b6770';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    meta.data.forEach((bar, i) => {
+      const label = truncarRotuloGrafico(labels[i]);
+      if (!label) return;
+      ctx.save();
+      ctx.translate(bar.x, bar.y - 6);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillText(label, 0, 0);
+      ctx.restore();
+    });
+
+    ctx.restore();
+  },
+};
+
 function mkChart(id, type, labels, data, colors, extraOpts = {}) {
   if (charts[id]) { charts[id].destroy(); }
   const el = document.getElementById(id);
@@ -339,6 +370,16 @@ function mkChart(id, type, labels, data, colors, extraOpts = {}) {
   if (type === 'line')     opts.scales = scalesBar;
   if (type === 'doughnut') opts.cutout = '62%';
 
+  // Barras que substituem gráficos circulares: rótulo em cima de cada
+  // barra em vez de eixo X + legenda à parte.
+  if (type === 'bar' && extraOpts.topLabels) {
+    opts.layout = { padding: { top: 34, left: 22 } };
+    opts.scales = {
+      x: { grid: { display: false }, ticks: { display: false } },
+      y: { grid: { color: gridC }, ticks: { color: tickC, font: { size: 10 } } },
+    };
+  }
+
   const dataset = {
     data,
     borderWidth: type === 'line' ? 2 : 0,
@@ -360,5 +401,6 @@ function mkChart(id, type, labels, data, colors, extraOpts = {}) {
     type,
     data: { labels, datasets: [dataset] },
     options: { ...opts, ...extraOpts },
+    plugins: extraOpts.topLabels ? [barTopLabelsPlugin] : [],
   });
 }
