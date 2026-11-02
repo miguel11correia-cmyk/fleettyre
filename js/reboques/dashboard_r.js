@@ -48,7 +48,7 @@ async function loadDashboardReboques() {
 
   // ── Gráfico tipo (só pneus ativos) ──
   const tipos   = countBy(activos, 'tipo');
-  const tLabels = Object.keys(tipos);
+  const tLabels = Object.keys(tipos).sort((a, b) => tipos[b] - tipos[a]);
   mkChart('rc-tipo', 'bar', tLabels, tLabels.map(k => tipos[k]), CHART_NEUTRAL, { topLabels: true });
 
   // ── Gráfico fornecedor (só pneus ativos — todos, não só os 8 maiores,
