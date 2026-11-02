@@ -50,9 +50,10 @@ async function loadDashboardReboques() {
   const tLabels = Object.keys(tipos);
   mkChart('rc-tipo', 'bar', tLabels, tLabels.map(k => tipos[k]), CHART_NEUTRAL, { topLabels: true });
 
-  // ── Gráfico fornecedor (só pneus ativos) ──
+  // ── Gráfico fornecedor (só pneus ativos — todos, não só os 8 maiores,
+  // para a soma das barras bater sempre certo com "Pneus ativos") ──
   const forns = countBy(activos, 'fornecedor');
-  const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]).slice(0, 8);
+  const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]);
   mkChart('rc-forn', 'bar', fKeys, fKeys.map(k => forns[k]), CHART_NEUTRAL, { topLabels: true });
 
   // ── Gráfico marca (só pneus ativos) ──
