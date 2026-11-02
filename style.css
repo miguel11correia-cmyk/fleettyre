@@ -428,6 +428,13 @@ body {
 .cw-t{ position: relative; width: 100%; height: 220px; }
 .cw canvas, .cw-t canvas { max-width: 100%; }
 
+/* Gráfico de barras com muitas categorias (ver prepararCanvasBarras em
+   utils.js): em vez de espremer as barras até ficarem ilegíveis, o
+   contentor ganha scroll horizontal e o canvas fica com a largura que
+   as barras precisam para se lerem bem. */
+.bar-scroll-outer { overflow-x: auto; }
+.bar-scroll-inner { position: relative; height: 100%; }
+
 /* ── FORMS ────────────────────────────────────────────────────── */
 .frow { margin-bottom: 10px; }
 .frow label {
