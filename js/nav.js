@@ -50,6 +50,13 @@ function navInicio() {
   fecharPainel();
   document.getElementById('btn-inicio').classList.add('active');
   document.getElementById('btn-registos')?.classList.remove('active');
+  // Início não pertence a nenhuma das três secções — esconde sempre o
+  // submenu de quem quer que tenha sido a última visitada.
+  document.getElementById('menu-registos').classList.add('hidden');
+  document.getElementById('menu-veiculos').classList.add('hidden');
+  document.getElementById('menu-reboques').classList.add('hidden');
+  document.getElementById('btn-veiculos').classList.remove('secao-active');
+  document.getElementById('btn-reboques').classList.remove('secao-active');
   document.getElementById('page-inicio').classList.remove('hidden');
   loadInicio();
 }
