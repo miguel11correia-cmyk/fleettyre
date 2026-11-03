@@ -232,7 +232,7 @@ async function _guardarRegistoGeralUnico(pos) {
     custo_mo:    custoMO,
     custo_total: (custoP || 0) + (custoMO || 0) || null,
     mes_desmont:     null,
-    escultura_final: null,
+    rasto_final: null,
     destino:         null,
   };
 

@@ -122,8 +122,8 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
   const kmsEf = kmsEfInfo
     ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km atual">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
     : '—';
-  const esc    = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
-  const escCls = (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
+  const esc    = r.rasto_final != null ? r.rasto_final + ' mm' : '—';
+  const escCls = (r.rasto_final != null && r.rasto_final <= 3) ? 'badge b-alert' : '';
   const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do veículo — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:nowrap">
       <button class="btn btn-s btn-s-brand" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
@@ -155,8 +155,8 @@ function linhaHistorico(r, kmAtual) {
   const kmsEf = kmsEfInfo
     ? (kmsEfInfo.estimado ? '<span style="color:var(--text3)" title="Estimado a partir do km atual">~' + fmt(kmsEfInfo.km) + '</span>' : fmt(kmsEfInfo.km))
     : '—';
-  const esc   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
-  const escCls= (r.escultura_final != null && r.escultura_final <= 3) ? 'badge b-alert' : '';
+  const esc   = r.rasto_final != null ? r.rasto_final + ' mm' : '—';
+  const escCls= (r.rasto_final != null && r.rasto_final <= 3) ? 'badge b-alert' : '';
   const custoTot = (r.custo_pneu || 0) + (r.custo_mo || 0);
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:nowrap">
       ${!r.mes_desmont ? `<button class="btn btn-s btn-s-brand" onclick="abrirPainel(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>` : '<span style="color:var(--text3)" title="Desmontado"><svg viewBox="0 0 24 24" style="width:14px;height:14px"><use href="#icon-check"/></svg></span>'}
@@ -243,7 +243,12 @@ async function abrirPainel(id) {
      <span style="color:var(--text2)">Montagem: ${data.mes_mont} · KMs montagem: ${fmt(data.kms_mont)}</span>`;
 
   // Limpar campos
-  ['d-mes','d-kms','d-esc','d-mo'].forEach(id => { document.getElementById(id).value = ''; });
+  ['d-mes','d-kms','d-mo'].forEach(id => { document.getElementById(id).value = ''; });
+  // Predefinido a 2.5mm — ponto típico de substituição por segurança/
+  // integridade da carcaça (bem acima do mínimo legal de 1.6mm), para
+  // não ficar em branco por omissão. O utilizador substitui se souber
+  // o valor real medido.
+  document.getElementById('d-esc').value = '2.5';
   document.getElementById('d-dest').value = 'Remix';
   document.getElementById('d-feedback').classList.add('hidden');
 
@@ -298,7 +303,7 @@ async function guardarDesmontagem() {
   const updates = {
     mes_desmont:     mes,
     kms_desmont:     kms,
-    escultura_final: (esc != null && esc >= 0 && esc <= 20) ? esc : null,
+    rasto_final: (esc != null && esc >= 0 && esc <= 20) ? esc : null,
     destino:         dest,
     custo_mo:        mo,
     custo_total:     custoTotalDesm,
@@ -343,7 +348,7 @@ async function abrirEdicao(id) {
   document.getElementById('e-mo').value      = data.custo_mo     != null ? data.custo_mo   : '';
   document.getElementById('e-mes-d').value   = data.mes_desmont  || '';
   document.getElementById('e-kms-d').value   = data.kms_desmont  || '';
-  document.getElementById('e-esc').value     = data.escultura_final != null ? data.escultura_final : '';
+  document.getElementById('e-esc').value     = data.rasto_final != null ? data.rasto_final : '';
   document.getElementById('e-dest').value    = data.destino      || '';
 
   document.getElementById('e-feedback').classList.add('hidden');
@@ -379,7 +384,7 @@ async function guardarEdicao() {
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('e-feedback', 'Mês de montagem inválido. Use o formato AAAA-MM.', true); return; }
   if (!kms || kms <= 0) { showFeedback('e-feedback', 'KMs de montagem são obrigatórios.', true); return; }
   if (kmsD && kmsD <= kms) { showFeedback('e-feedback', `KMs de desmontagem (${kmsD}) têm de ser maiores que os de montagem (${kms}).`, true); return; }
-  if (esc != null && (esc < 0 || esc > 25)) { showFeedback('e-feedback', 'Escultura tem de ser entre 0 e 25mm.', true); return; }
+  if (esc != null && (esc < 0 || esc > 25)) { showFeedback('e-feedback', 'Rasto tem de ser entre 0 e 25mm.', true); return; }
 
   const updates = {
     matricula:       mat,
@@ -396,7 +401,7 @@ async function guardarEdicao() {
     custo_total:     ((custoP || 0) + (custoMO || 0)) || null,
     mes_desmont:     mesD,
     kms_desmont:     kmsD,
-    escultura_final: esc,
+    rasto_final: esc,
     destino:         dest,
   };
 

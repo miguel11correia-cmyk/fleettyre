@@ -172,11 +172,11 @@ function renderStockDesmontados(pneus, tabela) {
 }
 
 function linhaPendenteStock(r, tabela, optsForn) {
-  const escStr = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  const escStr = r.rasto_final != null ? r.rasto_final + ' mm' : '—';
   return '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:6px">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px">'
     + '<div style="font-size:12px;white-space:nowrap"><strong>' + r.matricula + '</strong> <span style="color:var(--text3)">· ' + (r.posicao || '—') + '</span></div>'
-    + '<div style="font-size:11px;color:var(--text2);text-align:right">' + (r.marca || '—') + ' ' + (r.medida || '') + (r.escultura_final != null ? ' · ' + escStr : '') + '</div>'
+    + '<div style="font-size:11px;color:var(--text2);text-align:right">' + (r.marca || '—') + ' ' + (r.medida || '') + (r.rasto_final != null ? ' · ' + escStr : '') + '</div>'
     + '</div>'
     + '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">'
     + '<select id="forn-pronto-' + r.id + '" style="height:24px;font-size:10px;padding:0 2px;border:0.5px solid var(--border2);border-radius:4px;flex:1;min-width:90px">' + optsForn + '</select>'
@@ -426,7 +426,7 @@ async function abrirSelStock() {
         const rDestCls = (DESTINOS_CARTAO.find(d => d.destino === r.destino) || {}).cls || 'b-remix';
         html += '<span class="badge ' + rDestCls + '" style="flex-shrink:0">' + r.destino + '</span>';
         html += '</div>';
-        html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.escultura_final!=null?' · '+r.escultura_final+'mm':'') + (r.fornecedor_pronto ? ' · ' + r.fornecedor_pronto : '') + (rCustoPronto>0?' · <span style="color:var(--amber);font-weight:500">'+fmtEur(rCustoPronto)+'</span>':'') + '</div>';
+        html += '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + origem + ' ' + r.matricula + ' · ' + (r.posicao||'—') + ' · Desmont.: ' + (r.mes_desmont||'—') + (r.rasto_final!=null?' · '+r.rasto_final+'mm':'') + (r.fornecedor_pronto ? ' · ' + r.fornecedor_pronto : '') + (rCustoPronto>0?' · <span style="color:var(--amber);font-weight:500">'+fmtEur(rCustoPronto)+'</span>':'') + '</div>';
         html += '</div>';
       });
     }

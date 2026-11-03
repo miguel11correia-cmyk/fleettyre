@@ -453,7 +453,7 @@
         <div class="kpi blue"><div class="kpi-l">Pneus ativos</div><div class="kpi-v blue" id="k-activos">—</div><div class="kpi-s">sem desmontagem</div></div>
         <div class="kpi"><div class="kpi-l">Total registados</div><div class="kpi-v" id="k-total">—</div><div class="kpi-s">histórico completo</div></div>
         <div class="kpi green"><div class="kpi-l">Matrículas</div><div class="kpi-v green" id="k-mats">—</div><div class="kpi-s">veículos na frota</div></div>
-        <div class="kpi red"><div class="kpi-l">Alertas ativos</div><div class="kpi-v red" id="k-alerts">—</div><div class="kpi-s">escultura ≤ 3mm</div></div>
+        <div class="kpi red"><div class="kpi-l">Alertas ativos</div><div class="kpi-v red" id="k-alerts">—</div><div class="kpi-s">rasto ≤ 3mm</div></div>
         <div class="kpi amber"><div class="kpi-l">Custo total (€)</div><div class="kpi-v amber" id="k-custo">—</div><div class="kpi-s">com valor registado</div></div>
         <div class="kpi"><div class="kpi-l">Custo médio/pneu</div><div class="kpi-v" id="k-med">—</div><div class="kpi-s">só com custo preenchido</div></div>
       </div>
@@ -489,7 +489,7 @@
       <div class="g2">
         <div class="card">
           <div class="ct">Taxa de desgaste por posição (mm/1000km)</div>
-          <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Direção vs. Tração: só com registos históricos completos (montagem, desmontagem e escultura final).</p>
+          <p style="font-size:11px;color:var(--text3);margin-bottom:8px">Direção vs. Tração: só com registos históricos completos (montagem, desmontagem e rasto final).</p>
           <div class="cw-t"><canvas id="c-desgaste-pos" aria-label="Taxa de desgaste por posição"></canvas></div>
         </div>
         <div class="card">
@@ -657,7 +657,7 @@
             <table id="frota-lugares-table">
               <thead><tr>
                 <th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th>
-                <th>KMs Mont.</th><th>Mês Mont.</th><th>KMs Efect.</th><th>Escultura</th>
+                <th>KMs Mont.</th><th>Mês Mont.</th><th>KMs Efect.</th><th>Rasto</th>
                 <th>Custo €</th><th>M.Obra €</th><th>Ação</th>
               </tr></thead>
               <tbody id="frota-lugares-tbody"></tbody>
@@ -674,7 +674,7 @@
               <thead><tr>
                 <th>Mês Mont.</th><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th>
                 <th>KMs Mont.</th><th>Mês Desmont.</th><th>KMs Desmont.</th>
-                <th>KMs Efect.</th><th>Escultura</th><th>Destino</th>
+                <th>KMs Efect.</th><th>Rasto</th><th>Destino</th>
                 <th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Ação</th>
               </tr></thead>
               <tbody id="frota-tbody"></tbody>
@@ -693,7 +693,7 @@
           <div class="panel-info" id="painel-info"></div>
           <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="d-mes" placeholder="ex: 2026-07" maxlength="7" oninput="maskMesInput(this)"></div>
           <div class="frow"><label>KMs conta-quilómetros *</label><input type="number" id="d-kms" placeholder="ex: 785000" min="0"></div>
-          <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="d-esc" placeholder="—" min="0" max="20" step="0.5"></div>
+          <div class="frow"><label>Rasto restante (mm)</label><input type="number" class="qty-spin" id="d-esc" placeholder="—" min="0" max="20" step="0.5" value="2.5"></div>
           <div class="frow"><label>Destino do pneu</label>
             <select id="d-dest" data-fancy>
               <option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option>
@@ -738,7 +738,7 @@
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Desmontagem</div>
         <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="e-mes-d" maxlength="7" oninput="maskMesInput(this)"></div>
         <div class="frow"><label>KMs desmontagem</label><input type="number" id="e-kms-d" min="0"></div>
-        <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="e-esc" placeholder="—" min="0" max="20" step="0.5"></div>
+        <div class="frow"><label>Rasto restante (mm)</label><input type="number" class="qty-spin" id="e-esc" placeholder="—" min="0" max="20" step="0.5"></div>
         <div class="frow"><label>Destino</label>
           <select id="e-dest" data-fancy><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
         </div>
@@ -780,9 +780,9 @@
         <div class="ct">📐 Como o sistema calcula o desgaste</div>
         <div class="info-box">
           <p>A taxa de desgaste é calculada a partir dos registos de desmontagem já existentes:</p>
-          <p class="formula">Taxa (mm/1000km) = (Escultura inicial − Escultura final) ÷ KMs efetuados × 1000</p>
-          <p>Escultura inicial assumida: <strong>16mm</strong> para pneus Novos · <strong>14mm</strong> para Remix/Rechapado · <strong>12mm</strong> para Piso Aberto.</p>
-          <p>À medida que forem registadas mais desmontagens com escultura, o sistema fica mais preciso.</p>
+          <p class="formula">Taxa (mm/1000km) = (Rasto inicial − Rasto final) ÷ KMs efetuados × 1000</p>
+          <p>Rasto inicial assumida: <strong>16mm</strong> para pneus Novos · <strong>14mm</strong> para Remix/Rechapado · <strong>10mm</strong> para Piso Aberto.</p>
+          <p>À medida que forem registadas mais desmontagens com rasto, o sistema fica mais preciso.</p>
         </div>
       </div>
       <div class="card">
@@ -794,7 +794,7 @@
           <table>
             <thead><tr>
               <th>Matrícula</th><th>Posição</th><th>Marca</th><th>Tipo</th>
-              <th>KMs efetuados</th><th>Escultura final (mm)</th><th>Taxa (mm/1000km)</th>
+              <th>KMs efetuados</th><th>Rasto final (mm)</th><th>Taxa (mm/1000km)</th>
             </tr></thead>
             <tbody id="desgaste-tbody"></tbody>
           </table>
@@ -1291,7 +1291,7 @@
         <div class="card hidden" id="rfrota-lugares-card">
           <div class="ct">Posições</div>
           <div class="table-wrap"><table>
-            <thead><tr><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Mês Mont.</th><th>Meses ativo</th><th>Escultura</th><th>Custo €</th><th>M.Obra €</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Mês Mont.</th><th>Meses ativo</th><th>Rasto</th><th>Custo €</th><th>M.Obra €</th><th>Ação</th></tr></thead>
             <tbody id="rfrota-lugares-tbody"></tbody>
           </table></div>
         </div>
@@ -1301,7 +1301,7 @@
             <span id="rfrota-historico-seta" style="font-size:11px;color:var(--text3);font-weight:400;flex-shrink:0;margin-left:8px">▸ Expandir</span>
           </div>
           <div class="table-wrap hidden" id="rfrota-historico-wrap"><table class="table-compact">
-            <thead><tr><th>Mês Mont.</th><th>Eixo</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Meses ativo</th><th>Mês Desmont.</th><th>Escultura</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Ação</th></tr></thead>
+            <thead><tr><th>Mês Mont.</th><th>Eixo</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Meses ativo</th><th>Mês Desmont.</th><th>Rasto</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Ação</th></tr></thead>
             <tbody id="rfrota-tbody"></tbody>
           </table></div>
         </div>
@@ -1313,7 +1313,7 @@
         <div class="panel-body">
           <div class="panel-info" id="rpainel-info"></div>
           <div class="frow"><label>Mês de desmontagem * (AAAA-MM)</label><input type="text" id="rd-mes" placeholder="ex: 2026-07" maxlength="7" oninput="maskMesInput(this)"></div>
-          <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="rd-esc" placeholder="—" min="0" max="20" step="0.5"></div>
+          <div class="frow"><label>Rasto restante (mm)</label><input type="number" class="qty-spin" id="rd-esc" placeholder="—" min="0" max="20" step="0.5" value="2.5"></div>
           <div class="frow"><label>Destino</label><select id="rd-dest" data-fancy><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="rd-mo" min="0" step="0.01"></div>
           <button class="btn btn-p w100" onclick="guardarDesmontazemReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg> Guardar desmontagem</button>
@@ -1336,7 +1336,7 @@
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
           <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7" oninput="maskMesInput(this)"></div>
-          <div class="frow"><label>Escultura restante (mm)</label><input type="number" class="qty-spin" id="re-esc" placeholder="—" min="0" max="20" step="0.5"></div>
+          <div class="frow"><label>Rasto restante (mm)</label><input type="number" class="qty-spin" id="re-esc" placeholder="—" min="0" max="20" step="0.5"></div>
           <div class="frow"><label>Destino</label><select id="re-dest" data-fancy><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
           <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
           <div id="re-feedback" class="feedback hidden"></div>
@@ -1379,7 +1379,7 @@
       <div class="card">
         <div class="ct">📁 Histórico de durações</div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Matrícula</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Duração</th><th>Escultura final</th></tr></thead>
+          <thead><tr><th>Matrícula</th><th>Eixo</th><th>Marca</th><th>Tipo</th><th>Duração</th><th>Rasto final</th></tr></thead>
           <tbody id="r-hist-tbody"></tbody>
         </table></div>
       </div>

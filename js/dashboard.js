@@ -123,7 +123,7 @@ async function loadDashboard() {
   const tbodyPos = document.getElementById('desgaste-pos-tbody');
   if (tbodyPos) {
     if (posKeys.length === 0) {
-      tbodyPos.innerHTML = '<tr><td colspan="4" class="empty-msg" style="text-align:center;padding:12px">Sem registos históricos com escultura final ainda.</td></tr>';
+      tbodyPos.innerHTML = '<tr><td colspan="4" class="empty-msg" style="text-align:center;padding:12px">Sem registos históricos com rasto final ainda.</td></tr>';
     } else {
       tbodyPos.innerHTML = posKeys.map(k => {
         const a       = posAgg[k];

@@ -110,7 +110,7 @@ function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
   const alertCls = mesesActivo >= lim.critico ? 'b-alert' :
                    mesesActivo >= lim.aviso   ? 'b-warn'  : '';
   const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
-  const escStr   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  const escStr   = r.rasto_final != null ? r.rasto_final + ' mm' : '—';
   const avisoIcon = aviso ? ` <span title="Posição não reconhecida na configuração actual do reboque — edite o registo para corrigir" style="color:var(--red)">⚠</span>` : '';
   const acBtn = `<div style="display:flex;gap:4px;flex-wrap:nowrap">
       <button class="btn btn-s btn-s-brand" onclick="abrirPainelReboque(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
@@ -142,7 +142,7 @@ function linhaHistoricoReboque(r, hoje) {
   const alertCls = mesesActivo >= lim.critico ? 'b-alert' :
                    mesesActivo >= lim.aviso   ? 'b-warn'  : '';
   const mesesStr = `<span class="${alertCls ? 'badge ' + alertCls : ''}">${mesesActivo} meses</span>`;
-  const escStr   = r.escultura_final != null ? r.escultura_final + ' mm' : '—';
+  const escStr   = r.rasto_final != null ? r.rasto_final + ' mm' : '—';
   const acBtn    = !r.mes_desmont
     ? `<div style="display:flex;gap:4px;flex-wrap:nowrap">
          <button class="btn btn-s btn-s-brand" onclick="abrirPainelReboque(${r.id})"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar</button>
@@ -226,7 +226,12 @@ async function abrirPainelReboque(id) {
        Limite eixo ${data.eixo || '?'}: aviso ${lim.aviso}m · crítico ${lim.critico}m
      </span>`;
 
-  ['rd-mes','rd-esc','rd-mo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['rd-mes','rd-mo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  // Predefinido a 2.5mm — ponto típico de substituição por segurança/
+  // integridade da carcaça (bem acima do mínimo legal de 1.6mm), para
+  // não ficar em branco por omissão. O utilizador substitui se souber
+  // o valor real medido.
+  document.getElementById('rd-esc').value = '2.5';
   document.getElementById('rd-dest').value = 'Remix';
   document.getElementById('rd-feedback').classList.add('hidden');
   document.getElementById('rpainel-desmont').classList.add('open');
@@ -250,7 +255,7 @@ async function guardarDesmontazemReboque() {
 
   const updates = {
     mes_desmont:     mes,
-    escultura_final: (esc != null && esc >= 0 && esc <= 25) ? esc : null,
+    rasto_final: (esc != null && esc >= 0 && esc <= 25) ? esc : null,
     destino:         dest,
     custo_mo:        mo,
   };
@@ -286,7 +291,7 @@ async function abrirEdicaoReboque(id) {
   document.getElementById('re-custo').value  = data.custo_pneu   > 0 ? data.custo_pneu : '';
   document.getElementById('re-mo').value     = data.custo_mo     > 0 ? data.custo_mo   : '';
   document.getElementById('re-mes-d').value  = data.mes_desmont  || '';
-  document.getElementById('re-esc').value    = data.escultura_final != null ? data.escultura_final : '';
+  document.getElementById('re-esc').value    = data.rasto_final != null ? data.rasto_final : '';
   document.getElementById('re-dest').value   = data.destino      || '';
 
   document.getElementById('re-feedback').classList.add('hidden');
@@ -323,7 +328,7 @@ async function guardarEdicaoReboque() {
     marca: marca || null, medida: medida || null, subtipo: subtipo || null, tipo: tipo || null,
     fornecedor: forn || null, custo_pneu: custoP, custo_mo: custoMO,
     custo_total: ((custoP || 0) + (custoMO || 0)) || null,
-    mes_desmont: mesD, escultura_final: esc, destino: dest,
+    mes_desmont: mesD, rasto_final: esc, destino: dest,
   };
 
   loading(true);
