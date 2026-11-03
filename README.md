@@ -263,9 +263,9 @@ Em **"Marcas"** (veículos e reboques) o cálculo é diferente por natureza: nã
 
 ### Taxa de desgaste
 ```
-Taxa (mm/1000km) = (Escultura inicial − Escultura final) ÷ KMs efectuados × 1000
+Taxa (mm/1000km) = (Rasto inicial − Rasto final) ÷ KMs efectuados × 1000
 ```
-Escultura inicial assumida: 16mm (Novo), 14mm (Remix/Rechapado), 12mm (Piso Aberto). Só calculada para registos com escultura final entre 0 e 20mm, agrupada por família de posição (Direção/Tração/Pusher/Tag/Eixo N), não pelo lugar exacto.
+Rasto inicial assumido: 16mm (Novo), 14mm (Remix/Rechapado), 10mm (Piso Aberto). Só calculada para registos com rasto final entre 0 e 20mm, agrupada por família de posição (Direção/Tração/Pusher/Tag/Eixo N), não pelo lugar exacto.
 
 ---
 

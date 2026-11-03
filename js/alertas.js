@@ -99,7 +99,7 @@ const ALERTAS_NIVEL_INFO = {
 let alertasFiltro = 'critico';
 let alertasPorVeiculo = [];
 
-// Estimativa de escultura actual de cada pneu activo, pela mesma cascata
+// Estimativa de rasto actual de cada pneu activo, pela mesma cascata
 // usada em toda a app (ver taxaEstimada/kmsReaisOuEstimados). Extraído de
 // loadAlertas() para ser reutilizável — o Dashboard usa a mesma função,
 // em vez de uma contagem diferente, para que o número de alertas nunca
@@ -205,11 +205,11 @@ async function loadAlertas() {
   }
 
   // Histórico de taxas
-  const tbody2 = document.getElementById('escultura-tbody');
+  const tbody2 = document.getElementById('rasto-tbody');
   const comDesgaste = data.filter(r => taxaDesgaste(r) !== null);
   if (tbody2) {
     if (comDesgaste.length === 0) {
-      tbody2.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem registos históricos com escultura final ainda.</td></tr>';
+      tbody2.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem registos históricos com rasto final ainda.</td></tr>';
     } else {
       tbody2.innerHTML = comDesgaste.map(r => {
         const taxa = taxaDesgaste(r).toFixed(3);
@@ -220,7 +220,7 @@ async function loadAlertas() {
           <td>${r.marca   || '—'}</td>
           <td>${tipoBadge(r.tipo)}</td>
           <td style="text-align:right">${fmt(kmsEf)}</td>
-          <td style="text-align:right">${r.escultura_final} mm</td>
+          <td style="text-align:right">${r.rasto_final} mm</td>
           <td style="text-align:right">${taxa} mm/1000km</td>
         </tr>`;
       }).join('');

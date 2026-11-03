@@ -98,7 +98,7 @@ async function loadAlertasReboques() {
           <td>${r.marca || '—'}</td>
           <td>${tipoBadge(r.tipo)}</td>
           <td><span class="${cls}">${meses} meses</span></td>
-          <td>${r.escultura_final != null ? r.escultura_final + '\u202fmm' : '—'}</td>
+          <td>${r.rasto_final != null ? r.rasto_final + '\u202fmm' : '—'}</td>
         </tr>`;
       }).join('');
     }

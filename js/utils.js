@@ -70,14 +70,14 @@ function countBy(arr, key) {
 function escIni(tipo) {
   if (tipo === 'Remix')       return 14;
   if (tipo === 'Rechapado')   return 14;
-  if (tipo === 'Piso Aberto') return 12;
+  if (tipo === 'Piso Aberto') return 10;
   return 16;
 }
 
 function taxaDesgaste(r) {
   const kmsEf = (r.kms_desmont || 0) - (r.kms_mont || 0);
   if (kmsEf <= 0) return null;
-  const efinal = r.escultura_final;
+  const efinal = r.rasto_final;
   if (efinal == null || efinal < 0 || efinal > 20) return null;
   const eini = escIni(r.tipo);
   const desgaste = eini - efinal;
