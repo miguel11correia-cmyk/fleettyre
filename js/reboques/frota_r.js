@@ -226,7 +226,12 @@ async function abrirPainelReboque(id) {
        Limite eixo ${data.eixo || '?'}: aviso ${lim.aviso}m · crítico ${lim.critico}m
      </span>`;
 
-  ['rd-mes','rd-esc','rd-mo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['rd-mes','rd-mo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  // Predefinido a 2.5mm — ponto típico de substituição por segurança/
+  // integridade da carcaça (bem acima do mínimo legal de 1.6mm), para
+  // não ficar em branco por omissão. O utilizador substitui se souber
+  // o valor real medido.
+  document.getElementById('rd-esc').value = '2.5';
   document.getElementById('rd-dest').value = 'Remix';
   document.getElementById('rd-feedback').classList.add('hidden');
   document.getElementById('rpainel-desmont').classList.add('open');

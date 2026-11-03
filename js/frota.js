@@ -243,7 +243,12 @@ async function abrirPainel(id) {
      <span style="color:var(--text2)">Montagem: ${data.mes_mont} · KMs montagem: ${fmt(data.kms_mont)}</span>`;
 
   // Limpar campos
-  ['d-mes','d-kms','d-esc','d-mo'].forEach(id => { document.getElementById(id).value = ''; });
+  ['d-mes','d-kms','d-mo'].forEach(id => { document.getElementById(id).value = ''; });
+  // Predefinido a 2.5mm — ponto típico de substituição por segurança/
+  // integridade da carcaça (bem acima do mínimo legal de 1.6mm), para
+  // não ficar em branco por omissão. O utilizador substitui se souber
+  // o valor real medido.
+  document.getElementById('d-esc').value = '2.5';
   document.getElementById('d-dest').value = 'Remix';
   document.getElementById('d-feedback').classList.add('hidden');
 
