@@ -136,20 +136,85 @@ function handleContacto(req, res) {
   });
 }
 
+// Cabeçalhos de segurança aplicados a todas as respostas.
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data:",
+    "connect-src 'self' https://*.supabase.co",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join('; '),
+};
+
+// Rate limiting simples em memória para o formulário de contacto — chave
+// por IP, janela deslizante. Suficiente para travar abuso/spam básico;
+// não sobrevive a reinícios do processo nem é partilhado entre instâncias,
+// mas o Railway corre uma única instância deste serviço.
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const contactoHits = new Map();
+
+function limiteExcedido(ip) {
+  const agora = Date.now();
+  const hits = (contactoHits.get(ip) || []).filter(t => agora - t < RATE_LIMIT_WINDOW_MS);
+  hits.push(agora);
+  contactoHits.set(ip, hits);
+  return hits.length > RATE_LIMIT_MAX;
+}
+
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/api/contacto') {
+    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    if (limiteExcedido(ip)) {
+      res.writeHead(429, { ...SECURITY_HEADERS, 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ ok: false, erro: 'Demasiados pedidos. Tenta mais tarde.' }));
+      return;
+    }
     handleContacto(req, res);
     return;
   }
 
-  let filePath = req.url === '/' ? '/index.html' : req.url;
-  filePath = path.join(__dirname, filePath.split('?')[0]);
+  let urlPath = (req.url === '/' ? '/index.html' : req.url).split('?')[0];
+  const filePath = path.join(__dirname, path.normalize(urlPath));
+
+  // Impede path traversal (ex: /../../.env) — a resolução final tem de
+  // ficar dentro da pasta do projeto.
+  if (!filePath.startsWith(__dirname + path.sep) && filePath !== __dirname) {
+    res.writeHead(400);
+    res.end('Bad request');
+    return;
+  }
+
+  // Pastas/ficheiros que existem no repositório mas nunca devem ser
+  // servidos publicamente (histórico git, migrações SQL, config interna).
+  const relPath = path.relative(__dirname, filePath);
+  const primeiroSegmento = relPath.split(path.sep)[0];
+  if (
+    relPath.split(path.sep).some(seg => seg.startsWith('.')) ||
+    ['migrations', 'supabase', 'node_modules'].includes(primeiroSegmento)
+  ) {
+    res.writeHead(404);
+    res.end('Not found');
+    return;
+  }
 
   const ext  = path.extname(filePath);
   const mime = MIME[ext] || 'text/plain';
 
   // Headers para desativar cache no Cloudflare e browsers
   const headers = {
+    ...SECURITY_HEADERS,
     'Content-Type': mime,
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
