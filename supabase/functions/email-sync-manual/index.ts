@@ -10,7 +10,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { obterEmpresaId } from "../_shared/auth.ts";
 import { sincronizarIntegracao } from "../_shared/email-sync-logica.ts";
-import { CORS_HEADERS, tratarPreflight } from "../_shared/cors.ts";
+import { corsHeaders, tratarPreflight } from "../_shared/cors.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 
   const empresaId = await obterEmpresaId(req);
   if (!empresaId) {
-    return new Response(JSON.stringify({ erro: "Não autenticado ou sem empresa associada." }), { status: 401, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ erro: "Não autenticado ou sem empresa associada." }), { status: 401, headers: corsHeaders(req) });
   }
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -35,12 +35,12 @@ Deno.serve(async (req) => {
     .maybeSingle();
 
   if (error) {
-    return new Response(JSON.stringify({ ok: false, erro: error.message }), { status: 500, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ ok: false, erro: error.message }), { status: 500, headers: corsHeaders(req) });
   }
   if (!integ) {
-    return new Response(JSON.stringify({ ok: false, erro: "Sem integração de email activa." }), { status: 400, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ ok: false, erro: "Sem integração de email activa." }), { status: 400, headers: corsHeaders(req) });
   }
 
   const resultado = await sincronizarIntegracao(sb, integ);
-  return new Response(JSON.stringify(resultado), { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(resultado), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
 });

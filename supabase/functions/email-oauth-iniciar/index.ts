@@ -9,7 +9,7 @@
 import { obterEmpresaId } from "../_shared/auth.ts";
 import { gerarState } from "../_shared/oauth-state.ts";
 import { ADAPTADORES_EMAIL } from "../_shared/email-sync-logica.ts";
-import { CORS_HEADERS, tratarPreflight } from "../_shared/cors.ts";
+import { corsHeaders, tratarPreflight } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const REDIRECT_URI = `${SUPABASE_URL}/functions/v1/email-oauth-callback`;
@@ -20,20 +20,20 @@ Deno.serve(async (req) => {
 
   const empresaId = await obterEmpresaId(req);
   if (!empresaId) {
-    return new Response(JSON.stringify({ erro: "Não autenticado ou sem empresa associada." }), { status: 401, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ erro: "Não autenticado ou sem empresa associada." }), { status: 401, headers: corsHeaders(req) });
   }
 
   const url = new URL(req.url);
   const fornecedor = url.searchParams.get("fornecedor") ?? "outlook";
   const adaptador = ADAPTADORES_EMAIL[fornecedor];
   if (!adaptador) {
-    return new Response(JSON.stringify({ erro: `Fornecedor "${fornecedor}" não suportado.` }), { status: 400, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ erro: `Fornecedor "${fornecedor}" não suportado.` }), { status: 400, headers: corsHeaders(req) });
   }
 
   const state = await gerarState(empresaId, fornecedor);
   const urlAutorizacao = adaptador.obterUrlAutorizacao(state, REDIRECT_URI);
 
   return new Response(JSON.stringify({ url: urlAutorizacao }), {
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: { ...corsHeaders(req), "Content-Type": "application/json" },
   });
 });
