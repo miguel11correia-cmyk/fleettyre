@@ -72,8 +72,9 @@ migrations/                        — alterações à base de dados, ficheiros 
 supabase/functions/                — Edge Functions (Deno), deploy manual via Supabase CLI
   _shared/                          — código partilhado entre funções:
                                      auth.ts (obterEmpresaId — deriva a empresa sempre do JWT do
-                                     chamador), cors.ts (CORS_HEADERS/tratarPreflight, obrigatório
-                                     em qualquer função chamada via fetch() do browser),
+                                     chamador), cors.ts (corsHeaders()/tratarPreflight, restringe
+                                     a origem a fleet-tyre.com/localhost, obrigatório em qualquer
+                                     função chamada via fetch() do browser),
                                      adaptadores de telemetria e de email (ver secções próprias)
   telemetria-sync/                 — cron (pg_cron, diário): percorre todas as integrações de
                                      telemetria activas de todas as empresas

@@ -7,7 +7,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { obterEmpresaId } from "../_shared/auth.ts";
 import { ClienteIMAP } from "../_shared/imap-cliente.ts";
-import { CORS_HEADERS, tratarPreflight } from "../_shared/cors.ts";
+import { corsHeaders, tratarPreflight } from "../_shared/cors.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
   const empresaId = await obterEmpresaId(req);
   if (!empresaId) {
-    return new Response(JSON.stringify({ ok: false, erro: "Não autenticado ou sem empresa associada." }), { status: 401, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ ok: false, erro: "Não autenticado ou sem empresa associada." }), { status: 401, headers: corsHeaders(req) });
   }
 
   let dados: any;
@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
   const password = String(dados.password || "");
 
   if (!host || !usuario || !password) {
-    return new Response(JSON.stringify({ ok: false, erro: "Preenche o servidor, o utilizador e a password." }), { status: 400, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ ok: false, erro: "Preenche o servidor, o utilizador e a password." }), { status: 400, headers: corsHeaders(req) });
   }
 
   // Testar a ligação antes de gravar qualquer coisa.
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       await cliente.fechar();
     }
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, erro: `Não foi possível ligar: ${String(e)}` }), { status: 400, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ ok: false, erro: `Não foi possível ligar: ${String(e)}` }), { status: 400, headers: corsHeaders(req) });
   }
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
   );
 
   if (error) {
-    return new Response(JSON.stringify({ ok: false, erro: error.message }), { status: 500, headers: CORS_HEADERS });
+    return new Response(JSON.stringify({ ok: false, erro: error.message }), { status: 500, headers: corsHeaders(req) });
   }
-  return new Response(JSON.stringify({ ok: true }), { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders(req), "Content-Type": "application/json" } });
 });
