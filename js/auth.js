@@ -21,7 +21,16 @@ async function login() {
   await prosseguirAposAutenticacao();
 }
 
+function confirmarSair() {
+  document.getElementById('modal-sair').classList.remove('hidden');
+}
+
+function fecharConfirmarSair() {
+  document.getElementById('modal-sair').classList.add('hidden');
+}
+
 async function logout() {
+  document.getElementById('modal-sair').classList.add('hidden');
   await sb.auth.signOut();
   currentUser = null;
   currentEmpresaId = null;
@@ -37,7 +46,9 @@ async function logout() {
 }
 
 // Depois de autenticar: descobre se é admin e a que empresas tem acesso,
-// e mostra sempre o passo de escolha de empresa (confirmação manual).
+// e mostra sempre o passo de escolha de empresa (confirmação manual) —
+// excepto ao voltar de uma integração (ver voltaDeIntegracao() abaixo),
+// onde a empresa já tinha sido confirmada antes de sair da app.
 async function prosseguirAposAutenticacao() {
   const { data: resAdmin } = await sb.from('admins').select('user_id').eq('user_id', currentUser.id).maybeSingle();
   isAdmin = !!resAdmin;
@@ -49,18 +60,27 @@ async function prosseguirAposAutenticacao() {
     return;
   }
 
-  // Só uma empresa possível (caso normal, não-admin) — não há nada para
-  // escolher, por isso avança logo em vez de pedir confirmação manual.
-  if (empresasDisponiveis.length === 1) {
-    currentEmpresaId = empresasDisponiveis[0].id;
-    localStorage.setItem(EMPRESA_STORAGE_KEY, currentEmpresaId);
+  const guardada = localStorage.getItem(EMPRESA_STORAGE_KEY);
+  const valida   = empresasDisponiveis.some(e => e.id === guardada);
+
+  if (valida && voltaDeIntegracao()) {
+    currentEmpresaId = guardada;
     await mostrarApp();
     return;
   }
 
-  const guardada = localStorage.getItem(EMPRESA_STORAGE_KEY);
-  const valida   = empresasDisponiveis.some(e => e.id === guardada);
   mostrarSeletorEmpresa(empresasDisponiveis, valida ? guardada : empresasDisponiveis[0].id);
+}
+
+// Reload completo a voltar de uma integração (ex: callback OAuth do
+// Gmail/Outlook) — a sessão e a empresa já estavam confirmadas antes de
+// sair da app, não faz sentido voltar a pedir confirmação manual. A
+// telemetria (Cartrack) não passa por aqui porque liga via fetch directo,
+// sem reload de página — mas os parâmetros ficam previstos já agora.
+function voltaDeIntegracao() {
+  const params = new URLSearchParams(location.search);
+  return params.has('email_ligado') || params.has('email_erro')
+      || params.has('telemetria_ligado') || params.has('telemetria_erro');
 }
 
 // Empresas a que o utilizador tem acesso: todas se for admin, ou só a própria.

@@ -1092,6 +1092,31 @@ tbody tr:hover td { background: var(--bg); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── CONFIRMAR SAIR ───────────────────────────────────────────── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(247,246,244,0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.confirm-box {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  padding: 24px;
+  width: 280px;
+  text-align: center;
+}
+.confirm-box p { font-size: 13.5px; color: var(--text); margin-bottom: 18px; line-height: 1.4; }
+.confirm-actions { display: flex; gap: 8px; }
+.confirm-actions .btn { flex: 1; }
+
 /* ── REDUCED MOTION ───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .panel { transition: none; }

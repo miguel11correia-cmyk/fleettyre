@@ -314,7 +314,7 @@
     </div>
     <div class="sidebar-footer" style="display:flex;flex-direction:column;gap:6px">
       <button class="btn-logout" onclick="abrirPainelPassword()">Mudar password</button>
-      <button class="btn-logout" onclick="logout()">Sair</button>
+      <button class="btn-logout" onclick="confirmarSair()">Sair</button>
     </div>
   </nav>
   <div class="sidebar-scrim" onclick="toggleMobileSidebar(false)"></div>
@@ -1477,6 +1477,17 @@
 <!-- LOADING OVERLAY -->
 <div id="loading" class="loading-overlay hidden">
   <div class="spinner"></div>
+</div>
+
+<!-- CONFIRMAR SAIR -->
+<div id="modal-sair" class="confirm-overlay hidden">
+  <div class="confirm-box">
+    <p>Terminar sessão e sair da FleetTyre?</p>
+    <div class="confirm-actions">
+      <button class="btn" onclick="fecharConfirmarSair()">Cancelar</button>
+      <button class="btn btn-danger" onclick="logout()">Sair</button>
+    </div>
+  </div>
 </div>
 
 <!-- Configuração e estado global -->
