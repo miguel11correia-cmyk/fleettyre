@@ -21,7 +21,16 @@ async function login() {
   await prosseguirAposAutenticacao();
 }
 
+function confirmarSair() {
+  document.getElementById('modal-sair').classList.remove('hidden');
+}
+
+function fecharConfirmarSair() {
+  document.getElementById('modal-sair').classList.add('hidden');
+}
+
 async function logout() {
+  document.getElementById('modal-sair').classList.add('hidden');
   await sb.auth.signOut();
   currentUser = null;
   currentEmpresaId = null;
