@@ -49,6 +49,15 @@ async function prosseguirAposAutenticacao() {
     return;
   }
 
+  // Só uma empresa possível (caso normal, não-admin) — não há nada para
+  // escolher, por isso avança logo em vez de pedir confirmação manual.
+  if (empresasDisponiveis.length === 1) {
+    currentEmpresaId = empresasDisponiveis[0].id;
+    localStorage.setItem(EMPRESA_STORAGE_KEY, currentEmpresaId);
+    await mostrarApp();
+    return;
+  }
+
   const guardada = localStorage.getItem(EMPRESA_STORAGE_KEY);
   const valida   = empresasDisponiveis.some(e => e.id === guardada);
   mostrarSeletorEmpresa(empresasDisponiveis, valida ? guardada : empresasDisponiveis[0].id);
