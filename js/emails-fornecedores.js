@@ -67,7 +67,7 @@ async function carregarStatusEmail() {
   el.innerHTML = `
     <p style="margin-bottom:10px">Ligado via <strong>${nomeFornecedor}</strong> a <strong>${status.conta_email || '—'}</strong> · última sincronização: ${ultima}</p>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-p" onclick="sincronizarEmailAgora()">↻ Sincronizar agora</button>
+      <button class="btn btn-p" id="btn-sync-email" onclick="sincronizarEmailAgora()">↻ Sincronizar agora</button>
       <button class="btn" onclick="desligarEmail()">Desligar</button>
     </div>`;
 }
@@ -124,8 +124,18 @@ async function desligarEmail() {
 }
 
 async function sincronizarEmailAgora() {
-  showFeedback('email-forn-feedback', 'A sincronizar...', false);
+  const btn = document.getElementById('btn-sync-email');
+  const textoOriginal = btn?.innerHTML;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-sm"></span>A sincronizar...';
+  }
+  showFeedback('email-forn-feedback', '', false);
   const resultado = await chamarFuncaoEmail('email-sync-manual', { method: 'POST' });
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+  }
 
   if (resultado.ok) {
     const exame = resultado.totalNaJanela != null
