@@ -21,7 +21,7 @@ const MIME = {
 };
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const CONTACT_TO   = 'miguel.dscorreia@outlook.pt';
+const CONTACT_TO   = 'contacto@fleet-tyre.com';
 const CONTACT_FROM = 'FleetTyre <contacto@fleet-tyre.com>';
 
 function escapeHtml(str) {
@@ -118,7 +118,7 @@ function handleContacto(req, res) {
                        <p style="font-size:12px;margin:8px 0 0">
                          <a href="https://fleet-tyre.com" style="color:#C40E17;text-decoration:none">fleet-tyre.com</a>
                          &nbsp;·&nbsp;
-                         <a href="mailto:miguel.dscorreia@outlook.pt" style="color:#5b6770;text-decoration:none">miguel.dscorreia@outlook.pt</a>
+                         <a href="mailto:contacto@fleet-tyre.com" style="color:#5b6770;text-decoration:none">contacto@fleet-tyre.com</a>
                        </p>
                      </td>
                    </tr>
