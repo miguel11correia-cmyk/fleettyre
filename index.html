@@ -147,27 +147,41 @@
   }
   .lp-feature {
     background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 22px 18px;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .lp-feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.07);
+    border-color: var(--brand-red-md);
   }
   .lp-feature-icon {
     width: 40px; height: 40px; border-radius: 10px; background: var(--brand-red-lt); color: var(--brand-red);
     display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
+    transition: transform .25s ease, background .25s ease, color .25s ease;
   }
+  .lp-feature:hover .lp-feature-icon { background: var(--brand-red); color: #fff; transform: scale(1.08); }
   .lp-feature h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
   .lp-feature p { font-size: 13px; color: var(--text2); line-height: 1.5; }
 
   .lp-steps {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: step;
   }
-  .lp-step { position: relative; padding-left: 44px; }
+  .lp-step {
+    position: relative; padding: 18px 18px 18px 54px; margin-left: -18px;
+    border-radius: 12px; transition: background .2s ease, transform .2s ease;
+  }
+  .lp-step:hover { background: var(--surface); transform: translateY(-2px); }
   .lp-step::before {
     counter-increment: step; content: counter(step);
-    position: absolute; left: 0; top: 0;
+    position: absolute; left: 18px; top: 18px;
     width: 30px; height: 30px; border-radius: 50%;
     background: var(--brand-red); color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; font-weight: 500;
+    transition: transform .25s ease;
   }
-  .lp-step h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .lp-step:hover::before { transform: scale(1.12); }
+  .lp-step h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; min-height: 2.6em; display: flex; align-items: flex-start; }
   .lp-step p { font-size: 13px; color: var(--text2); line-height: 1.5; }
 
   html { scroll-behavior: smooth; }
@@ -185,13 +199,81 @@
   .lp-contact-feedback.success { color: var(--green); }
   .lp-contact-feedback.error   { color: var(--red); }
 
+  .lp-compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 880px; margin: 0 auto;
+  }
+  .lp-compare-col {
+    border-radius: 12px; padding: 24px 22px; border: 0.5px solid var(--border);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .lp-compare-col:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
+  .lp-compare-col.bad { background: var(--surface); }
+  .lp-compare-col.good { background: var(--brand-red-lt); border-color: var(--brand-red-md); }
+  .lp-compare-col h3 { font-size: 15px; font-weight: 500; margin-bottom: 16px; }
+  .lp-compare-col.good h3 { color: var(--brand-red-dk); }
+  .lp-compare-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .lp-compare-col li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text2); line-height: 1.5; transition: transform .15s ease; }
+  .lp-compare-col li:hover { transform: translateX(3px); }
+  .lp-compare-col svg { flex-shrink: 0; margin-top: 2px; }
+  .lp-compare-col.bad svg { color: var(--text3); }
+  .lp-compare-col.good svg { color: var(--brand-red); }
+
+  .lp-pricing-card {
+    max-width: 560px; margin: 0 auto; text-align: center;
+    background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px;
+    padding: 40px 32px;
+    transition: box-shadow .2s ease, border-color .2s ease;
+  }
+  .lp-pricing-card:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.07); border-color: var(--brand-red-md); }
+  .lp-pricing-card p { color: var(--text2); margin-bottom: 24px; max-width: 46ch; margin-left: auto; margin-right: auto; }
+
+  .lp-faq { max-width: 720px; margin: 0 auto; }
+  .lp-faq-item {
+    border-bottom: 0.5px solid var(--border); padding: 18px 0;
+  }
+  .lp-faq-item summary {
+    cursor: pointer; font-size: 14.5px; font-weight: 500; list-style: none;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    transition: color .15s ease; border-radius: 8px; margin: 0 -10px; padding: 8px 10px;
+  }
+  .lp-faq-item summary:hover { color: var(--brand-red-dk); background: var(--bg); }
+  .lp-faq-item summary::-webkit-details-marker { display: none; }
+  .lp-faq-item summary::after {
+    content: '+'; font-size: 18px; font-weight: 400; color: var(--text3); flex-shrink: 0;
+    transition: transform .2s ease;
+  }
+  .lp-faq-item[open] summary::after { content: '−'; }
+  .lp-faq-item summary:hover::after { transform: scale(1.2); }
+  .lp-faq-item p {
+    font-size: 13.5px; color: var(--text2); line-height: 1.6; margin-top: 10px; max-width: 64ch; padding: 0 10px;
+    animation: lp-faq-in .2s ease;
+  }
+  @keyframes lp-faq-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
   .lp-footer {
+    padding: 40px 24px 24px; border-top: 0.5px solid var(--border);
+  }
+  .lp-footer-top {
+    display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between;
+    max-width: 1080px; margin: 0 auto 32px;
+  }
+  .lp-footer-brand img { height: 26px; width: auto; margin-bottom: 10px; }
+  .lp-footer-brand p { font-size: 12.5px; color: var(--text3); max-width: 28ch; line-height: 1.5; }
+  .lp-footer-col h4 { font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .lp-footer-col a { display: block; font-size: 13px; color: var(--text3); padding: 4px 0; }
+  .lp-footer-col a:hover { color: var(--text); }
+  .lp-footer-bottom {
     display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
-    padding: 24px; border-top: 0.5px solid var(--border);
+    max-width: 1080px; margin: 0 auto; padding-top: 20px; border-top: 0.5px solid var(--border);
     font-size: 12px; color: var(--text3);
   }
-  .lp-footer a { color: var(--text2); }
-  .lp-footer a:hover { color: var(--text); }
+  .lp-footer-bottom a { color: var(--text2); }
+  .lp-footer-bottom a:hover { color: var(--text); }
+
+  @media (max-width: 860px) {
+    .lp-compare { grid-template-columns: 1fr; }
+    .lp-footer-top { flex-direction: column; gap: 28px; }
+  }
 
   @media (max-width: 860px) {
     .lp-hero { display: flex; flex-direction: column; min-height: 0; }
@@ -242,7 +324,7 @@
   </div>
 </section>
 
-<section class="lp-section alt">
+<section class="lp-section alt" id="resolve">
   <div class="wrap">
     <h2>O que a FleetTyre resolve</h2>
     <p class="sub">Pensada para quem já gere pneus em Excel ou em papel, e sabe que assim se perde dinheiro sem perceber onde.</p>
@@ -279,7 +361,7 @@
   </div>
 </section>
 
-<section class="lp-section">
+<section class="lp-section" id="como-funciona">
   <div class="wrap">
     <h2 style="margin-bottom:32px">Como funciona</h2>
     <div class="lp-steps">
@@ -326,6 +408,78 @@
   </div>
 </section>
 
+<section class="lp-section" id="comparacao">
+  <div class="wrap">
+    <h2>Excel e papel, ou a FleetTyre</h2>
+    <p class="sub">A mesma frota, duas formas muito diferentes de a gerir.</p>
+    <div class="lp-compare">
+      <div class="lp-compare-col bad">
+        <h3>Com folhas de cálculo e papel</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Dados espalhados por várias folhas, sem histórico por pneu</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Ninguém sabe ao certo quando um pneu vai precisar de troca</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Quilómetros atualizados à mão, com atrasos e erros</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Faturas de fornecedores perdidas no email, difíceis de encontrar</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Custo real por km só com trabalho manual, quando dá tempo</li>
+        </ul>
+      </div>
+      <div class="lp-compare-col good">
+        <h3>Com a FleetTyre</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Histórico completo por pneu, sempre acessível</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Alertas automáticos antes do desgaste virar um problema</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Quilometragem atualizada sozinha via GPS, quando ligado</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Faturas de fornecedores identificadas e organizadas sozinhas</li>
+          <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Custo por km calculado automaticamente, por marca e fornecedor</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-section alt" id="precos">
+  <div class="wrap">
+    <h2>Preços</h2>
+    <p class="sub">Sem planos genéricos — o preço ajusta-se ao tamanho da frota.</p>
+    <div class="lp-pricing-card">
+      <p>Cada frota tem uma dimensão e necessidades diferentes, por isso a FleetTyre não tem um preço fixo de tabela. Fala connosco e em poucos minutos sabes exatamente quanto custaria para a tua frota.</p>
+      <a class="btn btn-brand" href="#contacto" style="padding:12px 28px;font-size:14px">Pedir proposta</a>
+    </div>
+  </div>
+</section>
+
+<section class="lp-section" id="faq">
+  <div class="wrap">
+    <h2 style="margin-bottom:40px">Perguntas frequentes</h2>
+    <div class="lp-faq">
+      <details class="lp-faq-item">
+        <summary>Preciso de instalar sensores ou hardware para usar a FleetTyre?</summary>
+        <p>Não. A FleetTyre é uma aplicação web, sem hardware dedicado a comprar ou instalar. Quem já tiver um sistema de GPS/telemetria na frota pode ligá-lo para a quilometragem chegar automaticamente, mas é opcional — a app funciona de imediato sem isso.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>A FleetTyre funciona para reboques, ou só para camiões?</summary>
+        <p>Funciona para os dois, com gestão separada de eixos e posições adequada a cada tipo de veículo.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>Quanto tempo demora a implementar?</summary>
+        <p>O registo inicial da frota demora poucos minutos por veículo, e não há migração complexa de dados a fazer antes — começa a usar-se de imediato.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>Os meus dados ficam seguros e isolados de outras empresas?</summary>
+        <p>Sim. Cada empresa cliente tem os seus dados completamente isolados dos de qualquer outra, nunca partilhados nem visíveis entre contas diferentes.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>Preciso de mudar a forma como já trabalho (email, GPS)?</summary>
+        <p>Não. A FleetTyre liga-se ao email profissional e ao sistema de GPS que a empresa já usa, em vez de obrigar a adotar ferramentas novas.</p>
+      </details>
+      <details class="lp-faq-item">
+        <summary>É possível experimentar antes de decidir?</summary>
+        <p>Sim — contacte-nos e organizamos uma demonstração e um período experimental para a sua frota, sem compromisso.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
 <section class="lp-cta" id="contacto">
   <div class="wrap">
     <h2>Tem perguntas sobre a FleetTyre?</h2>
@@ -343,13 +497,34 @@
 </section>
 
 <footer class="lp-footer">
-  <span>© 2026 FleetTyre</span>
-  <span aria-hidden="true">·</span>
-  <a href="mailto:contacto@fleet-tyre.com">contacto@fleet-tyre.com</a>
-  <span aria-hidden="true">·</span>
-  <a href="privacidade.html">Política de Privacidade</a>
-  <span aria-hidden="true">·</span>
-  <a href="termos.html">Termos de Serviço</a>
+  <div class="lp-footer-top">
+    <div class="lp-footer-brand">
+      <img src="assets/logo-horizontal.png" alt="FleetTyre">
+      <p>Gestão de pneus para frotas de veículos pesados e reboques.</p>
+    </div>
+    <div class="lp-footer-col">
+      <h4>Produto</h4>
+      <a href="#resolve">Funcionalidades</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#precos">Preços</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="lp-footer-col">
+      <h4>Empresa</h4>
+      <a href="#contacto">Contacto</a>
+      <a href="app.html">Entrar</a>
+    </div>
+    <div class="lp-footer-col">
+      <h4>Legal</h4>
+      <a href="privacidade.html">Política de Privacidade</a>
+      <a href="termos.html">Termos de Serviço</a>
+    </div>
+  </div>
+  <div class="lp-footer-bottom">
+    <span>© 2026 FleetTyre</span>
+    <span aria-hidden="true">·</span>
+    <a href="mailto:contacto@fleet-tyre.com">contacto@fleet-tyre.com</a>
+  </div>
 </footer>
 
 <script>
