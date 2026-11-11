@@ -49,11 +49,6 @@ function renderRoiPorTipoReboques(data) {
       }).join('');
     }
   }
-
-  if (keys.length > 0) {
-    const vals = keys.map(t => Number((agg[t].mesesPorEuroArr.reduce((s, v) => s + v, 0) / agg[t].mesesPorEuroArr.length).toFixed(2)));
-    mkChart('rc-roi-tipo', 'bar', keys, vals, CHART_NEUTRAL);
-  }
 }
 
 // ── ANÁLISE 2 — COMPARAÇÃO ENTRE REBOQUES ─────────────────────────

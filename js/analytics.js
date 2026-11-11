@@ -29,10 +29,10 @@ function renderRoiPorTipo(data) {
     const kmsEf = r.kms_desmont - r.kms_mont;
     if (kmsEf <= 0) return;
     const tipo = r.tipo || 'Novo';
-    if (!agg[tipo]) agg[tipo] = { kmsArr: [], custoArr: [], kmsPorEuroArr: [] };
+    if (!agg[tipo]) agg[tipo] = { kmsArr: [], custoArr: [], custoPor1000kmArr: [] };
     agg[tipo].kmsArr.push(kmsEf);
     agg[tipo].custoArr.push(Number(r.custo_pneu));
-    agg[tipo].kmsPorEuroArr.push(kmsEf / Number(r.custo_pneu));
+    agg[tipo].custoPor1000kmArr.push(Number(r.custo_pneu) / (kmsEf / 1000));
   });
 
   const keys = TIPOS_ORDEM.filter(t => agg[t]);
@@ -42,24 +42,19 @@ function renderRoiPorTipo(data) {
       tbody.innerHTML = '<tr><td colspan="5" class="empty-msg" style="text-align:center;padding:12px">Sem registos com KMs de montagem/desmontagem e custo preenchidos.</td></tr>';
     } else {
       tbody.innerHTML = keys.map(t => {
-        const a        = agg[t];
-        const kmsM     = Math.round(a.kmsArr.reduce((s, v) => s + v, 0) / a.kmsArr.length);
-        const custoM   = a.custoArr.reduce((s, v) => s + v, 0) / a.custoArr.length;
-        const kmsPorEu = a.kmsPorEuroArr.reduce((s, v) => s + v, 0) / a.kmsPorEuroArr.length;
+        const a             = agg[t];
+        const kmsM          = Math.round(a.kmsArr.reduce((s, v) => s + v, 0) / a.kmsArr.length);
+        const custoM        = a.custoArr.reduce((s, v) => s + v, 0) / a.custoArr.length;
+        const custoPor1000km = a.custoPor1000kmArr.reduce((s, v) => s + v, 0) / a.custoPor1000kmArr.length;
         return `<tr>
           <td>${tipoBadge(t)}</td>
           <td style="text-align:right">${fmt(kmsM)}</td>
           <td style="text-align:right">${fmtEur(custoM)}</td>
-          <td style="text-align:right">${fmt(Math.round(kmsPorEu))}</td>
+          <td style="text-align:right">${fmtEur(custoPor1000km)}</td>
           <td style="text-align:center">${a.kmsArr.length}</td>
         </tr>`;
       }).join('');
     }
-  }
-
-  if (keys.length > 0) {
-    const vals = keys.map(t => Math.round(agg[t].kmsPorEuroArr.reduce((s, v) => s + v, 0) / agg[t].kmsPorEuroArr.length));
-    mkChart('c-roi-tipo', 'bar', keys, vals, CHART_NEUTRAL);
   }
 }
 
