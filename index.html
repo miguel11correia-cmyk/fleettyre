@@ -270,6 +270,40 @@
   .lp-footer-bottom a { color: var(--text2); }
   .lp-footer-bottom a:hover { color: var(--text); }
 
+  /* Fundo escuro com o símbolo ampliado, como na capa do manual de
+     identidade — antracite de marca + icon-mark em branco a baixa
+     opacidade, cortado pelo canto. */
+  .lp-section-dark {
+    position: relative;
+    background: #1a242b;
+    overflow: hidden;
+    border-top: none;
+    border-bottom: none;
+  }
+  .lp-section-dark::before {
+    content: '';
+    position: absolute;
+    right: -10%;
+    bottom: -14%;
+    width: 60%;
+    aspect-ratio: 1389 / 1132;
+    background: url('assets/icon-mark.png') no-repeat center / contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.07;
+    pointer-events: none;
+  }
+  .lp-section-dark .wrap { position: relative; z-index: 1; }
+  .lp-section-dark h2 { color: #fff; }
+  .lp-section-dark p.sub { color: #a9b0b5; }
+  .lp-section-dark .lp-step h3 { color: #fff; }
+  .lp-section-dark .lp-step p { color: #b7bdc2; }
+  .lp-section-dark .lp-step:hover { background: rgba(255,255,255,0.06); }
+  .lp-section-dark .lp-faq-item { border-bottom-color: rgba(255,255,255,0.14); }
+  .lp-section-dark .lp-faq-item summary { color: #fff; }
+  .lp-section-dark .lp-faq-item summary:hover { background: rgba(255,255,255,0.06); color: var(--brand-red-lt); }
+  .lp-section-dark .lp-faq-item summary::after { color: #8a9096; }
+  .lp-section-dark .lp-faq-item p { color: #b7bdc2; }
+
   @media (max-width: 860px) {
     .lp-compare { grid-template-columns: 1fr; }
     .lp-footer-top { flex-direction: column; gap: 28px; }
@@ -361,7 +395,7 @@
   </div>
 </section>
 
-<section class="lp-section" id="como-funciona">
+<section class="lp-section lp-section-dark" id="como-funciona">
   <div class="wrap">
     <h2 style="margin-bottom:32px">Como funciona</h2>
     <div class="lp-steps">
@@ -408,7 +442,7 @@
   </div>
 </section>
 
-<section class="lp-section" id="comparacao">
+<section class="lp-section lp-section-dark" id="comparacao">
   <div class="wrap">
     <h2>Gestão manual, ou com a FleetTyre</h2>
     <p class="sub">A mesma frota, duas formas muito diferentes de a gerir.</p>
@@ -448,7 +482,7 @@
   </div>
 </section>
 
-<section class="lp-section" id="faq">
+<section class="lp-section lp-section-dark" id="faq">
   <div class="wrap">
     <h2 style="margin-bottom:40px">Perguntas frequentes</h2>
     <div class="lp-faq">
