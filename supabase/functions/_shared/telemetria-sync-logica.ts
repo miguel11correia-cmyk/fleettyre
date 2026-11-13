@@ -6,9 +6,13 @@
 
 import type { AdaptadorTelemetria } from "./telemetria-tipos.ts";
 import { cartrack } from "./cartrack.ts";
+import { frotcom } from "./frotcom.ts";
+import { geotab } from "./geotab.ts";
 
 export const ADAPTADORES_TELEMETRIA: Record<string, AdaptadorTelemetria> = {
   cartrack,
+  frotcom,
+  geotab,
 };
 
 export interface IntegracaoTelemetria {
