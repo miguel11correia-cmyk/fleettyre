@@ -1,5 +1,8 @@
 // ── ALERTAS ──────────────────────────────────────────────
 
+// Marca os KMs/leituras que vêm da telemetria (GPS), não de registo manual.
+const ICON_TELEMETRIA = '<svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:-2px;margin-left:3px" title="Via telemetria"><use href="#icon-telemetria"/></svg>';
+
 // Agrupa a taxa de desgaste (mm/1000km) de registos históricos por uma chave à escolha.
 function calcularTaxasPor(dados, chaveFn) {
   const taxas = {};
@@ -197,7 +200,7 @@ async function loadAlertas() {
         <td>${r.posicao || '—'}</td>
         <td>${r.marca   || '—'}</td>
         <td>${tipoBadge(r.tipo)}</td>
-        <td style="text-align:right">${fmt(r.kmsFeitos)}${r.kmReal ? ' 📡' : ''}</td>
+        <td style="text-align:right">${fmt(r.kmsFeitos)}${r.kmReal ? ICON_TELEMETRIA : ''}</td>
         <td><span class="${escCls}">${r.escEstimada} mm</span></td>
         <td style="text-align:right">${r.taxa.toFixed(3)} mm/1000km</td>
       </tr>`;
@@ -254,17 +257,20 @@ function renderAlertasVeiculos() {
     return;
   }
 
-  cont.innerHTML = visiveis.map(v => `
+  cont.innerHTML = visiveis.map(v => {
+    const temLeituraReal = v.pneus.some(p => p.kmReal);
+    return `
     <div class="alerta-veic ${v.pior}" onclick="irParaVeiculo('${v.matricula}')">
       <div>
-        <div class="alerta-veic-mat">${v.matricula}</div>
+        <div class="alerta-veic-mat">${v.matricula}${temLeituraReal ? ICON_TELEMETRIA : ''}</div>
         <span class="badge ${ALERTAS_NIVEL_INFO[v.pior].badgeCls}">${ALERTAS_NIVEL_INFO[v.pior].label}</span>
       </div>
       <div class="alerta-veic-pneus">
-        ${v.pneus.map(p => `<span class="badge ${ALERTAS_NIVEL_INFO[p.nivel].badgeCls}">${p.posicao || '—'} · ${p.escEstimada}mm${p.kmReal ? ' 📡' : ''}</span>`).join('')}
+        ${v.pneus.map(p => `<span class="badge ${ALERTAS_NIVEL_INFO[p.nivel].badgeCls}">${p.posicao || '—'} · ${p.escEstimada}mm</span>`).join('')}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 async function irParaVeiculo(mat) {
