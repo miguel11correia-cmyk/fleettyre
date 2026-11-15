@@ -10,7 +10,6 @@
 let comprasVista  = 'unificada'; // 'veiculos' | 'reboques' | 'unificada'
 let fornDadosVeic = [];
 let fornDadosReb  = [];
-let comprasVeiculosKm = [];
 let fornCmpMarca  = '';
 
 async function loadCompras(vistaInicial) {
@@ -19,16 +18,14 @@ async function loadCompras(vistaInicial) {
   if (sel) sel.value = comprasVista;
 
   loading(true);
-  const [{ data: pneus }, { data: reboques }, { data: veiculosData }] = await Promise.all([
+  const [{ data: pneus }, { data: reboques }] = await Promise.all([
     fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id')),
     fetchAllRows(() => sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId).order('id')),
-    sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
   ]);
   loading(false);
 
-  fornDadosVeic     = pneus || [];
-  fornDadosReb      = reboques || [];
-  comprasVeiculosKm = veiculosData || [];
+  fornDadosVeic = pneus || [];
+  fornDadosReb  = reboques || [];
 
   renderComprasVista();
 }
@@ -132,203 +129,95 @@ function renderComparacaoFornecedores() {
 // (€/km nos camiões, via odómetro; €/mês nos reboques, via duração —
 // não há odómetro de reboque) e o ranking por essa eficiência.
 
+// Só entram registos desmontados com toda a informação necessária —
+// um pneu ainda montado não tem KMs/duração "final", por isso
+// qualquer média com ele misturado seria uma estimativa a menos, não
+// um valor real fechado.
+function registosCompletosVeiculos() {
+  return fornDadosVeic.filter(r =>
+    r.marca && r.mes_desmont && r.kms_mont != null && r.kms_desmont != null &&
+    r.kms_desmont > r.kms_mont && r.custo_pneu > 0
+  );
+}
+
+function registosCompletosReboques() {
+  return fornDadosReb.filter(r =>
+    r.marca && r.mes_mont && r.mes_desmont && r.custo_pneu > 0
+  );
+}
+
 function renderDesempenhoMarcas() {
-  const thead   = document.getElementById('marc-thead');
-  const tbody   = document.getElementById('marc-tbody');
-  const efCard  = document.getElementById('marc-eficiencia-card');
-  const efTitulo = document.getElementById('marc-eficiencia-titulo');
+  const thead = document.getElementById('marc-thead');
+  const tbody = document.getElementById('marc-tbody');
   if (!thead || !tbody) return;
 
-  if (comprasVista === 'unificada') {
-    efCard?.classList.add('hidden');
-    renderDesempenhoMarcasUnificado(thead, tbody);
-    return;
-  }
-
-  efCard?.classList.remove('hidden');
-  const isVeic = comprasVista === 'veiculos';
-  efTitulo.textContent = isVeic ? 'KMs médios por marca' : 'Duração média por marca (meses)';
-  if (isVeic) renderDesempenhoMarcasVeiculos(thead, tbody);
-  else        renderDesempenhoMarcasReboques(thead, tbody);
-}
-
-function renderDesempenhoMarcasUnificado(thead, tbody) {
-  const dados = dadosComprasVista();
-  const agg = {};
-  dados.filter(r => r.marca).forEach(r => {
-    const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
-    agg[k].total++;
-    if (r.tipo === 'Novo')             agg[k].novo++;
-    else if (r.tipo === 'Remix')       agg[k].remix++;
-    else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
-    else if (r.tipo === 'Piso Aberto') agg[k].piso++;
-    if (r.custo_pneu > 0) { agg[k].comCusto++; agg[k].custo += Number(r.custo_pneu); }
-  });
-
-  const keys = Object.keys(agg).sort((a, b) => agg[b].total - agg[a].total);
-  thead.innerHTML = `<tr>
-    <th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
-    <th style="text-align:right">Com custo regist.</th><th style="text-align:right">Custo total (€)</th><th style="text-align:right">Custo médio/pneu (€)</th>
-  </tr>`;
-  tbody.innerHTML = keys.map(k => {
-    const m   = agg[k];
-    const med = m.comCusto > 0 ? fmtEur(m.custo / m.comCusto) : '—';
-    return `<tr>
-      <td><strong>${k}</strong></td>
-      <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
-      <td style="text-align:right">${m.comCusto}</td>
-      <td style="text-align:right">${m.custo > 0 ? fmtEur(m.custo) : '—'}</td>
-      <td style="text-align:right">${med}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderDesempenhoMarcasVeiculos(thead, tbody) {
-  const kmAtualPorMat = {};
-  comprasVeiculosKm.forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
-
-  const agg = {};
-  fornDadosVeic.filter(r => r.marca).forEach(r => {
-    const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [], taxaArr: [] };
-    agg[k].total++;
-    if (r.tipo === 'Novo')             agg[k].novo++;
-    else if (r.tipo === 'Remix')       agg[k].remix++;
-    else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
-    else if (r.tipo === 'Piso Aberto') agg[k].piso++;
-    const kmsInfo = kmsEfectuados(r, kmAtualPorMat[r.matricula]);
-    if (kmsInfo)           agg[k].kmsArr.push(kmsInfo.km);
-    if (r.custo_pneu > 0)  agg[k].custos.push(Number(r.custo_pneu));
-    const taxa = taxaDesgaste(r);
-    if (taxa !== null)     agg[k].taxaArr.push(taxa);
-  });
-
-  // €/km desta marca = custo médio ÷ KMs médios, usando o histórico
-  // completo da marca (várias pneus independentes, não uma entidade
-  // única a acumular histórico) — mais amostras dão uma média mais
-  // robusta.
-  const eurKmPorMarca = {};
-  Object.keys(agg).forEach(k => {
-    const m = agg[k];
-    const custoM = m.custos.length > 0 ? m.custos.reduce((s, v) => s + v, 0) / m.custos.length : null;
-    const kmsM   = m.kmsArr.length  > 0 ? m.kmsArr.reduce((s, v) => s + v, 0)  / m.kmsArr.length  : null;
-    eurKmPorMarca[k] = (custoM && kmsM && kmsM > 0) ? custoM / kmsM : null;
-  });
-
-  // Ranking: marcas com €/km calculável primeiro (mais eficiente/barata
-  // primeiro), as restantes no fim por ordem de quantidade de pneus.
-  const keys = Object.keys(agg).sort((a, b) => {
-    const ea = eurKmPorMarca[a], eb = eurKmPorMarca[b];
-    if (ea != null && eb != null) return ea - eb;
-    if (ea != null) return -1;
-    if (eb != null) return 1;
-    return agg[b].total - agg[a].total;
-  });
-
-  thead.innerHTML = `<tr>
-    <th>#</th><th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
-    <th style="text-align:right">KMs médios/pneu</th><th style="text-align:right">Taxa desgaste média (mm/1000km)</th>
-    <th style="text-align:right">Custo médio/pneu (€)</th><th style="text-align:right">€/km</th>
-  </tr>`;
-  tbody.innerHTML = keys.map((k, i) => {
-    const m = agg[k];
-    const kmsM = m.kmsArr.length > 0
-      ? fmt(Math.round(m.kmsArr.reduce((s, v) => s + v, 0) / m.kmsArr.length))
-      : '—';
-    const custoM = m.custos.length > 0
-      ? fmtEur(m.custos.reduce((s, v) => s + v, 0) / m.custos.length)
-      : '—';
-    const taxaM = m.taxaArr.length > 0
-      ? (m.taxaArr.reduce((s, v) => s + v, 0) / m.taxaArr.length).toFixed(3)
-      : '—';
-    const eurKm = eurKmPorMarca[k];
-    return `<tr>
-      <td>${eurKm != null ? i + 1 : '—'}</td>
-      <td><strong>${k}</strong></td>
-      <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
-      <td style="text-align:right">${kmsM}</td>
-      <td style="text-align:right">${taxaM}</td>
-      <td style="text-align:right">${custoM}</td>
-      <td style="text-align:right">${eurKm != null ? '€ ' + eurKm.toFixed(4) : '—'}</td>
-    </tr>`;
-  }).join('');
-
-  const keysComKms = keys.filter(k => agg[k].kmsArr.length > 0);
-  if (keysComKms.length > 0) {
-    mkChart('c-marc-eficiencia', 'bar',
-      keysComKms,
-      keysComKms.map(k => Math.round(agg[k].kmsArr.reduce((s, v) => s + v, 0) / agg[k].kmsArr.length)),
-      CHART_NEUTRAL
-    );
+  if (comprasVista === 'veiculos') {
+    renderDesempenhoMarcasDetalhe(thead, tbody, registosCompletosVeiculos(), 'km');
+  } else if (comprasVista === 'reboques') {
+    renderDesempenhoMarcasDetalhe(thead, tbody, registosCompletosReboques(), 'mes');
+  } else {
+    renderDesempenhoMarcasDetalhe(thead, tbody, [...registosCompletosVeiculos(), ...registosCompletosReboques()], null);
   }
 }
 
-function renderDesempenhoMarcasReboques(thead, tbody) {
+// Detalhe por Marca → Modelo (subtipo) → Tipo, com custo médio e,
+// nas vistas individuais, a eficiência (€/1000km nos camiões, via
+// odómetro; €/mês nos reboques, via duração — não combinável entre
+// si, por isso ausente na vista unificada).
+function renderDesempenhoMarcasDetalhe(thead, tbody, dados, modo) {
   const agg = {};
-  fornDadosReb.filter(r => r.marca).forEach(r => {
-    const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, mesesArr: [], custos: [] };
-    agg[k].total++;
-    if (r.tipo === 'Novo')             agg[k].novo++;
-    else if (r.tipo === 'Remix')       agg[k].remix++;
-    else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
-    else if (r.tipo === 'Piso Aberto') agg[k].piso++;
-    if (r.mes_desmont && r.mes_mont) agg[k].mesesArr.push(mesesEntre(r.mes_mont, r.mes_desmont));
-    if (r.custo_pneu > 0)            agg[k].custos.push(Number(r.custo_pneu));
+  dados.forEach(r => {
+    const chave = r.marca + '|||' + (r.subtipo || '(sem modelo)') + '|||' + (r.tipo || '(sem tipo)');
+    if (!agg[chave]) agg[chave] = { marca: r.marca, modelo: r.subtipo || '(sem modelo)', tipo: r.tipo || '—', custos: [], efArr: [] };
+    agg[chave].custos.push(Number(r.custo_pneu));
+    if (modo === 'km') {
+      const km = r.kms_desmont - r.kms_mont;
+      if (km > 0) agg[chave].efArr.push(Number(r.custo_pneu) / (km / 1000));
+    } else if (modo === 'mes') {
+      const meses = mesesEntre(r.mes_mont, r.mes_desmont);
+      if (meses > 0) agg[chave].efArr.push(Number(r.custo_pneu) / meses);
+    }
   });
 
-  // €/mês desta marca = custo médio ÷ duração média, usando o
-  // histórico completo da marca (várias pneus independentes, não uma
-  // entidade única a acumular histórico) — mais amostras dão uma
-  // média mais robusta.
-  const eurMesPorMarca = {};
-  Object.keys(agg).forEach(k => {
-    const m = agg[k];
-    const custoM = m.custos.length   > 0 ? m.custos.reduce((s, v) => s + v, 0)   / m.custos.length   : null;
-    const mesesM = m.mesesArr.length > 0 ? m.mesesArr.reduce((s, v) => s + v, 0) / m.mesesArr.length : null;
-    eurMesPorMarca[k] = (custoM && mesesM && mesesM > 0) ? custoM / mesesM : null;
-  });
+  const linhas = Object.values(agg).map(g => ({
+    ...g,
+    n: g.custos.length,
+    custoM: g.custos.reduce((s, v) => s + v, 0) / g.custos.length,
+    efM: g.efArr.length > 0 ? g.efArr.reduce((s, v) => s + v, 0) / g.efArr.length : null,
+  }));
 
-  const keys = Object.keys(agg).sort((a, b) => {
-    const ea = eurMesPorMarca[a], eb = eurMesPorMarca[b];
-    if (ea != null && eb != null) return ea - eb;
-    if (ea != null) return -1;
-    if (eb != null) return 1;
-    return agg[b].total - agg[a].total;
-  });
-
-  thead.innerHTML = `<tr>
-    <th>#</th><th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
-    <th style="text-align:right">Duração média (meses)</th><th style="text-align:right">Custo médio/pneu (€)</th><th style="text-align:right">€/mês</th>
-  </tr>`;
-  tbody.innerHTML = keys.map((k, i) => {
-    const m = agg[k];
-    const mesesM = m.mesesArr.length > 0
-      ? Math.round(m.mesesArr.reduce((s, v) => s + v, 0) / m.mesesArr.length) + ' meses'
-      : '—';
-    const custoM = m.custos.length > 0
-      ? fmtEur(m.custos.reduce((s, v) => s + v, 0) / m.custos.length)
-      : '—';
-    const eurMes = eurMesPorMarca[k];
-    return `<tr>
-      <td>${eurMes != null ? i + 1 : '—'}</td>
-      <td><strong>${k}</strong></td>
-      <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
-      <td style="text-align:right">${mesesM}</td>
-      <td style="text-align:right">${custoM}</td>
-      <td style="text-align:right">${eurMes != null ? fmtEur(eurMes) : '—'}</td>
-    </tr>`;
-  }).join('');
-
-  const keysComMeses = keys.filter(k => agg[k].mesesArr.length > 0);
-  if (keysComMeses.length > 0) {
-    mkChart('c-marc-eficiencia', 'bar',
-      keysComMeses,
-      keysComMeses.map(k => Math.round(agg[k].mesesArr.reduce((s, v) => s + v, 0) / agg[k].mesesArr.length)),
-      CHART_NEUTRAL
-    );
+  if (modo) {
+    // Ranking: combinações com eficiência calculável primeiro (mais
+    // barata/eficiente primeiro), as restantes no fim por nº de registos.
+    linhas.sort((a, b) => {
+      if (a.efM != null && b.efM != null) return a.efM - b.efM;
+      if (a.efM != null) return -1;
+      if (b.efM != null) return 1;
+      return b.n - a.n;
+    });
+  } else {
+    linhas.sort((a, b) => b.n - a.n);
   }
+
+  const efLabel = modo === 'km' ? '€/1000km' : modo === 'mes' ? '€/mês' : null;
+  thead.innerHTML = `<tr>
+    ${modo ? '<th>#</th>' : ''}
+    <th>Marca</th><th>Modelo</th><th>Tipo</th>
+    <th style="text-align:center">Nº registos</th><th style="text-align:right">Custo médio (€)</th>
+    ${efLabel ? `<th style="text-align:right">${efLabel}</th>` : ''}
+  </tr>`;
+
+  tbody.innerHTML = linhas.length === 0
+    ? `<tr><td colspan="${modo ? 6 : 5}" class="empty-msg" style="text-align:center;padding:12px">Sem registos desmontados com toda a informação necessária ainda.</td></tr>`
+    : linhas.map((l, i) => `<tr>
+        ${modo ? `<td>${l.efM != null ? i + 1 : '—'}</td>` : ''}
+        <td><strong>${l.marca}</strong></td>
+        <td>${l.modelo}</td>
+        <td>${l.tipo}</td>
+        <td style="text-align:center">${l.n}</td>
+        <td style="text-align:right">${fmtEur(l.custoM)}</td>
+        ${efLabel ? `<td style="text-align:right">${l.efM != null ? fmtEur(l.efM) : '—'}</td>` : ''}
+      </tr>`).join('');
 }
 
 // ── GESTÃO (Configuração > Fornecedores) ─────────────────────────────
