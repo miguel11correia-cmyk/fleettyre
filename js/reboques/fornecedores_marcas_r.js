@@ -1,49 +1,7 @@
 // ── REBOQUES/FORNECEDORES_MARCAS.JS ──────────────────────────────
-
-async function loadFornecedoresReboques() {
-  loading(true);
-  const { data, error } = await fetchAllRows(() => sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId).order('id'));
-  loading(false);
-  if (error || !data) return;
-
-  const agg = {};
-  data.forEach(r => {
-    if (r.fornecedor === 'PARQUE') return; // não é um fornecedor real — pneu que a empresa já tinha antes
-    const k = r.fornecedor || '(sem registo)';
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
-    agg[k].total++;
-    if (r.tipo === 'Novo')        agg[k].novo++;
-    else if (r.tipo === 'Remix')  agg[k].remix++;
-    else if (r.tipo === 'Rechapado') agg[k].rechapado++;
-    else if (r.tipo === 'Piso Aberto') agg[k].piso++;
-    if (r.custo_pneu > 0) { agg[k].comCusto++; agg[k].custo += Number(r.custo_pneu); }
-  });
-
-  const keys = Object.keys(agg).sort((a, b) => agg[b].total - agg[a].total);
-  const tbody = document.getElementById('rforn-tbody');
-  if (tbody) {
-    tbody.innerHTML = keys.map(k => {
-      const f   = agg[k];
-      const med = f.comCusto > 0 ? fmtEur(f.custo / f.comCusto) : '—';
-      return `<tr>
-        <td><strong>${k}</strong></td>
-        <td>${f.total}</td><td>${f.novo}</td><td>${f.remix}</td><td>${f.rechapado}</td><td>${f.piso}</td>
-        <td>${f.comCusto}</td>
-        <td style="text-align:right">${f.custo > 0 ? fmtEur(f.custo) : '—'}</td>
-        <td style="text-align:right">${med}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  const keysComCusto = keys.filter(k => agg[k].comCusto > 0);
-  if (keysComCusto.length > 0) {
-    mkChart('rc-forn-custo', 'bar',
-      keysComCusto,
-      keysComCusto.map(k => Math.round(agg[k].custo / agg[k].comCusto)),
-      CHART_NEUTRAL
-    );
-  }
-}
+// A analise de Fornecedores fundiu-se com a de veiculos — ver
+// loadFornecedores() em js/fornecedores.js. Marcas continua separada
+// (ver seccao sobre a app, ranking por eficiencia nao e combinavel).
 
 async function loadMarcasReboques() {
   loading(true);

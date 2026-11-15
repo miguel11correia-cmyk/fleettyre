@@ -42,16 +42,48 @@ function preencherSelectores() {
 }
 
 // ── PÁGINA FORNECEDORES ───────────────────────────────────────────
+// Fundida (Camiões/Reboques/Unificada), já que o fornecedor é o
+// mesmo independentemente do pneu ir para camião ou reboque — ver
+// o mesmo raciocínio aplicado ao Início/Dashboard.
 
-async function loadFornecedores() {
+let fornVista     = 'unificada'; // 'veiculos' | 'reboques' | 'unificada'
+let fornDadosVeic = [];
+let fornDadosReb  = [];
+let fornCmpMarca  = '';
+
+async function loadFornecedores(vistaInicial) {
+  if (vistaInicial) fornVista = vistaInicial;
+  const sel = document.getElementById('forn-vista');
+  if (sel) sel.value = fornVista;
+
   loading(true);
-  const { data, error } = await fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id'));
+  const [{ data: pneus }, { data: reboques }] = await Promise.all([
+    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id')),
+    fetchAllRows(() => sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId).order('id')),
+  ]);
   loading(false);
-  if (error || !data) return;
 
-  // Analytics
+  fornDadosVeic = pneus || [];
+  fornDadosReb  = reboques || [];
+  renderFornecedoresVista();
+}
+
+function escolherVistaFornecedores(v) {
+  fornVista = v;
+  renderFornecedoresVista();
+}
+
+function dadosFornecedoresVista() {
+  if (fornVista === 'veiculos') return fornDadosVeic;
+  if (fornVista === 'reboques') return fornDadosReb;
+  return [...fornDadosVeic, ...fornDadosReb];
+}
+
+function renderFornecedoresVista() {
+  const dados = dadosFornecedoresVista();
+
   const agg = {};
-  data.forEach(r => {
+  dados.forEach(r => {
     if (r.fornecedor === 'PARQUE') return; // não é um fornecedor real — pneu que a empresa já tinha antes
     const k = r.fornecedor || '(sem registo)';
     if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
@@ -87,6 +119,85 @@ async function loadFornecedores() {
       CHART_NEUTRAL
     );
   }
+
+  renderComparacaoFornecedores();
+}
+
+// ── COMPARAÇÃO DE PREÇOS POR MARCA E MODELO ─────────────────────────
+// Por modelo (subtipo) da marca escolhida, ordena os fornecedores do
+// mais barato ao mais caro. A percentagem compara sempre contra o
+// fornecedor mais barato NESSE MOMENTO, não contra uma média de todo
+// o histórico — uma média destas desloca-se para baixo à medida que
+// se compra mais ao fornecedor mais barato, o que tornaria a
+// percentagem cada vez menos informativa com o tempo.
+
+function escolherMarcaComparacaoFornecedores(v) {
+  fornCmpMarca = v;
+  renderComparacaoFornecedores();
+}
+
+function renderComparacaoFornecedores() {
+  const sel = document.getElementById('forn-cmp-marca');
+  const cont = document.getElementById('forn-cmp-resultado');
+  if (!sel || !cont) return;
+
+  const dados  = dadosFornecedoresVista();
+  const marcas = [...new Set(dados.filter(r => r.marca).map(r => r.marca))].sort();
+  const val = fornCmpMarca;
+  sel.innerHTML = '<option value="">— selecionar —</option>' +
+    marcas.map(m => `<option value="${m}"${m === val ? ' selected' : ''}>${m}</option>`).join('');
+
+  if (!fornCmpMarca) {
+    cont.innerHTML = '<p class="empty-msg">Escolhe uma marca para comparar preços entre fornecedores.</p>';
+    return;
+  }
+
+  const doMarca = dados.filter(r =>
+    r.marca === fornCmpMarca && r.fornecedor && r.fornecedor !== 'PARQUE' && r.custo_pneu > 0
+  );
+  if (doMarca.length === 0) {
+    cont.innerHTML = '<p class="empty-msg">Sem registos com custo registado para esta marca.</p>';
+    return;
+  }
+
+  const porSubtipo = {};
+  doMarca.forEach(r => {
+    const sub = r.subtipo || '(sem modelo registado)';
+    if (!porSubtipo[sub]) porSubtipo[sub] = {};
+    if (!porSubtipo[sub][r.fornecedor]) porSubtipo[sub][r.fornecedor] = [];
+    porSubtipo[sub][r.fornecedor].push(Number(r.custo_pneu));
+  });
+
+  const subtipos = Object.keys(porSubtipo).sort();
+  cont.innerHTML = subtipos.map(sub => {
+    const linhas = Object.keys(porSubtipo[sub])
+      .map(f => {
+        const custos = porSubtipo[sub][f];
+        const media  = custos.reduce((s, v) => s + v, 0) / custos.length;
+        return { fornecedor: f, media, n: custos.length };
+      })
+      .sort((a, b) => a.media - b.media);
+
+    const min = linhas[0].media;
+    const linhasHtml = linhas.map(l => {
+      const pct = min > 0 ? Math.round(((l.media - min) / min) * 100) : 0;
+      const pctHtml = pct === 0
+        ? '<span style="color:var(--green);font-size:11px;font-weight:600">mais barato</span>'
+        : `<span style="color:var(--red);font-size:11px;font-weight:600">+${pct}%</span>`;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border)">
+        <span>${l.fornecedor} <span style="color:var(--text3);font-size:11px">(${l.n} ${l.n === 1 ? 'compra' : 'compras'})</span></span>
+        <span style="display:flex;gap:10px;align-items:center">
+          <strong>${fmtEur(l.media)}</strong>
+          ${pctHtml}
+        </span>
+      </div>`;
+    }).join('');
+
+    return `<div style="margin-top:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:2px">${sub}</div>
+      ${linhasHtml}
+    </div>`;
+  }).join('');
 }
 
 async function renderGestaoFornecedores() {
