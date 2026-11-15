@@ -935,7 +935,7 @@ tbody tr:hover td { background: var(--bg); }
   flex-shrink: 0;
   vertical-align: middle;
 }
-.ico-telemetria svg { width: 11px; height: 11px; color: var(--text2); }
+.ico-telemetria svg { width: 13px; height: 13px; color: var(--text2); }
 .alerta-veic-pneus { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
 
 /* ── INFO BOX ─────────────────────────────────────────────────── */
