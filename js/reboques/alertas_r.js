@@ -1,5 +1,13 @@
 // ── REBOQUES/ALERTAS.JS ──────────────────────────────────────────
 
+// Limites de duração por eixo (meses) — padrão europeu semirreboque 3 eixos
+const LIMITES_EIXO = {
+  1: { aviso: 12, critico: 14 },
+  2: { aviso: 20, critico: 24 },
+  3: { aviso: 12, critico: 14 },
+  null: { aviso: 12, critico: 14 } // fallback se eixo não definido
+};
+
 function nivelDuracao(mesesActivo, lim) {
   if (mesesActivo >= lim.critico) return 'critico';
   if (mesesActivo >= lim.aviso)   return 'medio';
