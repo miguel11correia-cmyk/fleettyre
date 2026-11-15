@@ -320,7 +320,6 @@ async function guardarDesmontagem() {
   setTimeout(() => {
     fecharPainel();
     loadFrota();
-    loadDashboard();
   }, 800);
 }
 
@@ -412,7 +411,7 @@ async function guardarEdicao() {
   if (error) { showFeedback('e-feedback', 'Erro: ' + error.message, true); return; }
 
   showFeedback('e-feedback', 'Registo atualizado.');
-  setTimeout(() => { fecharEdicao(); loadFrota(); loadDashboard(); }, 800);
+  setTimeout(() => { fecharEdicao(); loadFrota(); }, 800);
 }
 
 
@@ -423,5 +422,4 @@ async function apagarRegisto(id, matricula) {
   loading(false);
   if (error) { alert('Erro ao apagar: ' + error.message); return; }
   loadFrota();
-  loadDashboard();
 }

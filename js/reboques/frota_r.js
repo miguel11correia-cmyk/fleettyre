@@ -266,7 +266,7 @@ async function guardarDesmontazemReboque() {
 
   if (error) { showFeedback('rd-feedback', 'Erro: ' + error.message, true); return; }
   showFeedback('rd-feedback', 'Desmontagem guardada.');
-  setTimeout(() => { fecharPainelReboque(); loadFrotaReboques(); loadDashboardReboques(); }, 800);
+  setTimeout(() => { fecharPainelReboque(); loadFrotaReboques(); }, 800);
 }
 
 // ── EDIÇÃO ────────────────────────────────────────────────────────
@@ -337,7 +337,7 @@ async function guardarEdicaoReboque() {
 
   if (error) { showFeedback('re-feedback', 'Erro: ' + error.message, true); return; }
   showFeedback('re-feedback', 'Registo atualizado.');
-  setTimeout(() => { fecharEdicaoReboque(); loadFrotaReboques(); loadDashboardReboques(); }, 800);
+  setTimeout(() => { fecharEdicaoReboque(); loadFrotaReboques(); }, 800);
 }
 
 async function apagarRegistoReboque(id, matricula) {
@@ -347,5 +347,4 @@ async function apagarRegistoReboque(id, matricula) {
   loading(false);
   if (error) { alert('Erro ao apagar: ' + error.message); return; }
   loadFrotaReboques();
-  loadDashboardReboques();
 }

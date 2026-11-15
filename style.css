@@ -811,6 +811,7 @@ tbody tr:hover td { background: var(--bg); }
   pointer-events: none;
 }
 .panel.open { transform: translateX(0); pointer-events: auto; }
+.panel-wide { width: 640px; }
 .panel-head {
   padding: 14px 16px;
   display: flex;

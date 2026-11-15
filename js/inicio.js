@@ -1,35 +1,64 @@
 // ── INÍCIO ────────────────────────────────────────────────────────
-//
-// Página central, comum a veículos e reboques: resumo do que precisa
-// de atenção + formulário único de "Registar pneu" (com um selector
-// Camião/Reboque no topo, em vez de duas abas separadas).
+// Página central, comum a veículos e reboques: aviso de atenção +
+// resumo geral (KPIs e gráficos, antes espalhados por "Dashboard
+// Frota" e "Dashboard Reboques", agora fundidos aqui com um selector
+// Camiões/Reboques/Visão unificada) + atalho para o registo de pneu
+// (formulário movido para um painel lateral, para não ocupar sempre
+// o ecrã principal).
 
 let segmentoRegisto = 'veiculo';
+let inicioVista = 'unificada'; // 'veiculos' | 'reboques' | 'unificada'
+let inicioDadosVeic = { pneus: [], veiculos: [] };
+let inicioDadosReb  = { reboques: [] };
+let inicioAlertasCount = { veic: 0, reb: 0 };
 
 async function loadInicio() {
   popularSelectorMatriculaGeral();
 
   loading(true);
   const [{ data: pneusData }, { data: veiculosData }, { data: reboquesData }] = await Promise.all([
-    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id')),
+    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('mes_mont', { ascending: true })),
     sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
-    fetchAllRows(() => sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId).order('id')),
+    fetchAllRows(() => sb.from('reboques').select('*').eq('empresa_id', currentEmpresaId).order('mes_mont', { ascending: true })),
   ]);
   loading(false);
 
+  inicioDadosVeic = { pneus: pneusData || [], veiculos: veiculosData || [] };
+  inicioDadosReb  = { reboques: reboquesData || [] };
+
   let criticosVeic = [];
-  if (pneusData && pneusData.length > 0) {
+  if (inicioDadosVeic.pneus.length > 0) {
     const kmAtualPorMat = {};
-    (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
-    criticosVeic = calcularEstimativasDesgaste(pneusData, kmAtualPorMat).filter(r => r.nivel === 'critico');
+    inicioDadosVeic.veiculos.forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
+    criticosVeic = calcularEstimativasDesgaste(inicioDadosVeic.pneus, kmAtualPorMat).filter(r => r.nivel === 'critico');
   }
 
   let criticosReb = [];
-  if (reboquesData && reboquesData.length > 0) {
-    criticosReb = calcularAlertasReboques(reboquesData).filter(r => r.nivel === 'critico');
+  if (inicioDadosReb.reboques.length > 0) {
+    criticosReb = calcularAlertasReboques(inicioDadosReb.reboques).filter(r => r.nivel === 'critico');
+  }
+
+  inicioAlertasCount = {
+    veic: new Set(criticosVeic.map(r => r.matricula)).size,
+    reb:  new Set(criticosReb.map(r => r.matricula)).size,
+  };
+
+  // Badges do menu — antes actualizados dentro de loadDashboard()/
+  // loadDashboardReboques(), agora aqui, já que o Início carrega
+  // sempre a seguir ao login (ver navInicio() em auth.js).
+  const badgeV = document.getElementById('badge-alertas');
+  if (badgeV) {
+    badgeV.textContent = inicioAlertasCount.veic;
+    badgeV.classList.toggle('hidden', inicioAlertasCount.veic === 0);
+  }
+  const badgeR = document.getElementById('badge-alertas-r');
+  if (badgeR) {
+    badgeR.textContent = inicioAlertasCount.reb;
+    badgeR.classList.toggle('hidden', inicioAlertasCount.reb === 0);
   }
 
   renderInicioAtencao(criticosVeic, criticosReb);
+  renderInicioVista();
 }
 
 // Cartão "Precisa da tua atenção" — junta camiões e reboques numa só
@@ -91,6 +120,216 @@ function irParaAlertasVeiculosInicio() {
 function irParaAlertasReboquesInicio() {
   toggleSecaoSemCarregar('reboques');
   navR('alertas-r', document.querySelector('.ni[data-page="alertas-r"]'));
+}
+
+// ── VISÃO GERAL (ex-"Dashboard Frota" / "Dashboard Reboques") ──────
+// Os dois dashboards separados fundiram-se aqui: os KPIs e os
+// gráficos comuns (tipo/fornecedor/marca/evolução mensal/tabela
+// anual) recalculam-se consoante a vista escolhida, juntando dados
+// de camiões e reboques quando a vista é "unificada" já que os
+// campos (tipo, marca, fornecedor, custo_pneu, mes_mont) são os
+// mesmos nas duas tabelas. A análise por posição (camiões) e por
+// eixo (reboques) não são combináveis — por isso só aparecem nas
+// vistas individuais.
+
+function escolherVistaInicio(v) {
+  inicioVista = v;
+  renderInicioVista();
+}
+
+function renderInicioVista() {
+  const pneus     = inicioDadosVeic.pneus || [];
+  const reboques  = inicioDadosReb.reboques || [];
+
+  let total, matsLabel, matsSub, alertsSub, alertasN;
+  if (inicioVista === 'veiculos') {
+    total = pneus;
+    matsLabel = 'Matrículas'; matsSub = 'veículos na frota'; alertsSub = 'rasto ≤ 3mm';
+    alertasN = inicioAlertasCount.veic;
+  } else if (inicioVista === 'reboques') {
+    total = reboques;
+    matsLabel = 'Reboques'; matsSub = 'matrículas'; alertsSub = 'acima do limite';
+    alertasN = inicioAlertasCount.reb;
+  } else {
+    total = [...pneus, ...reboques];
+    matsLabel = 'Matrículas'; matsSub = 'veículos + reboques'; alertsSub = 'críticos';
+    alertasN = inicioAlertasCount.veic + inicioAlertasCount.reb;
+  }
+  const ativos = total.filter(r => !r.mes_desmont);
+
+  document.getElementById('k-activos').textContent   = ativos.length;
+  document.getElementById('k-total').textContent     = total.length;
+  document.getElementById('k-mats-label').textContent = matsLabel;
+  document.getElementById('k-mats').textContent      = new Set(total.map(r => r.matricula)).size;
+  document.getElementById('k-mats-sub').textContent  = matsSub;
+  document.getElementById('k-alerts').textContent    = alertasN;
+  document.getElementById('k-alerts-sub').textContent = alertsSub;
+
+  const comCusto   = total.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+  const custoTotal = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
+  const custoMed   = comCusto.length > 0 ? custoTotal / comCusto.length : null;
+  document.getElementById('k-custo').textContent = custoTotal > 0 ? fmtEur(custoTotal) : '—';
+  document.getElementById('k-med').textContent   = custoMed   ? fmtEur(custoMed)   : '—';
+
+  // ── Gráficos por tipo/fornecedor/marca (só pneus ativos) ──
+  const tipos   = countBy(ativos, 'tipo');
+  const tLabels = Object.keys(tipos).sort((a, b) => tipos[b] - tipos[a]);
+  mkChart('c-tipo', 'bar', tLabels, tLabels.map(k => tipos[k]), CHART_NEUTRAL, { topLabels: true });
+
+  const forns = countBy(ativos, 'fornecedor');
+  const fKeys = Object.keys(forns).sort((a, b) => forns[b] - forns[a]);
+  mkChart('c-forn', 'bar', fKeys, fKeys.map(k => forns[k]), CHART_NEUTRAL, { topLabels: true });
+
+  const marcs = countBy(ativos, 'marca');
+  const mKeys = Object.keys(marcs).sort((a, b) => marcs[b] - marcs[a]);
+  mkChart('c-marc', 'bar', mKeys, mKeys.map(k => marcs[k]), CHART_NEUTRAL, { topLabels: true });
+
+  // ── Evolução mensal do custo (linha) ──
+  const porMes = {};
+  total.forEach(r => {
+    if (!r.mes_mont || !r.custo_pneu || r.custo_pneu <= 0) return;
+    porMes[r.mes_mont] = (porMes[r.mes_mont] || 0) + Number(r.custo_pneu);
+  });
+  const meses = Object.keys(porMes).sort();
+  if (meses.length > 0) {
+    mkChart('c-mensal', 'line', meses, meses.map(m => porMes[m]), [CHART_NEUTRAL], {
+      elements: {
+        line: { borderColor: CHART_NEUTRAL, borderWidth: 2, tension: 0.3, fill: false },
+        point: { backgroundColor: CHART_NEUTRAL, radius: 3 }
+      }
+    });
+  }
+
+  // ── Tabela anual ──
+  const porAno = {};
+  total.forEach(r => {
+    if (!r.mes_mont) return;
+    const ano = r.mes_mont.split('-')[0];
+    if (!porAno[ano]) porAno[ano] = { pneus: 0, custo: 0, comCusto: 0 };
+    porAno[ano].pneus++;
+    if (r.custo_pneu > 0) { porAno[ano].custo += Number(r.custo_pneu); porAno[ano].comCusto++; }
+  });
+  const anos = Object.keys(porAno).sort((a, b) => b - a);
+  const tbodyAnual = document.getElementById('tabela-anual-tbody');
+  if (tbodyAnual) {
+    tbodyAnual.innerHTML = anos.length === 0
+      ? '<tr><td colspan="4" class="empty-msg" style="text-align:center;padding:12px">Sem dados anuais ainda.</td></tr>'
+      : anos.map(ano => {
+          const d   = porAno[ano];
+          const med = d.comCusto > 0 ? fmtEur(d.custo / d.comCusto) : '—';
+          return `<tr>
+            <td><strong>${ano}</strong></td>
+            <td style="text-align:center">${d.pneus}</td>
+            <td style="text-align:right">${d.custo > 0 ? fmtEur(d.custo) : '—'}</td>
+            <td style="text-align:right">${med}</td>
+          </tr>`;
+        }).join('');
+  }
+
+  // ── Análise por posição (camiões) / eixo (reboques) — não combinável ──
+  const painelPos = document.getElementById('inicio-analise-pos');
+  if (inicioVista === 'unificada') {
+    painelPos.classList.add('hidden');
+  } else {
+    painelPos.classList.remove('hidden');
+    if (inicioVista === 'veiculos') renderInicioAnalisePosicao(pneus);
+    else renderInicioAnaliseEixo(reboques);
+  }
+}
+
+// Taxa de desgaste por posição (Direção vs. Tração) — camiões.
+function renderInicioAnalisePosicao(pneusData) {
+  document.getElementById('inicio-pos-titulo').textContent = 'Taxa de desgaste por posição (mm/1000km)';
+  document.getElementById('inicio-pos-sub').textContent    = 'Direção vs. Tração: só com registos históricos completos (montagem, desmontagem e rasto final).';
+  document.getElementById('inicio-pos-detalhe-titulo').textContent = 'Detalhe por posição';
+  document.getElementById('inicio-pos-thead').innerHTML =
+    '<tr><th>Posição</th><th style="text-align:right">Taxa média (mm/1000km)</th><th style="text-align:right">KMs médios efetuados</th><th style="text-align:center">Nº registos</th></tr>';
+
+  const posAgg = {};
+  pneusData.forEach(r => {
+    const taxa = taxaDesgaste(r);
+    if (taxa === null) return;
+    const k = categoriaPosicao(r.posicao);
+    if (!k) return;
+    if (!posAgg[k]) posAgg[k] = { taxaArr: [], kmsArr: [] };
+    posAgg[k].taxaArr.push(taxa);
+    posAgg[k].kmsArr.push(r.kms_desmont - r.kms_mont);
+  });
+
+  const posKeys = ['Direção', 'Tração', ...Object.keys(posAgg).filter(k => k !== 'Direção' && k !== 'Tração')]
+    .filter(k => posAgg[k]);
+  const tbody = document.getElementById('desgaste-pos-tbody');
+  if (posKeys.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-msg" style="text-align:center;padding:12px">Sem registos históricos com rasto final ainda.</td></tr>';
+  } else {
+    tbody.innerHTML = posKeys.map(k => {
+      const a     = posAgg[k];
+      const taxaM = a.taxaArr.reduce((s, v) => s + v, 0) / a.taxaArr.length;
+      const kmsM  = a.kmsArr.reduce((s, v) => s + v, 0) / a.kmsArr.length;
+      return `<tr>
+        <td>${k}</td>
+        <td style="text-align:right">${taxaM.toFixed(3)}</td>
+        <td style="text-align:right">${fmt(Math.round(kmsM))}</td>
+        <td style="text-align:center">${a.taxaArr.length}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  if (posKeys.length > 0) {
+    const vals = posKeys.map(k => Number((posAgg[k].taxaArr.reduce((s, v) => s + v, 0) / posAgg[k].taxaArr.length).toFixed(3)));
+    mkChart('c-posicao-eixo', 'bar', posKeys, vals, CHART_NEUTRAL);
+  }
+}
+
+// Duração média por eixo — reboques.
+function renderInicioAnaliseEixo(reboquesData) {
+  document.getElementById('inicio-pos-titulo').textContent = 'Duração média por eixo (meses)';
+  document.getElementById('inicio-pos-sub').textContent    = 'Só com desmontagens já registadas.';
+  document.getElementById('inicio-pos-detalhe-titulo').textContent = 'Detalhe por eixo';
+  document.getElementById('inicio-pos-thead').innerHTML =
+    '<tr><th>Eixo</th><th style="text-align:right">Duração média (meses)</th><th style="text-align:center">Nº registos</th></tr>';
+
+  const agg = {};
+  reboquesData.forEach(r => {
+    if (!r.mes_desmont || !r.mes_mont) return;
+    const meses = mesesEntre(r.mes_mont, r.mes_desmont);
+    if (meses <= 0) return;
+    if (!r.eixo) return;
+    const k = `Eixo ${r.eixo}`;
+    if (!agg[k]) agg[k] = [];
+    agg[k].push(meses);
+  });
+
+  const keys = ['Eixo 1', 'Eixo 2', 'Eixo 3', ...Object.keys(agg).filter(k => !['Eixo 1', 'Eixo 2', 'Eixo 3'].includes(k))]
+    .filter(k => agg[k]);
+  const tbody = document.getElementById('desgaste-pos-tbody');
+  if (keys.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="empty-msg" style="text-align:center;padding:12px">Sem desmontagens registadas ainda.</td></tr>';
+  } else {
+    tbody.innerHTML = keys.map(k => {
+      const arr   = agg[k];
+      const media = Math.round(arr.reduce((s, v) => s + v, 0) / arr.length);
+      return `<tr><td>${k}</td><td style="text-align:right">${media}</td><td style="text-align:center">${arr.length}</td></tr>`;
+    }).join('');
+  }
+
+  if (keys.length > 0) {
+    const vals = keys.map(k => Math.round(agg[k].reduce((s, v) => s + v, 0) / agg[k].length));
+    mkChart('c-posicao-eixo', 'bar', keys, vals, CHART_NEUTRAL);
+  }
+}
+
+// ── PAINEL — REGISTAR PNEU ──────────────────────────────────────────
+// O formulário já não ocupa sempre o ecrã de Início — abre à parte,
+// no mesmo painel lateral usado noutras páginas (ver abrirPainel em
+// frota.js), para não competir com o resumo geral.
+
+function abrirPainelRegistoGeral() {
+  document.getElementById('painel-registo-geral').classList.add('open');
+}
+
+function fecharPainelRegistoGeral() {
+  document.getElementById('painel-registo-geral').classList.remove('open');
 }
 
 // ── FORMULÁRIO UNIFICADO DE REGISTO ─────────────────────────────────
