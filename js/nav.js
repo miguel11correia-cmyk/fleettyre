@@ -35,9 +35,9 @@ function toggleSecao(secao) {
   if (secao === 'registos') {
     navReg('fornecedores-registo', document.querySelector('[data-page="fornecedores-registo"]'));
   } else if (secao === 'veiculos') {
-    nav('dashboard', document.querySelector('[data-page="dashboard"]'));
+    nav('frota', document.querySelector('[data-page="frota"]'));
   } else {
-    navR('dashboard-r', document.querySelector('[data-page="dashboard-r"]'));
+    navR('frota-r', document.querySelector('[data-page="frota-r"]'));
   }
 }
 
@@ -48,6 +48,7 @@ function navInicio() {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   toggleMobileSidebar(false);
   fecharPainel();
+  fecharPainelRegistoGeral();
   document.getElementById('btn-inicio').classList.add('active');
   document.getElementById('btn-registos')?.classList.remove('active');
   // Início não pertence a nenhuma das três secções — esconde sempre o
@@ -69,6 +70,7 @@ function navReg(id, el) {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
   toggleMobileSidebar(false);
+  fecharPainelRegistoGeral();
   const page = document.getElementById('page-' + id);
   if (!page) return;
   page.classList.remove('hidden');
@@ -92,9 +94,9 @@ function nav(id, el) {
   page.classList.remove('hidden');
   if (el) el.classList.add('active');
   fecharPainel();
+  fecharPainelRegistoGeral();
 
-  if      (id === 'dashboard')     loadDashboard();
-  else if (id === 'frota')         initFrotaSelect();
+  if      (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
   else if (id === 'fornecedores')  loadFornecedores();
   else if (id === 'marcas')        loadMarcas();
@@ -107,6 +109,7 @@ function navR(id, el) {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
   toggleMobileSidebar(false);
+  fecharPainelRegistoGeral();
 
   // Stock é partilhado — usa page-stock com contexto reboques
   const pageId = id === 'stock-r' ? 'stock' : id;
@@ -115,8 +118,7 @@ function navR(id, el) {
   page.classList.remove('hidden');
   if (el) el.classList.add('active');
 
-  if      (id === 'dashboard-r')    loadDashboardReboques();
-  else if (id === 'frota-r')        initFrotaSelectReboques();
+  if      (id === 'frota-r')        initFrotaSelectReboques();
   else if (id === 'alertas-r')      loadAlertasReboques();
   else if (id === 'fornecedores-r') loadFornecedoresReboques();
   else if (id === 'marcas-r')       loadMarcasReboques();
