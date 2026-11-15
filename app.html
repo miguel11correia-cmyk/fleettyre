@@ -223,6 +223,11 @@
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 10 3l7 6.5"/><path d="M5 8v8.5a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8"/><path d="M8 17.5V12h4v5.5"/></svg>
         Início
       </button>
+      <!-- COMPRAS (Fornecedores + Marcas) — comum a veículos e reboques, fora da troca de secção -->
+      <button id="btn-compras" class="nav-inicio-btn" onclick="navCompras()">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg>
+        Compras
+      </button>
       <!-- SELECTOR CAMIÕES/REBOQUES -->
       <div class="secao-btns">
         <button id="btn-veiculos" class="secao-btn secao-active" onclick="toggleSecao('veiculos')">
@@ -269,12 +274,6 @@
           <span class="badge-n hidden" id="badge-alertas">0</span>
         </div>
         <div class="nav-section">Análise</div>
-        <div class="ni" onclick="nav('fornecedores',this)" data-page="fornecedores">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg></span>Fornecedores
-        </div>
-        <div class="ni" onclick="nav('marcas',this)" data-page="marcas">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5h5.5V8L8 16.5l-5.5-5.5L11 2.5Z"/><circle cx="13.3" cy="5.7" r="1"/></svg></span>Marcas
-        </div>
         <div class="ni" onclick="nav('analytics',this)" data-page="analytics">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Análise
         </div>
@@ -295,12 +294,6 @@
           <span class="badge-n hidden" id="badge-alertas-r">0</span>
         </div>
         <div class="nav-section">Análise</div>
-        <div class="ni" onclick="navR('fornecedores-r',this)" data-page="fornecedores-r">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg></span>Fornecedores
-        </div>
-        <div class="ni" onclick="navR('marcas-r',this)" data-page="marcas-r">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5h5.5V8L8 16.5l-5.5-5.5L11 2.5Z"/><circle cx="13.3" cy="5.7" r="1"/></svg></span>Marcas
-        </div>
         <div class="ni" onclick="navR('analytics-r',this)" data-page="analytics-r">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5 7.5 9l3.5 3 6-7"/><path d="M13.5 5h3.5v3.5"/></svg></span>Análise
         </div>
@@ -818,16 +811,17 @@
     </div>
 
     <!-- FORNECEDORES -->
-    <div class="page hidden" id="page-fornecedores">
+    <!-- COMPRAS — Fornecedores + Marcas, comum a veículos e reboques -->
+    <div class="page hidden" id="page-compras">
       <div class="page-header">
-        <h2>Fornecedores</h2>
-        <button class="btn btn-sm" onclick="loadFornecedores()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
+        <h2>Compras</h2>
+        <button class="btn btn-sm" onclick="loadCompras()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
 
       <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div class="ct" style="margin:0">Visão geral</div>
         <div class="frow" style="margin:0;max-width:200px;flex:1">
-          <select id="forn-vista" data-fancy onchange="escolherVistaFornecedores(this.value)">
+          <select id="compras-vista" data-fancy onchange="escolherVistaCompras(this.value)">
             <option value="unificada">Visão unificada</option>
             <option value="veiculos">Camiões</option>
             <option value="reboques">Reboques</option>
@@ -847,10 +841,6 @@
           </table>
         </div>
       </div>
-      <div class="card">
-        <div class="ct">Custo médio por pneu por fornecedor (€)</div>
-        <div class="cw-t"><canvas id="c-forn-custo" aria-label="Custo médio por fornecedor"></canvas></div>
-      </div>
 
       <div class="card">
         <div class="ct">Comparar preços por marca e modelo</div>
@@ -863,29 +853,19 @@
         </div>
         <div id="forn-cmp-resultado"></div>
       </div>
-    </div>
 
-    <!-- MARCAS -->
-    <div class="page hidden" id="page-marcas">
-      <div class="page-header">
-        <h2>Marcas</h2>
-        <button class="btn btn-sm" onclick="loadMarcas()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
-      </div>
       <div class="card">
         <div class="ct">Desempenho por marca</div>
         <div class="table-wrap">
           <table>
-            <thead><tr>
-              <th>#</th><th>Marca</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
-              <th>KMs médios/pneu</th><th>Taxa desgaste média (mm/1000km)</th><th>Custo médio/pneu (€)</th><th style="text-align:right">€/km</th>
-            </tr></thead>
+            <thead id="marc-thead"></thead>
             <tbody id="marc-tbody"></tbody>
           </table>
         </div>
       </div>
-      <div class="card">
-        <div class="ct">KMs médios por marca</div>
-        <div class="cw-t"><canvas id="c-marc-km" aria-label="KMs médios por marca"></canvas></div>
+      <div class="card hidden" id="marc-eficiencia-card">
+        <div class="ct" id="marc-eficiencia-titulo">KMs médios por marca</div>
+        <div class="cw-t"><canvas id="c-marc-eficiencia" aria-label="Eficiência por marca"></canvas></div>
       </div>
     </div>
 
@@ -1386,18 +1366,6 @@
 
     <!-- REBOQUES — FORNECEDORES -->
     <!-- REBOQUES — MARCAS -->
-    <div class="page hidden" id="page-marcas-r">
-      <div class="page-header"><h2>Marcas (Reboques)</h2><button class="btn btn-sm" onclick="loadMarcasReboques()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button></div>
-      <div class="card">
-        <div class="ct">Desempenho por marca</div>
-        <div class="table-wrap"><table>
-          <thead><tr><th>#</th><th>Marca</th><th>Total</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Ab.</th><th>Duração média</th><th>Custo médio/pneu (€)</th><th style="text-align:right">€/mês</th></tr></thead>
-          <tbody id="rmarc-tbody"></tbody>
-        </table></div>
-      </div>
-      <div class="card"><div class="ct">Duração média por marca (meses)</div><div class="cw-t"><canvas id="rc-marc-dur"></canvas></div></div>
-    </div>
-
     <!-- REBOQUES — ANALYTICS -->
     <div class="page hidden" id="page-analytics-r">
       <div class="page-header">
@@ -1483,7 +1451,7 @@
 <script src="js/frota.js"></script>
 <script src="js/frota_cadastro.js"></script>
 <script src="js/alertas.js"></script>
-<script src="js/fornecedores.js"></script>
+<script src="js/compras.js"></script>
 <script src="js/marcas.js"></script>
 <script src="js/emails-fornecedores.js"></script>
 <script src="js/telemetria.js"></script>
@@ -1493,9 +1461,7 @@
 <!-- Módulos reboques -->
 <script src="js/reboques/frota_r.js"></script>
 <script src="js/reboques/frota_cadastro_r.js"></script>
-<script src="js/reboques/alertas_r.js"></script>
-<script src="js/reboques/fornecedores_marcas_r.js"></script>
-<script src="js/reboques/analytics_r.js"></script>
+<script src="js/reboques/alertas_r.js"></script><script src="js/reboques/analytics_r.js"></script>
 <!-- Navegação -->
 <script src="js/nav.js"></script>
 <!-- Autenticação (último — depende de tudo o resto) -->

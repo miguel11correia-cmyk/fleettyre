@@ -28,6 +28,7 @@ function toggleSecaoSemCarregar(secao) {
   document.getElementById('btn-veiculos').classList.toggle('secao-active', secao === 'veiculos');
   document.getElementById('btn-reboques').classList.toggle('secao-active', secao === 'reboques');
   document.getElementById('btn-inicio')?.classList.remove('active');
+  document.getElementById('btn-compras')?.classList.remove('active');
 }
 
 function toggleSecao(secao) {
@@ -50,8 +51,9 @@ function navInicio() {
   fecharPainel();
   fecharPainelRegistoGeral();
   document.getElementById('btn-inicio').classList.add('active');
+  document.getElementById('btn-compras')?.classList.remove('active');
   document.getElementById('btn-registos')?.classList.remove('active');
-  // Início não pertence a nenhuma das três secções — esconde sempre o
+  // Início não pertence a nenhuma das secções — esconde sempre o
   // submenu de quem quer que tenha sido a última visitada.
   document.getElementById('menu-registos').classList.add('hidden');
   document.getElementById('menu-veiculos').classList.add('hidden');
@@ -62,6 +64,26 @@ function navInicio() {
   loadInicio();
 }
 
+// Página "Compras" (Fornecedores + Marcas) — tal como o Início, fora
+// das três secções, sempre acessível independentemente de onde se está.
+function navCompras() {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  toggleMobileSidebar(false);
+  fecharPainel();
+  fecharPainelRegistoGeral();
+  document.getElementById('btn-compras').classList.add('active');
+  document.getElementById('btn-inicio')?.classList.remove('active');
+  document.getElementById('btn-registos')?.classList.remove('active');
+  document.getElementById('menu-registos').classList.add('hidden');
+  document.getElementById('menu-veiculos').classList.add('hidden');
+  document.getElementById('menu-reboques').classList.add('hidden');
+  document.getElementById('btn-veiculos').classList.remove('secao-active');
+  document.getElementById('btn-reboques').classList.remove('secao-active');
+  document.getElementById('page-compras').classList.remove('hidden');
+  loadCompras();
+}
+
 // Secção "Registos" — partilhada entre veículos e reboques (fornecedores,
 // marcas, e as fichas de frota), para não ficar escondida dentro de um
 // dos dois modos.
@@ -69,6 +91,7 @@ function navReg(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
+  document.getElementById('btn-compras')?.classList.remove('active');
   toggleMobileSidebar(false);
   fecharPainelRegistoGeral();
   const page = document.getElementById('page-' + id);
@@ -88,6 +111,7 @@ function nav(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
+  document.getElementById('btn-compras')?.classList.remove('active');
   toggleMobileSidebar(false);
   const page = document.getElementById('page-' + id);
   if (!page) return;
@@ -98,8 +122,6 @@ function nav(id, el) {
 
   if      (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
-  else if (id === 'fornecedores')  loadFornecedores('veiculos');
-  else if (id === 'marcas')        loadMarcas();
   else if (id === 'analytics')     loadAnalytics();
   else if (id === 'stock')         { stockContexto = 'veiculos'; loadStock(); }
 }
@@ -108,12 +130,13 @@ function navR(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
+  document.getElementById('btn-compras')?.classList.remove('active');
   toggleMobileSidebar(false);
   fecharPainelRegistoGeral();
 
-  // Stock e Fornecedores são partilhados — usam a página de veículos
-  // com um contexto/vista de reboques.
-  const pageId = id === 'stock-r' ? 'stock' : id === 'fornecedores-r' ? 'fornecedores' : id;
+  // Stock é partilhado — usa a página de veículos com um contexto de
+  // reboques (Fornecedores/Marcas saíram para a página "Compras").
+  const pageId = id === 'stock-r' ? 'stock' : id;
   const page = document.getElementById('page-' + pageId);
   if (!page) return;
   page.classList.remove('hidden');
@@ -121,8 +144,6 @@ function navR(id, el) {
 
   if      (id === 'frota-r')        initFrotaSelectReboques();
   else if (id === 'alertas-r')      loadAlertasReboques();
-  else if (id === 'fornecedores-r') loadFornecedores('reboques');
-  else if (id === 'marcas-r')       loadMarcasReboques();
   else if (id === 'analytics-r')    loadAnalyticsReboques();
   else if (id === 'stock-r')        { stockContexto = 'reboques'; loadStock(); }
 }

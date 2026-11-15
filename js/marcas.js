@@ -1,97 +1,12 @@
 // ── MARCAS ────────────────────────────────────────────────────────
+// A analise de desempenho por marca fundiu-se com a de Fornecedores
+// na pagina "Compras" — ver renderDesempenhoMarcas() em
+// js/compras.js. Este ficheiro fica só com a gestão (Configuração >
+// Marcas): lista de marcas e os seus subtipos/modelos.
 
 let marcGestaoExpandida = false;
 let listaSubtipos       = [];
 let subtipoMarcaId      = null;
-
-async function loadMarcas() {
-  loading(true);
-  const [{ data, error }, { data: veiculosData }] = await Promise.all([
-    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId).order('id')),
-    sb.from('veiculos').select('matricula, km_atual').eq('empresa_id', currentEmpresaId),
-  ]);
-  loading(false);
-  if (error || !data) return;
-
-  const kmAtualPorMat = {};
-  (veiculosData || []).forEach(v => { if (v.km_atual != null) kmAtualPorMat[v.matricula] = v.km_atual; });
-
-  const hoje = mesAtual();
-  const agg  = {};
-  data.filter(r => r.marca).forEach(r => {
-    const k = r.marca;
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, kmsArr: [], custos: [], taxaArr: [] };
-    agg[k].total++;
-    if (r.tipo === 'Novo')             agg[k].novo++;
-    else if (r.tipo === 'Remix')       agg[k].remix++;
-    else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
-    else if (r.tipo === 'Piso Aberto') agg[k].piso++;
-    const kmsInfo = kmsEfectuados(r, kmAtualPorMat[r.matricula]);
-    if (kmsInfo)                       agg[k].kmsArr.push(kmsInfo.km);
-    if (r.custo_pneu > 0)              agg[k].custos.push(Number(r.custo_pneu));
-    const taxa = taxaDesgaste(r);
-    if (taxa !== null)                 agg[k].taxaArr.push(taxa);
-  });
-
-  // €/km desta marca = custo médio ÷ KMs médios, usando o histórico
-  // COMPLETO da marca (activos + já substituídos, de todos os
-  // veículos) — ao contrário de "Por veículo"/"Análise", aqui não há
-  // uma entidade única a acumular histórico para sempre; é uma média
-  // estatística entre vários pneus independentes, por isso mais
-  // amostras (o histórico todo) dão uma média mais robusta.
-  const eurKmPorMarca = {};
-  Object.keys(agg).forEach(k => {
-    const m = agg[k];
-    const custoM = m.custos.length > 0 ? m.custos.reduce((s,v) => s+v, 0) / m.custos.length : null;
-    const kmsM   = m.kmsArr.length  > 0 ? m.kmsArr.reduce((s,v) => s+v, 0)  / m.kmsArr.length  : null;
-    eurKmPorMarca[k] = (custoM && kmsM && kmsM > 0) ? custoM / kmsM : null;
-  });
-
-  // Ranking: marcas com €/km calculável primeiro (mais eficiente/barata
-  // primeiro), as restantes no fim por ordem de quantidade de pneus.
-  const keys = Object.keys(agg).sort((a, b) => {
-    const ea = eurKmPorMarca[a], eb = eurKmPorMarca[b];
-    if (ea != null && eb != null) return ea - eb;
-    if (ea != null) return -1;
-    if (eb != null) return 1;
-    return agg[b].total - agg[a].total;
-  });
-
-  const tbody = document.getElementById('marc-tbody');
-  if (tbody) {
-    tbody.innerHTML = keys.map((k, i) => {
-      const m = agg[k];
-      const kmsM = m.kmsArr.length > 0
-        ? fmt(Math.round(m.kmsArr.reduce((s,v) => s+v, 0) / m.kmsArr.length))
-        : '—';
-      const custoM = m.custos.length > 0
-        ? fmtEur(m.custos.reduce((s,v) => s+v, 0) / m.custos.length)
-        : '—';
-      const taxaM = m.taxaArr.length > 0
-        ? (m.taxaArr.reduce((s,v) => s+v, 0) / m.taxaArr.length).toFixed(3)
-        : '—';
-      const eurKm = eurKmPorMarca[k];
-      return `<tr>
-        <td>${eurKm != null ? i + 1 : '—'}</td>
-        <td><strong>${k}</strong></td>
-        <td>${m.total}</td><td>${m.novo}</td><td>${m.remix}</td><td>${m.rechapado}</td><td>${m.piso}</td>
-        <td style="text-align:right">${kmsM}</td>
-        <td style="text-align:right">${taxaM}</td>
-        <td style="text-align:right">${custoM}</td>
-        <td style="text-align:right">${eurKm != null ? '€ ' + eurKm.toFixed(4) : '—'}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  const keysComKms = keys.filter(k => agg[k].kmsArr.length > 0);
-  if (keysComKms.length > 0) {
-    mkChart('c-marc-km', 'bar',
-      keysComKms,
-      keysComKms.map(k => Math.round(agg[k].kmsArr.reduce((s,v) => s+v, 0) / agg[k].kmsArr.length)),
-      CHART_NEUTRAL
-    );
-  }
-}
 
 async function renderGestaoMarcas() {
   const { data } = await sb.from('marcas').select('*').eq('empresa_id', currentEmpresaId).order('codigo');
