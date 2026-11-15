@@ -1,7 +1,7 @@
 // ── ALERTAS ──────────────────────────────────────────────
 
 // Marca os KMs/leituras que vêm da telemetria (GPS), não de registo manual.
-const ICON_TELEMETRIA = '<svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:-2px;margin-left:3px" title="Via telemetria"><use href="#icon-telemetria"/></svg>';
+const ICON_TELEMETRIA = '<span class="ico-telemetria" title="Via telemetria"><svg viewBox="0 0 24 24"><use href="#icon-telemetria"/></svg></span>';
 
 // Agrupa a taxa de desgaste (mm/1000km) de registos históricos por uma chave à escolha.
 function calcularTaxasPor(dados, chaveFn) {
