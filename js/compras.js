@@ -45,44 +45,8 @@ function dadosComprasVista() {
 }
 
 function renderComprasVista() {
-  renderResumoFornecedores();
   renderComparacaoFornecedores();
   renderDesempenhoMarcas();
-}
-
-// ── RESUMO POR FORNECEDOR ────────────────────────────────────────────
-
-function renderResumoFornecedores() {
-  const dados = dadosComprasVista();
-
-  const agg = {};
-  dados.forEach(r => {
-    if (r.fornecedor === 'PARQUE') return; // não é um fornecedor real — pneu que a empresa já tinha antes
-    const k = r.fornecedor || '(sem registo)';
-    if (!agg[k]) agg[k] = { total: 0, novo: 0, remix: 0, rechapado: 0, piso: 0, comCusto: 0, custo: 0 };
-    agg[k].total++;
-    if (r.tipo === 'Novo')             agg[k].novo++;
-    else if (r.tipo === 'Remix')       agg[k].remix++;
-    else if (r.tipo === 'Rechapado')   agg[k].rechapado++;
-    else if (r.tipo === 'Piso Aberto') agg[k].piso++;
-    if (r.custo_pneu > 0) { agg[k].comCusto++; agg[k].custo += Number(r.custo_pneu); }
-  });
-
-  const keys = Object.keys(agg).sort((a, b) => agg[b].total - agg[a].total);
-  const tbody = document.getElementById('forn-tbody');
-  if (tbody) {
-    tbody.innerHTML = keys.map(k => {
-      const f   = agg[k];
-      const med = f.comCusto > 0 ? fmtEur(f.custo / f.comCusto) : '—';
-      return `<tr>
-        <td><strong>${k}</strong></td>
-        <td>${f.total}</td><td>${f.novo}</td><td>${f.remix}</td><td>${f.rechapado}</td><td>${f.piso}</td>
-        <td>${f.comCusto}</td>
-        <td style="text-align:right">${f.custo > 0 ? fmtEur(f.custo) : '—'}</td>
-        <td style="text-align:right">${med}</td>
-      </tr>`;
-    }).join('');
-  }
 }
 
 // ── COMPARAÇÃO DE PREÇOS POR MARCA E MODELO ─────────────────────────
@@ -394,7 +358,7 @@ function preencherSelectores() {
     // "PARQUE" é uma opção fixa da app (não um fornecedor registado) —
     // indica que o pneu já estava na frota antes de haver registo de
     // fornecedor, por isso aparece sempre, a cinzento, e não entra na
-    // lista editável de fornecedores nem na análise (ver renderResumoFornecedores).
+    // lista editável de fornecedores nem na análise (ver renderComparacaoFornecedores).
     el.innerHTML = `<option value="">${placeholder}</option>` +
       `<option value="PARQUE" data-muted="true" ${val === 'PARQUE' ? 'selected' : ''}>Parque (já na frota)</option>` +
       listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} · ${f.nome}</option>`).join('');

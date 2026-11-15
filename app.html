@@ -830,21 +830,8 @@
       </div>
 
       <div class="card">
-        <div class="ct">Resumo por fornecedor</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Fornecedor</th><th>Total pneus</th><th>Novos</th><th>Remix</th><th>Rechapado</th><th>Piso Aberto</th>
-              <th>Com custo regist.</th><th>Custo total (€)</th><th>Custo médio/pneu (€)</th>
-            </tr></thead>
-            <tbody id="forn-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="ct">Comparar preços por marca e modelo</div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Por modelo (subtipo) da marca escolhida, fornecedores ordenados do mais barato ao mais caro — a percentagem compara sempre contra o fornecedor mais barato desse modelo neste momento, não contra uma média que se desloca com o tempo.</p>
+        <div class="ct">Comparação de Preços</div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Por marca e modelo, fornecedores ordenados do mais barato ao mais caro.</p>
         <div class="frow" style="max-width:260px">
           <label>Marca</label>
           <select id="forn-cmp-marca" data-fancy onchange="escolherMarcaComparacaoFornecedores(this.value)">
