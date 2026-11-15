@@ -11,6 +11,7 @@ let comprasVista  = 'unificada'; // 'veiculos' | 'reboques' | 'unificada'
 let fornDadosVeic = [];
 let fornDadosReb  = [];
 let fornCmpMarca  = '';
+let fornCmpTipo   = '';
 
 async function loadCompras(vistaInicial) {
   if (vistaInicial) comprasVista = vistaInicial;
@@ -59,12 +60,22 @@ function escolherMarcaComparacaoFornecedores(v) {
   renderComparacaoFornecedores();
 }
 
+function escolherTipoComparacaoFornecedores(v) {
+  fornCmpTipo = v;
+  renderComparacaoFornecedores();
+}
+
 function renderComparacaoFornecedores() {
   const sel = document.getElementById('forn-cmp-marca');
   const cont = document.getElementById('forn-cmp-resultado');
   if (!sel || !cont) return;
 
-  const dados  = dadosComprasVista();
+  // Esta comparação olha sempre para a frota toda (camiões + reboques),
+  // seja qual for a "Visão geral" escolhida em cima — o preço de um
+  // fornecedor é o mesmo preço quer o pneu vá para um camião ou um
+  // reboque, ao contrário do "Desempenho por marca" (onde a eficiência
+  // km/duração é mesmo diferente consoante o tipo de veículo).
+  const dados  = [...fornDadosVeic, ...fornDadosReb];
   const marcas = [...new Set(dados.filter(r => r.marca).map(r => r.marca))].sort();
   const val = fornCmpMarca;
   sel.innerHTML = '<option value="">— selecionar —</option>' +
@@ -76,7 +87,8 @@ function renderComparacaoFornecedores() {
   }
 
   const doMarca = dados.filter(r =>
-    r.marca === fornCmpMarca && r.fornecedor && r.fornecedor !== 'PARQUE' && r.custo_pneu > 0
+    r.marca === fornCmpMarca && r.fornecedor && r.fornecedor !== 'PARQUE' && r.custo_pneu > 0 &&
+    (!fornCmpTipo || r.tipo === fornCmpTipo)
   );
   if (doMarca.length === 0) {
     cont.innerHTML = '<p class="empty-msg">Sem registos com custo registado para esta marca.</p>';
