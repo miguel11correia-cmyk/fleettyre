@@ -98,7 +98,7 @@ function nav(id, el) {
 
   if      (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
-  else if (id === 'fornecedores')  loadFornecedores();
+  else if (id === 'fornecedores')  loadFornecedores('veiculos');
   else if (id === 'marcas')        loadMarcas();
   else if (id === 'analytics')     loadAnalytics();
   else if (id === 'stock')         { stockContexto = 'veiculos'; loadStock(); }
@@ -111,8 +111,9 @@ function navR(id, el) {
   toggleMobileSidebar(false);
   fecharPainelRegistoGeral();
 
-  // Stock é partilhado — usa page-stock com contexto reboques
-  const pageId = id === 'stock-r' ? 'stock' : id;
+  // Stock e Fornecedores são partilhados — usam a página de veículos
+  // com um contexto/vista de reboques.
+  const pageId = id === 'stock-r' ? 'stock' : id === 'fornecedores-r' ? 'fornecedores' : id;
   const page = document.getElementById('page-' + pageId);
   if (!page) return;
   page.classList.remove('hidden');
@@ -120,7 +121,7 @@ function navR(id, el) {
 
   if      (id === 'frota-r')        initFrotaSelectReboques();
   else if (id === 'alertas-r')      loadAlertasReboques();
-  else if (id === 'fornecedores-r') loadFornecedoresReboques();
+  else if (id === 'fornecedores-r') loadFornecedores('reboques');
   else if (id === 'marcas-r')       loadMarcasReboques();
   else if (id === 'analytics-r')    loadAnalyticsReboques();
   else if (id === 'stock-r')        { stockContexto = 'reboques'; loadStock(); }
