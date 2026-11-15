@@ -832,11 +832,23 @@
       <div class="card">
         <div class="ct">Comparação de Preços</div>
         <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Por marca e modelo, fornecedores ordenados do mais barato ao mais caro.</p>
-        <div class="frow" style="max-width:260px">
-          <label>Marca</label>
-          <select id="forn-cmp-marca" data-fancy onchange="escolherMarcaComparacaoFornecedores(this.value)">
-            <option value="">— selecionar —</option>
-          </select>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <div class="frow" style="max-width:260px;flex:1">
+            <label>Marca</label>
+            <select id="forn-cmp-marca" data-fancy onchange="escolherMarcaComparacaoFornecedores(this.value)">
+              <option value="">— selecionar —</option>
+            </select>
+          </div>
+          <div class="frow" style="max-width:200px;flex:1">
+            <label>Tipo</label>
+            <select id="forn-cmp-tipo" data-fancy onchange="escolherTipoComparacaoFornecedores(this.value)">
+              <option value="">— todos —</option>
+              <option value="Novo">Novo</option>
+              <option value="Remix">Remix</option>
+              <option value="Rechapado">Rechapado</option>
+              <option value="Piso Aberto">Piso Aberto</option>
+            </select>
+          </div>
         </div>
         <div id="forn-cmp-resultado"></div>
       </div>
