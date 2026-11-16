@@ -242,6 +242,10 @@
 
       <!-- MENU REGISTOS -->
       <div id="menu-registos" class="hidden">
+        <div class="nav-section">Pneus</div>
+        <div class="ni" onclick="navReg('registo-pneu',this)" data-page="registo-pneu">
+          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.5v7M6.5 10h7"/></svg></span>Registar pneu
+        </div>
         <div class="nav-section">Configuração</div>
         <div class="ni" onclick="navReg('fornecedores-registo',this)" data-page="fornecedores-registo">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg></span>Fornecedores
@@ -342,7 +346,7 @@
         <h2>Início</h2>
         <div style="display:flex;gap:8px">
           <button class="btn btn-sm" onclick="loadInicio()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
-          <button class="btn btn-p btn-sm" onclick="abrirPainelRegistoGeral()"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Registar pneu</button>
+          <button class="btn btn-p btn-sm" onclick="irParaRegistoPneu()"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Registar pneu</button>
         </div>
       </div>
 
@@ -426,13 +430,12 @@
       </div>
     </div>
 
-    <!-- PAINEL — REGISTAR PNEU (fora do ecrã principal, aberto a pedido) -->
-    <div class="panel panel-wide" id="painel-registo-geral">
-      <div class="panel-head">
-        <span>Registar pneu</span>
-        <button class="btn-close" onclick="fecharPainelRegistoGeral()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
+    <!-- REGISTOS — REGISTAR PNEU (aba central, antes era um painel lateral) -->
+    <div class="page hidden" id="page-registo-pneu">
+      <div class="page-header">
+        <h2>Registar pneu</h2>
       </div>
-      <div class="panel-body">
+      <div>
         <div class="card">
           <div class="ct">Registar pneu</div>
           <div class="g2">
@@ -652,6 +655,14 @@
           <select id="sel-mat" data-fancy onchange="loadFrota()"></select>
         </div>
         <div class="card" id="frota-info-veiculo"></div>
+        <div class="card hidden" id="frota-bulk-bar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:500" id="frota-bulk-count">0 selecionados</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-s btn-s-brand" onclick="abrirPainelBulk([...frotaSelecionados])"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar seleção</button>
+            <button class="btn btn-sm" onclick="abrirEdicaoBulkFrota()"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg> Editar seleção</button>
+            <button class="btn btn-sm" onclick="limparSelecaoFrota()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg> Cancelar</button>
+          </div>
+        </div>
         <div class="krow">
           <div class="kpi green"><div class="kpi-l">Pneus activos</div><div class="kpi-v green" id="fk1">—</div><div class="kpi-s">montados agora</div></div>
           <div class="kpi kpi-highlight"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk2">—</div><div class="kpi-s">custo activo ÷ km médio activo</div></div>
@@ -664,7 +675,7 @@
           <div class="table-wrap">
             <table id="frota-lugares-table">
               <thead><tr>
-                <th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th>
+                <th></th><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th>
                 <th>KMs Mont.</th><th>Mês Mont.</th><th>KMs Efect.</th><th>Rasto</th>
                 <th>Custo €</th><th>M.Obra €</th><th>Ação</th>
               </tr></thead>
@@ -680,7 +691,7 @@
           <div class="table-wrap hidden" id="frota-historico-wrap">
             <table id="frota-table" class="table-compact">
               <thead><tr>
-                <th>Mês Mont.</th><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th>
+                <th></th><th>Mês Mont.</th><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th>
                 <th>KMs Mont.</th><th>Mês Desmont.</th><th>KMs Desmont.</th>
                 <th>KMs Efect.</th><th>Rasto</th><th>Destino</th>
                 <th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Ação</th>
@@ -721,7 +732,7 @@
         <button class="btn-close" onclick="fecharEdicao()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
       </div>
       <div class="panel-body">
-        <p style="font-size:11px;color:var(--text3);margin-bottom:12px">É possível editar qualquer campo. Os custos são os mais comuns de atualizar depois.</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Os custos são os mais comuns de atualizar depois.</p>
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Montagem</div>
         <div class="frow"><label>Matrícula *</label><input type="text" id="e-mat" oninput="this.value=this.value.toUpperCase()"></div>
         <div class="frow"><label>Mês montagem * (AAAA-MM)</label><input type="text" id="e-mes" maxlength="7" oninput="maskMesInput(this)"></div>
@@ -743,18 +754,35 @@
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Custos</div>
         <div class="frow"><label>Custo pneu (€)</label><input type="number" id="e-custo" min="0" step="0.01"></div>
         <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="e-mo" min="0" step="0.01"></div>
-        <div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">Desmontagem</div>
-        <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="e-mes-d" maxlength="7" oninput="maskMesInput(this)"></div>
-        <div class="frow"><label>KMs desmontagem</label><input type="number" id="e-kms-d" min="0"></div>
-        <div class="frow"><label>Rasto restante (mm)</label><input type="number" class="qty-spin" id="e-esc" placeholder="—" min="0" max="20" step="0.5"></div>
-        <div class="frow"><label>Destino</label>
-          <select id="e-dest" data-fancy><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select>
-        </div>
+        <p style="font-size:11px;color:var(--text3);margin:4px 0 0">Para registar a saída do pneu, usa o botão "Desmontar" — este formulário já não altera esses campos.</p>
         <button class="btn btn-p w100" onclick="guardarEdicao()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
         <div id="e-feedback" class="feedback hidden"></div>
       </div>
     </div>
 
+    </div>
+
+    <!-- PAINEL EDIÇÃO EM MASSA — partilhado entre veículos e reboques -->
+    <div class="panel" id="painel-editar-bulk">
+      <div class="panel-head">
+        <span>Editar registos selecionados</span>
+        <button class="btn-close" onclick="fecharEdicaoBulk()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
+      </div>
+      <div class="panel-body">
+        <div class="panel-info" id="be-info"></div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Só os campos preenchidos são aplicados a todos os registos selecionados — os que deixares em branco mantêm o valor que cada um já tinha.</p>
+        <div class="frow"><label>Marca</label><select id="be-marca" data-fancy onchange="popularSelectorSubtipo('be-marca','be-subtipo')"><option value="">— manter —</option></select></div>
+        <div class="frow"><label>Modelo</label><select id="be-subtipo" data-fancy><option value="">— nenhum —</option></select></div>
+        <div class="frow"><label>Medida</label><input type="text" id="be-medida" placeholder="— manter —"></div>
+        <div class="frow"><label>Fornecedor</label><select id="be-forn" data-fancy><option value="">— manter —</option></select></div>
+        <div class="frow"><label>Tipo</label>
+          <select id="be-tipo" data-fancy><option value="">— manter —</option><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select>
+        </div>
+        <div class="frow"><label>Custo pneu (€)</label><input type="number" id="be-custo" placeholder="— manter —" min="0" step="0.01"></div>
+        <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="be-mo" placeholder="— manter —" min="0" step="0.01"></div>
+        <button class="btn btn-p w100" onclick="guardarEdicaoBulk()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Aplicar à seleção</button>
+        <div id="be-feedback" class="feedback hidden"></div>
+      </div>
     </div>
 
     <!-- ALERTAS -->
@@ -1255,6 +1283,14 @@
           <select id="sel-mat-r" data-fancy onchange="loadFrotaReboques()"></select>
         </div>
         <div class="card" id="frota-info-reboque"></div>
+        <div class="card hidden" id="rfrota-bulk-bar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:500" id="rfrota-bulk-count">0 selecionados</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-s btn-s-brand" onclick="abrirPainelReboqueBulk([...rfrotaSelecionados])"><svg viewBox="0 0 24 24"><use href="#icon-wrench"/></svg> Desmontar seleção</button>
+            <button class="btn btn-sm" onclick="abrirEdicaoBulkReboque()"><svg viewBox="0 0 24 24"><use href="#icon-edit"/></svg> Editar seleção</button>
+            <button class="btn btn-sm" onclick="limparSelecaoReboque()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg> Cancelar</button>
+          </div>
+        </div>
         <div class="krow">
           <div class="kpi green"><div class="kpi-l">Pneus activos</div><div class="kpi-v green" id="rfk1">—</div><div class="kpi-s">montados agora</div></div>
           <div class="kpi kpi-highlight"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk2">—</div><div class="kpi-s">custo activo ÷ duração activos</div></div>
@@ -1265,7 +1301,7 @@
         <div class="card hidden" id="rfrota-lugares-card">
           <div class="ct">Posições</div>
           <div class="table-wrap"><table>
-            <thead><tr><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Mês Mont.</th><th>Meses ativo</th><th>Rasto</th><th>Custo €</th><th>M.Obra €</th><th>Ação</th></tr></thead>
+            <thead><tr><th></th><th>Posição</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Mês Mont.</th><th>Meses ativo</th><th>Rasto</th><th>Custo €</th><th>M.Obra €</th><th>Ação</th></tr></thead>
             <tbody id="rfrota-lugares-tbody"></tbody>
           </table></div>
         </div>
@@ -1275,7 +1311,7 @@
             <span id="rfrota-historico-seta" style="font-size:11px;color:var(--text3);font-weight:400;flex-shrink:0;margin-left:8px">▸ Expandir</span>
           </div>
           <div class="table-wrap hidden" id="rfrota-historico-wrap"><table class="table-compact">
-            <thead><tr><th>Mês Mont.</th><th>Eixo</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Meses ativo</th><th>Mês Desmont.</th><th>Rasto</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Ação</th></tr></thead>
+            <thead><tr><th></th><th>Mês Mont.</th><th>Eixo</th><th>Marca</th><th>Modelo</th><th>Medida</th><th>Fornecedor</th><th>Tipo</th><th>Meses ativo</th><th>Mês Desmont.</th><th>Rasto</th><th>Destino</th><th>Custo €</th><th>M.Obra €</th><th>Total €</th><th>Ação</th></tr></thead>
             <tbody id="rfrota-tbody"></tbody>
           </table></div>
         </div>
@@ -1309,9 +1345,7 @@
           <div class="frow"><label>Tipo</label><select id="re-tipo" data-fancy><option>Novo</option><option>Remix</option><option>Rechapado</option><option>Piso Aberto</option></select></div>
           <div class="frow"><label>Custo pneu (€)</label><input type="number" id="re-custo" min="0" step="0.01"></div>
           <div class="frow"><label>Custo mão de obra (€)</label><input type="number" id="re-mo" min="0" step="0.01"></div>
-          <div class="frow"><label>Mês desmontagem (AAAA-MM)</label><input type="text" id="re-mes-d" maxlength="7" oninput="maskMesInput(this)"></div>
-          <div class="frow"><label>Rasto restante (mm)</label><input type="number" class="qty-spin" id="re-esc" placeholder="—" min="0" max="20" step="0.5"></div>
-          <div class="frow"><label>Destino</label><select id="re-dest" data-fancy><option value="">— sem destino —</option><option>Remix</option><option>Rechapar</option><option>Lixo</option><option>Stock</option><option>Transferido</option><option>Abrir Piso</option></select></div>
+          <p style="font-size:11px;color:var(--text3);margin:4px 0 0">Para registar a saída do pneu, usa o botão "Desmontar" — este formulário já não altera esses campos.</p>
           <button class="btn btn-p w100" onclick="guardarEdicaoReboque()" style="margin-top:12px"><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg>Guardar alterações</button>
           <div id="re-feedback" class="feedback hidden"></div>
         </div>

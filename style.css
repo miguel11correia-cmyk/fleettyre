@@ -811,7 +811,12 @@ tbody tr:hover td { background: var(--bg); }
   pointer-events: none;
 }
 .panel.open { transform: translateX(0); pointer-events: auto; }
-.panel-wide { width: 640px; }
+.frota-sel-chk, .rfrota-sel-chk {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--brand-red);
+  cursor: pointer;
+}
 .panel-head {
   padding: 14px 16px;
   display: flex;

@@ -2,9 +2,8 @@
 // Página central, comum a veículos e reboques: aviso de atenção +
 // resumo geral (KPIs e gráficos, antes espalhados por "Dashboard
 // Frota" e "Dashboard Reboques", agora fundidos aqui com um selector
-// Camiões/Reboques/Visão unificada) + atalho para o registo de pneu
-// (formulário movido para um painel lateral, para não ocupar sempre
-// o ecrã principal).
+// Camiões/Reboques/Visão unificada). O registo de pneu tem a sua
+// própria aba ("Registos" > "Registar pneu" — ver nav.js/navReg).
 
 let segmentoRegisto = 'veiculo';
 let inicioVista = 'unificada'; // 'veiculos' | 'reboques' | 'unificada'
@@ -317,19 +316,6 @@ function renderInicioAnaliseEixo(reboquesData) {
     const vals = keys.map(k => Math.round(agg[k].reduce((s, v) => s + v, 0) / agg[k].length));
     mkChart('c-posicao-eixo', 'bar', keys, vals, CHART_NEUTRAL);
   }
-}
-
-// ── PAINEL — REGISTAR PNEU ──────────────────────────────────────────
-// O formulário já não ocupa sempre o ecrã de Início — abre à parte,
-// no mesmo painel lateral usado noutras páginas (ver abrirPainel em
-// frota.js), para não competir com o resumo geral.
-
-function abrirPainelRegistoGeral() {
-  document.getElementById('painel-registo-geral').classList.add('open');
-}
-
-function fecharPainelRegistoGeral() {
-  document.getElementById('painel-registo-geral').classList.remove('open');
 }
 
 // ── FORMULÁRIO UNIFICADO DE REGISTO ─────────────────────────────────
