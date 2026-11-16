@@ -3,8 +3,38 @@
 const ICON_REBOQUE = '<svg viewBox="0 0 512 512" width="14" height="14" style="vertical-align:-2px;margin-right:4px"><use href="#icon-trailer"/></svg>';
 
 let painelRId = null;
+let painelRIdsBulk = null;
 let editRId   = null;
 let rfrotaHistoricoExpandido = false;
+
+// ── SELEÇÃO MÚLTIPLA (ver equivalente em frota.js) ─────────────────
+let rfrotaSelecionados = new Set();
+
+function toggleRfrotaSel(id) {
+  if (rfrotaSelecionados.has(id)) rfrotaSelecionados.delete(id);
+  else rfrotaSelecionados.add(id);
+  renderRfrotaBulkBar();
+}
+
+function limparSelecaoReboque() {
+  rfrotaSelecionados = new Set();
+  document.querySelectorAll('.rfrota-sel-chk').forEach(c => { c.checked = false; });
+  renderRfrotaBulkBar();
+}
+
+function renderRfrotaBulkBar() {
+  const bar = document.getElementById('rfrota-bulk-bar');
+  if (!bar) return;
+  const n = rfrotaSelecionados.size;
+  bar.classList.toggle('hidden', n === 0);
+  const count = document.getElementById('rfrota-bulk-count');
+  if (count) count.textContent = n + (n === 1 ? ' selecionado' : ' selecionados');
+}
+
+function abrirEdicaoBulkReboque() {
+  if (rfrotaSelecionados.size === 0) return;
+  abrirEdicaoBulk([...rfrotaSelecionados], 'reboques');
+}
 
 function toggleRfrotaHistorico() {
   rfrotaHistoricoExpandido = !rfrotaHistoricoExpandido;
@@ -38,6 +68,7 @@ async function loadFrotaReboques() {
   ]);
   loading(false);
 
+  limparSelecaoReboque();
   renderInfoReboque(reboque, mat);
 
   if (error || !data) return;
@@ -100,6 +131,7 @@ async function loadFrotaReboques() {
 function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
   if (!r) {
     return `<tr style="color:var(--text3)">
+      <td></td>
       <td>${lugar}</td>
       <td colspan="10">— vazio —</td>
       <td><button class="btn btn-sm" onclick="montarNoLugarReboque('${mat}','${lugar}')"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Montar</button></td>
@@ -119,6 +151,7 @@ function linhaLugarReboque(lugar, r, mat, hoje, aviso) {
       <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
     </div>`;
   return `<tr>
+    <td><input type="checkbox" class="rfrota-sel-chk" ${rfrotaSelecionados.has(r.id) ? 'checked' : ''} onchange="toggleRfrotaSel(${r.id})"></td>
     <td>${lugar}${avisoIcon}</td>
     <td>${r.marca    || '—'}</td>
     <td>${r.subtipo  || '—'}</td>
@@ -157,6 +190,7 @@ function linhaHistoricoReboque(r, hoje) {
          <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegistoReboque(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
        </div>`;
   return `<tr>
+    <td>${!r.mes_desmont ? `<input type="checkbox" class="rfrota-sel-chk" ${rfrotaSelecionados.has(r.id) ? 'checked' : ''} onchange="toggleRfrotaSel(${r.id})">` : ''}</td>
     <td>${r.mes_mont || '—'}</td>
     <td>${r.eixo ? 'Eixo ' + r.eixo : '—'}</td>
     <td>${r.marca    || '—'}</td>
@@ -175,10 +209,12 @@ function linhaHistoricoReboque(r, hoje) {
   </tr>`;
 }
 
-// Atalho do botão "+ Montar" de um lugar vazio: abre "Início" já no
-// modo Reboque, com a matrícula e a categoria desse lugar preenchidas.
+// Atalho do botão "+ Montar" de um lugar vazio: vai direto à aba de
+// registo, já no modo Reboque, com a matrícula e a categoria desse
+// lugar preenchidas.
 async function montarNoLugarReboque(matricula, lugar) {
-  navInicio();
+  toggleSecaoSemCarregar('registos');
+  navReg('registo-pneu', document.querySelector('.ni[data-page="registo-pneu"]'));
   await toggleSegmentoRegisto('reboque', true);
   document.getElementById('g-mat').value = matricula;
   atualizarCategoriasPosicao('g-mat', 'g-eixo', listaReboquesFrota, SLOTS_REBOQUE);
@@ -215,6 +251,7 @@ async function abrirPainelReboque(id) {
   const { data } = await sb.from('reboques').select('*').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   if (!data) return;
   painelRId = id;
+  painelRIdsBulk = null;
   const hoje = mesAtual();
   const mesesActivo = mesesEntre(data.mes_mont, hoje);
   const lim = LIMITES_EIXO[data.eixo] || LIMITES_EIXO[null];
@@ -237,12 +274,37 @@ async function abrirPainelReboque(id) {
   document.getElementById('rpainel-desmont').classList.add('open');
 }
 
+// Desmontagem de vários pneus de reboque de uma vez (ex: todo um eixo)
+// — mesmo painel do botão "Desmontar" individual, com mês/rasto/
+// destino/mão de obra aplicados a todos os selecionados.
+async function abrirPainelReboqueBulk(ids) {
+  if (!ids || ids.length === 0) return;
+  const { data } = await sb.from('reboques').select('id,matricula,eixo,marca,medida').in('id', ids).eq('empresa_id', currentEmpresaId);
+  const registos = data || [];
+  if (registos.length === 0) return;
+  painelRId = null;
+  painelRIdsBulk = ids;
+
+  const linhas = registos.map(r => `Eixo ${r.eixo || '—'} · ${r.marca || '—'} ${r.medida || ''}`).join('<br>');
+  document.getElementById('rpainel-info').innerHTML =
+    `<strong>${registos[0].matricula}</strong> · <strong>${registos.length} pneus selecionados</strong><br>
+     <span style="color:var(--text2)">${linhas}</span>`;
+
+  ['rd-mes','rd-mo'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('rd-esc').value = '2.5';
+  document.getElementById('rd-dest').value = 'Remix';
+  document.getElementById('rd-feedback').classList.add('hidden');
+  document.getElementById('rpainel-desmont').classList.add('open');
+}
+
 function fecharPainelReboque() {
   document.getElementById('rpainel-desmont').classList.remove('open');
   painelRId = null;
+  painelRIdsBulk = null;
 }
 
 async function guardarDesmontazemReboque() {
+  if (painelRIdsBulk) return guardarDesmontazemReboqueBulk();
   if (painelRId == null) return;
   const mes  = document.getElementById('rd-mes').value.trim();
   const esc  = document.getElementById('rd-esc').value !== '' ? parseFloat(document.getElementById('rd-esc').value) : null;
@@ -269,6 +331,42 @@ async function guardarDesmontazemReboque() {
   setTimeout(() => { fecharPainelReboque(); loadFrotaReboques(); }, 800);
 }
 
+async function guardarDesmontazemReboqueBulk() {
+  const ids = painelRIdsBulk;
+  if (!ids || ids.length === 0) return;
+
+  const mes  = document.getElementById('rd-mes').value.trim();
+  const esc  = document.getElementById('rd-esc').value !== '' ? parseFloat(document.getElementById('rd-esc').value) : null;
+  const dest = document.getElementById('rd-dest').value;
+  const mo   = document.getElementById('rd-mo').value !== '' ? parseFloat(document.getElementById('rd-mo').value) : null;
+
+  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
+    showFeedback('rd-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return;
+  }
+
+  const updates = {
+    mes_desmont: mes,
+    rasto_final: (esc != null && esc >= 0 && esc <= 25) ? esc : null,
+    destino:     dest,
+    custo_mo:    mo,
+  };
+
+  loading(true);
+  let erros = 0;
+  for (const id of ids) {
+    const { error } = await sb.from('reboques').update(updates).eq('id', id);
+    if (error) erros++;
+  }
+  loading(false);
+
+  if (erros === 0) {
+    showFeedback('rd-feedback', ids.length + ' desmontagens guardadas.');
+    setTimeout(() => { fecharPainelReboque(); loadFrotaReboques(); }, 800);
+  } else {
+    showFeedback('rd-feedback', 'Erro em ' + erros + ' de ' + ids.length + ' registos.', true);
+  }
+}
+
 // ── EDIÇÃO ────────────────────────────────────────────────────────
 
 async function abrirEdicaoReboque(id) {
@@ -290,9 +388,6 @@ async function abrirEdicaoReboque(id) {
   document.getElementById('re-forn').value   = data.fornecedor   || '';
   document.getElementById('re-custo').value  = data.custo_pneu   > 0 ? data.custo_pneu : '';
   document.getElementById('re-mo').value     = data.custo_mo     > 0 ? data.custo_mo   : '';
-  document.getElementById('re-mes-d').value  = data.mes_desmont  || '';
-  document.getElementById('re-esc').value    = data.rasto_final != null ? data.rasto_final : '';
-  document.getElementById('re-dest').value   = data.destino      || '';
 
   document.getElementById('re-feedback').classList.add('hidden');
   document.getElementById('rpainel-editar').classList.add('open');
@@ -316,19 +411,16 @@ async function guardarEdicaoReboque() {
   const forn   = document.getElementById('re-forn').value.trim().toUpperCase();
   const custoP = document.getElementById('re-custo').value !== '' ? parseFloat(document.getElementById('re-custo').value) : null;
   const custoMO= document.getElementById('re-mo').value    !== '' ? parseFloat(document.getElementById('re-mo').value)    : null;
-  const mesD   = document.getElementById('re-mes-d').value.trim() || null;
-  const esc    = document.getElementById('re-esc').value   !== '' ? parseFloat(document.getElementById('re-esc').value)  : null;
-  const dest   = document.getElementById('re-dest').value  || null;
 
   if (!mat) { showFeedback('re-feedback', 'Matrícula é obrigatória.', true); return; }
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('re-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return; }
 
+  // Desmontagem não se edita aqui — para isso existe o botão "Desmontar".
   const updates = {
     matricula: mat, mes_mont: mes, eixo, posicao: pos || null,
     marca: marca || null, medida: medida || null, subtipo: subtipo || null, tipo: tipo || null,
     fornecedor: forn || null, custo_pneu: custoP, custo_mo: custoMO,
     custo_total: ((custoP || 0) + (custoMO || 0)) || null,
-    mes_desmont: mesD, rasto_final: esc, destino: dest,
   };
 
   loading(true);

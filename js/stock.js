@@ -176,7 +176,7 @@ function linhaPendenteStock(r, tabela, optsForn) {
   return '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:6px">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px">'
     + '<div style="font-size:12px;white-space:nowrap"><strong>' + r.matricula + '</strong> <span style="color:var(--text3)">· ' + (r.posicao || '—') + '</span></div>'
-    + '<div style="font-size:11px;color:var(--text2);text-align:right">' + (r.marca || '—') + ' ' + (r.medida || '') + (r.rasto_final != null ? ' · ' + escStr : '') + '</div>'
+    + '<div style="font-size:11px;color:var(--text2);text-align:right">' + (r.marca || '—') + ' ' + (r.medida || '') + (r.rasto_final != null ? ' · ' + escStr : '') + (r.mes_desmont ? ' · ' + r.mes_desmont : '') + '</div>'
     + '</div>'
     + '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">'
     + '<select id="forn-pronto-' + r.id + '" style="height:24px;font-size:10px;padding:0 2px;border:0.5px solid var(--border2);border-radius:4px;flex:1;min-width:90px">' + optsForn + '</select>'
@@ -529,7 +529,7 @@ function renderAlocResultados() {
       : '<span class="alo-custo alo-custo-vazio">sem custo</span>';
     html += '<div class="alo-row' + (sel ? ' selected' : '') + '" data-id="' + r.id + '" onclick="toggleAlocSel(' + r.id + ')">'
       + '<span class="alo-check"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></span>'
-      + '<span class="alo-info"><strong>' + r.matricula + '</strong> · ' + pos + ' · ' + (r.marca || '—') + ' ' + (r.medida || '') + ' · ' + tipoBadge(r.tipo) + ' · ' + (r.mes_mont || '—') + (r.fornecedor ? ' · ' + r.fornecedor : '') + '</span>'
+      + '<span class="alo-info"><strong>' + r.matricula + '</strong> · ' + pos + ' · ' + (r.marca || '—') + ' ' + (r.medida || '') + (r.subtipo ? ' ' + r.subtipo : '') + ' · ' + tipoBadge(r.tipo) + ' · ' + (r.mes_mont || '—') + (r.fornecedor ? ' · ' + r.fornecedor : '') + '</span>'
       + custoTxt
       + '</div>';
   });

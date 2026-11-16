@@ -4,6 +4,39 @@ const ICON_VEICULO = '<svg viewBox="0 0 512.001 512.001" width="14" height="14" 
 
 let frotaHistoricoExpandido = false;
 
+// ── SELEÇÃO MÚLTIPLA ──────────────────────────────────────────────
+// Pneus de Direção/Tração (ou do mesmo eixo) saem quase sempre ao
+// mesmo tempo — em vez de desmontar/editar um a um, seleciona-se
+// vários registos activos e aplica-se a mesma desmontagem/edição a
+// todos de uma vez (ver abrirPainelBulk / abrirEdicaoBulkFrota).
+let frotaSelecionados = new Set();
+
+function toggleFrotaSel(id) {
+  if (frotaSelecionados.has(id)) frotaSelecionados.delete(id);
+  else frotaSelecionados.add(id);
+  renderFrotaBulkBar();
+}
+
+function limparSelecaoFrota() {
+  frotaSelecionados = new Set();
+  document.querySelectorAll('.frota-sel-chk').forEach(c => { c.checked = false; });
+  renderFrotaBulkBar();
+}
+
+function renderFrotaBulkBar() {
+  const bar = document.getElementById('frota-bulk-bar');
+  if (!bar) return;
+  const n = frotaSelecionados.size;
+  bar.classList.toggle('hidden', n === 0);
+  const count = document.getElementById('frota-bulk-count');
+  if (count) count.textContent = n + (n === 1 ? ' selecionado' : ' selecionados');
+}
+
+function abrirEdicaoBulkFrota() {
+  if (frotaSelecionados.size === 0) return;
+  abrirEdicaoBulk([...frotaSelecionados], 'pneus');
+}
+
 function toggleFrotaHistorico() {
   frotaHistoricoExpandido = !frotaHistoricoExpandido;
   document.getElementById('frota-historico-wrap').classList.toggle('hidden', !frotaHistoricoExpandido);
@@ -40,6 +73,7 @@ async function loadFrota() {
   ]);
   loading(false);
 
+  limparSelecaoFrota();
   renderInfoVeiculo(veiculo, mat);
 
   if (error || !data) return;
@@ -113,6 +147,7 @@ async function loadFrota() {
 function linhaLugar(lugar, r, mat, kmAtual, aviso) {
   if (!r) {
     return `<tr style="color:var(--text3)">
+      <td></td>
       <td>${lugar}</td>
       <td colspan="11">— vazio —</td>
       <td><button class="btn btn-sm" onclick="montarNoLugar('${mat}','${lugar}')"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Montar</button></td>
@@ -132,6 +167,7 @@ function linhaLugar(lugar, r, mat, kmAtual, aviso) {
       <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
     </div>`;
   return `<tr>
+    <td><input type="checkbox" class="frota-sel-chk" ${frotaSelecionados.has(r.id) ? 'checked' : ''} onchange="toggleFrotaSel(${r.id})"></td>
     <td>${lugar}${avisoIcon}</td>
     <td>${r.marca || '—'}</td>
     <td>${r.subtipo || '—'}</td>
@@ -165,6 +201,7 @@ function linhaHistorico(r, kmAtual) {
       <button class="btn btn-sm btn-icon btn-danger" onclick="apagarRegisto(${r.id},'${r.matricula}')" title="Apagar"><svg viewBox="0 0 24 24"><use href="#icon-trash"/></svg></button>
     </div>`;
   return `<tr>
+    <td>${!r.mes_desmont ? `<input type="checkbox" class="frota-sel-chk" ${frotaSelecionados.has(r.id) ? 'checked' : ''} onchange="toggleFrotaSel(${r.id})">` : ''}</td>
     <td>${r.mes_mont || '—'}</td>
     <td>${r.posicao  || '—'}</td>
     <td>${r.marca    || '—'}</td>
@@ -185,10 +222,12 @@ function linhaHistorico(r, kmAtual) {
   </tr>`;
 }
 
-// Atalho do botão "+ Montar" de um lugar vazio: abre "Início" já no
-// modo Camião, com a matrícula e a categoria desse lugar preenchidas.
+// Atalho do botão "+ Montar" de um lugar vazio: vai direto à aba de
+// registo, já no modo Camião, com a matrícula e a categoria desse
+// lugar preenchidas.
 async function montarNoLugar(matricula, lugar) {
-  navInicio();
+  toggleSecaoSemCarregar('registos');
+  navReg('registo-pneu', document.querySelector('.ni[data-page="registo-pneu"]'));
   await toggleSegmentoRegisto('veiculo', true);
   document.getElementById('g-mat').value = matricula;
   atualizarCategoriasPosicao('g-mat', 'g-pos', listaVeiculos, SLOTS_VEICULO);
@@ -232,11 +271,14 @@ function relativo(isoDate) {
   return `há ${diffD} dia${diffD === 1 ? '' : 's'}`;
 }
 
+let painelIdsBulk = null;
+
 async function abrirPainel(id) {
   // Buscar registo para mostrar info
   const { data } = await sb.from('pneus').select('*').eq('id', id).eq('empresa_id', currentEmpresaId).single();
   if (!data) return;
   painelId = id;
+  painelIdsBulk = null;
 
   document.getElementById('painel-info').innerHTML =
     `<strong>${data.matricula}</strong> · ${data.posicao || '—'} · ${data.marca || '—'} ${data.medida || ''}<br>
@@ -261,12 +303,37 @@ async function abrirPainel(id) {
   document.getElementById('painel').classList.add('open');
 }
 
+// Desmontagem de vários pneus de uma vez (ex: toda a Direção ou todo
+// um eixo) — mesmo painel do botão "Desmontar" individual, mas com
+// mês/KMs/rasto/destino/mão de obra aplicados a todos os selecionados.
+async function abrirPainelBulk(ids) {
+  if (!ids || ids.length === 0) return;
+  const { data } = await sb.from('pneus').select('id,matricula,posicao,marca,medida,kms_mont').in('id', ids).eq('empresa_id', currentEmpresaId);
+  const registos = data || [];
+  if (registos.length === 0) return;
+  painelId = null;
+  painelIdsBulk = ids;
+
+  const linhas = registos.map(r => `${r.posicao || '—'} · ${r.marca || '—'} ${r.medida || ''}`).join('<br>');
+  document.getElementById('painel-info').innerHTML =
+    `<strong>${registos[0].matricula}</strong> · <strong>${registos.length} pneus selecionados</strong><br>
+     <span style="color:var(--text2)">${linhas}</span>`;
+
+  ['d-mes','d-kms','d-mo'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('d-esc').value = '2.5';
+  document.getElementById('d-dest').value = 'Remix';
+  document.getElementById('d-feedback').classList.add('hidden');
+  document.getElementById('painel').classList.add('open');
+}
+
 function fecharPainel() {
   document.getElementById('painel').classList.remove('open');
   painelId = null;
+  painelIdsBulk = null;
 }
 
 async function guardarDesmontagem() {
+  if (painelIdsBulk) return guardarDesmontagemBulk();
   if (painelId == null) return;
 
   const mes    = document.getElementById('d-mes').value.trim();
@@ -323,6 +390,61 @@ async function guardarDesmontagem() {
   }, 800);
 }
 
+async function guardarDesmontagemBulk() {
+  const ids = painelIdsBulk;
+  if (!ids || ids.length === 0) return;
+
+  const mes    = document.getElementById('d-mes').value.trim();
+  const kmsStr = document.getElementById('d-kms').value;
+  const escStr = document.getElementById('d-esc').value;
+  const dest   = document.getElementById('d-dest').value;
+  const moStr  = document.getElementById('d-mo').value;
+
+  if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
+    showFeedback('d-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return;
+  }
+  const kms = parseInt(kmsStr);
+  if (!kms || kms <= 0) {
+    showFeedback('d-feedback', 'KMs são obrigatórios.', true); return;
+  }
+
+  const { data: origs } = await sb.from('pneus').select('id,kms_mont,custo_pneu').in('id', ids).eq('empresa_id', currentEmpresaId);
+  const mapa = {};
+  (origs || []).forEach(r => { mapa[r.id] = r; });
+
+  const invalido = ids.find(id => mapa[id] && mapa[id].kms_mont && kms <= mapa[id].kms_mont);
+  if (invalido) {
+    showFeedback('d-feedback', `KMs de desmontagem (${fmt(kms)}) têm de ser maiores que os de montagem de todos os pneus selecionados.`, true);
+    return;
+  }
+
+  const esc = escStr !== '' ? parseFloat(escStr) : null;
+  const mo  = moStr  !== '' ? parseFloat(moStr)  : null;
+
+  loading(true);
+  let erros = 0;
+  for (const id of ids) {
+    const custoTotalDesm = ((mapa[id]?.custo_pneu || 0) + (mo || 0)) || null;
+    const { error } = await sb.from('pneus').update({
+      mes_desmont: mes,
+      kms_desmont: kms,
+      rasto_final: (esc != null && esc >= 0 && esc <= 20) ? esc : null,
+      destino:     dest,
+      custo_mo:    mo,
+      custo_total: custoTotalDesm,
+    }).eq('id', id);
+    if (error) erros++;
+  }
+  loading(false);
+
+  if (erros === 0) {
+    showFeedback('d-feedback', ids.length + ' desmontagens guardadas.');
+    setTimeout(() => { fecharPainel(); loadFrota(); }, 800);
+  } else {
+    showFeedback('d-feedback', 'Erro em ' + erros + ' de ' + ids.length + ' registos.', true);
+  }
+}
+
 async function abrirEdicao(id) {
   loading(true);
   const { data, error } = await sb.from('pneus').select('*').eq('id', id).eq('empresa_id', currentEmpresaId).single();
@@ -345,10 +467,6 @@ async function abrirEdicao(id) {
   document.getElementById('e-forn').value    = data.fornecedor   || '';
   document.getElementById('e-custo').value   = data.custo_pneu   != null ? data.custo_pneu : '';
   document.getElementById('e-mo').value      = data.custo_mo     != null ? data.custo_mo   : '';
-  document.getElementById('e-mes-d').value   = data.mes_desmont  || '';
-  document.getElementById('e-kms-d').value   = data.kms_desmont  || '';
-  document.getElementById('e-esc').value     = data.rasto_final != null ? data.rasto_final : '';
-  document.getElementById('e-dest').value    = data.destino      || '';
 
   document.getElementById('e-feedback').classList.add('hidden');
   document.getElementById('painel-editar').classList.add('open');
@@ -373,18 +491,15 @@ async function guardarEdicao() {
   const forn   = document.getElementById('e-forn').value.trim().toUpperCase();
   const custoP = document.getElementById('e-custo').value !== '' ? parseFloat(document.getElementById('e-custo').value) : null;
   const custoMO= document.getElementById('e-mo').value    !== '' ? parseFloat(document.getElementById('e-mo').value)    : null;
-  const mesD   = document.getElementById('e-mes-d').value.trim() || null;
-  const kmsD   = document.getElementById('e-kms-d').value !== '' ? parseInt(document.getElementById('e-kms-d').value) : null;
-  const esc    = document.getElementById('e-esc').value   !== '' ? parseFloat(document.getElementById('e-esc').value)  : null;
-  const dest   = document.getElementById('e-dest').value || null; // vazio = null
 
   // Validações básicas
   if (!mat) { showFeedback('e-feedback', 'Matrícula é obrigatória.', true); return; }
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) { showFeedback('e-feedback', 'Mês de montagem inválido. Use o formato AAAA-MM.', true); return; }
   if (!kms || kms <= 0) { showFeedback('e-feedback', 'KMs de montagem são obrigatórios.', true); return; }
-  if (kmsD && kmsD <= kms) { showFeedback('e-feedback', `KMs de desmontagem (${kmsD}) têm de ser maiores que os de montagem (${kms}).`, true); return; }
-  if (esc != null && (esc < 0 || esc > 25)) { showFeedback('e-feedback', 'Rasto tem de ser entre 0 e 25mm.', true); return; }
 
+  // Desmontagem (mês/kms/rasto/destino) não se edita aqui — para isso
+  // existe o botão "Desmontar", por isso esses campos nem entram no
+  // update e mantêm o valor que já tinham.
   const updates = {
     matricula:       mat,
     mes_mont:        mes,
@@ -398,10 +513,6 @@ async function guardarEdicao() {
     custo_pneu:      custoP,
     custo_mo:        custoMO,
     custo_total:     ((custoP || 0) + (custoMO || 0)) || null,
-    mes_desmont:     mesD,
-    kms_desmont:     kmsD,
-    rasto_final: esc,
-    destino:         dest,
   };
 
   loading(true);

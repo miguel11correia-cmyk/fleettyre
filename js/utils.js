@@ -27,9 +27,16 @@ async function fetchAllRows(construirQuery) {
 
 // ── FORMATAÇÃO ────────────────────────────────────────────────────
 
+// Separador de milhares forçado a espaço — toLocaleString('pt-PT')
+// dava resultados inconsistentes consoante o motor do browser (ponto,
+// espaço fino ou nada), por isso agrupa-se à mão em vez de depender
+// dos dados de locale.
 function fmt(n) {
   if (n == null) return '—';
-  return Number(n).toLocaleString('pt-PT');
+  const num = Math.round(Number(n));
+  const neg = num < 0;
+  const str = String(Math.abs(num)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return (neg ? '-' : '') + str;
 }
 
 function fmtEur(n) {
@@ -302,6 +309,91 @@ async function resolverLugaresRegisto(tabela, matricula, categoria, quantidade, 
     return { ok: false, erro: `Só há ${livres.length} lugar(es) livre(s) em "${categoria}" para ${matricula}.` };
   }
   return { ok: true, posicoes: livres.slice(0, quantidade) };
+}
+
+// ── EDIÇÃO EM MASSA (vários registos de uma vez) ──────────────────
+// Partilhada entre "Por veículo" e "Por reboque" (ver abrirEdicaoBulkFrota/
+// abrirEdicaoBulkReboque) — só os campos preenchidos aqui são
+// aplicados a todos os ids selecionados; os deixados em branco
+// mantêm o valor que cada registo já tinha. Matrícula/posição/mês de
+// montagem/KMs ficam de fora de propósito — são sempre individuais.
+let bulkEditTabela = null;
+let bulkEditIds = [];
+
+function abrirEdicaoBulk(ids, tabela) {
+  if (!ids || ids.length === 0) return;
+  bulkEditTabela = tabela;
+  bulkEditIds = ids;
+
+  document.getElementById('be-info').innerHTML = `<strong>${ids.length}</strong> registos selecionados`;
+  ['be-marca', 'be-medida', 'be-forn', 'be-tipo', 'be-custo', 'be-mo'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  popularSelectorSubtipo('be-marca', 'be-subtipo');
+  document.getElementById('be-feedback').classList.add('hidden');
+  document.getElementById('painel-editar-bulk').classList.add('open');
+}
+
+function fecharEdicaoBulk() {
+  document.getElementById('painel-editar-bulk').classList.remove('open');
+  bulkEditTabela = null;
+  bulkEditIds = [];
+}
+
+async function guardarEdicaoBulk() {
+  if (!bulkEditTabela || bulkEditIds.length === 0) return;
+
+  const marca   = document.getElementById('be-marca').value.trim().toUpperCase();
+  const subtipo = document.getElementById('be-subtipo').value;
+  const medida  = document.getElementById('be-medida').value.trim();
+  const forn    = document.getElementById('be-forn').value.trim().toUpperCase();
+  const tipo    = document.getElementById('be-tipo').value;
+  const custoStr= document.getElementById('be-custo').value;
+  const moStr   = document.getElementById('be-mo').value;
+  const custo   = custoStr !== '' ? parseFloat(custoStr) : undefined;
+  const mo      = moStr    !== '' ? parseFloat(moStr)    : undefined;
+
+  if (!marca && !medida && !forn && !tipo && custo === undefined && mo === undefined) {
+    showFeedback('be-feedback', 'Preenche pelo menos um campo para aplicar.', true);
+    return;
+  }
+
+  loading(true);
+  const ids = bulkEditIds;
+  const tabela = bulkEditTabela;
+  const { data: atuais } = await sb.from(tabela).select('id,custo_pneu,custo_mo').in('id', ids).eq('empresa_id', currentEmpresaId);
+  const mapaAtuais = {};
+  (atuais || []).forEach(r => { mapaAtuais[r.id] = r; });
+
+  let erros = 0;
+  for (const id of ids) {
+    const updates = {};
+    if (marca)  { updates.marca = marca; updates.subtipo = subtipo || null; }
+    if (medida) updates.medida = medida;
+    if (forn)   updates.fornecedor = forn;
+    if (tipo)   updates.tipo = tipo;
+    if (custo !== undefined || mo !== undefined) {
+      const base = mapaAtuais[id] || {};
+      const custoFinal = custo !== undefined ? custo : (base.custo_pneu || 0);
+      const moFinal     = mo    !== undefined ? mo    : (base.custo_mo    || 0);
+      if (custo !== undefined) updates.custo_pneu = custo;
+      if (mo    !== undefined) updates.custo_mo    = mo;
+      updates.custo_total = (custoFinal + moFinal) || null;
+    }
+    const { error } = await sb.from(tabela).update(updates).eq('id', id);
+    if (error) erros++;
+  }
+  loading(false);
+
+  if (erros === 0) {
+    showFeedback('be-feedback', ids.length + ' registos atualizados.');
+    setTimeout(() => {
+      fecharEdicaoBulk();
+      if (tabela === 'pneus') loadFrota(); else loadFrotaReboques();
+    }, 800);
+  } else {
+    showFeedback('be-feedback', 'Erro em ' + erros + ' de ' + ids.length + ' registos.', true);
+  }
 }
 
 // ── UI HELPERS ────────────────────────────────────────────────────
