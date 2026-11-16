@@ -251,11 +251,11 @@ async function carregarListasFornMarca() {
 
 function preencherSelectores() {
   // Selectores de veículos e da fatura de stock
-  ['g-forn', 'f-forn', 'e-forn', 're-forn', 'alo-forn'].forEach(id => {
+  ['g-forn', 'f-forn', 'e-forn', 're-forn', 'alo-forn', 'be-forn'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    const placeholder = id === 'alo-forn' ? '— todos —' : '— selecionar —';
+    const placeholder = id === 'alo-forn' ? '— todos —' : id === 'be-forn' ? '— manter —' : '— selecionar —';
     // "PARQUE" é uma opção fixa da app (não um fornecedor registado) —
     // indica que o pneu já estava na frota antes de haver registo de
     // fornecedor, por isso aparece sempre, a cinzento, e não entra na
@@ -265,11 +265,11 @@ function preencherSelectores() {
       listaFornecedores.map(f => `<option value="${f.nome}" ${f.nome === val ? 'selected' : ''}>${f.codigo} · ${f.nome}</option>`).join('');
   });
 
-  ['g-marca', 'e-marca', 're-marca', 'alo-marca'].forEach(id => {
+  ['g-marca', 'e-marca', 're-marca', 'alo-marca', 'be-marca'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    const placeholder = id === 'alo-marca' ? '— todas —' : '— selecionar —';
+    const placeholder = id === 'alo-marca' ? '— todas —' : id === 'be-marca' ? '— manter —' : '— selecionar —';
     el.innerHTML = `<option value="">${placeholder}</option>` +
       listaMarcas.map(m => `<option value="${m.nome}" ${m.nome === val ? 'selected' : ''}>${m.codigo} · ${m.nome}</option>`).join('');
   });

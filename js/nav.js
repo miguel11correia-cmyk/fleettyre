@@ -49,6 +49,7 @@ function navInicio() {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   toggleMobileSidebar(false);
   fecharPainel();
+  fecharPainelRegistoGeral();
   document.getElementById('btn-inicio').classList.add('active');
   document.getElementById('btn-compras')?.classList.remove('active');
   document.getElementById('btn-registos')?.classList.remove('active');
@@ -63,14 +64,6 @@ function navInicio() {
   loadInicio();
 }
 
-// Atalho do botão "Registar pneu" em Início — vai direto à aba de
-// registo (secção "Registos"), tal como o botão "Montar" de um lugar
-// vazio (ver montarNoLugar/montarNoLugarReboque).
-function irParaRegistoPneu() {
-  toggleSecaoSemCarregar('registos');
-  navReg('registo-pneu', document.querySelector('.ni[data-page="registo-pneu"]'));
-}
-
 // Página "Compras" (Fornecedores + Marcas) — tal como o Início, fora
 // das três secções, sempre acessível independentemente de onde se está.
 function navCompras() {
@@ -78,6 +71,7 @@ function navCompras() {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   toggleMobileSidebar(false);
   fecharPainel();
+  fecharPainelRegistoGeral();
   document.getElementById('btn-compras').classList.add('active');
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-registos')?.classList.remove('active');
@@ -99,13 +93,13 @@ function navReg(id, el) {
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-compras')?.classList.remove('active');
   toggleMobileSidebar(false);
+  fecharPainelRegistoGeral();
   const page = document.getElementById('page-' + id);
   if (!page) return;
   page.classList.remove('hidden');
   if (el) el.classList.add('active');
 
-  if      (id === 'registo-pneu')         toggleSegmentoRegisto(segmentoRegisto, true);
-  else if (id === 'fornecedores-registo') renderGestaoFornecedores();
+  if      (id === 'fornecedores-registo') renderGestaoFornecedores();
   else if (id === 'marcas-registo')       renderGestaoMarcas();
   else if (id === 'frota-cadastro')       initFrotaCadastro();
   else if (id === 'frota-cadastro-r')     initFrotaCadastroReboques();
@@ -124,6 +118,7 @@ function nav(id, el) {
   page.classList.remove('hidden');
   if (el) el.classList.add('active');
   fecharPainel();
+  fecharPainelRegistoGeral();
 
   if      (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
@@ -137,6 +132,7 @@ function navR(id, el) {
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-compras')?.classList.remove('active');
   toggleMobileSidebar(false);
+  fecharPainelRegistoGeral();
 
   // Stock é partilhado — usa a página de veículos com um contexto de
   // reboques (Fornecedores/Marcas saíram para a página "Compras").
