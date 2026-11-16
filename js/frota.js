@@ -222,12 +222,11 @@ function linhaHistorico(r, kmAtual) {
   </tr>`;
 }
 
-// Atalho do botão "+ Montar" de um lugar vazio: vai direto à aba de
-// registo, já no modo Camião, com a matrícula e a categoria desse
-// lugar preenchidas.
+// Atalho do botão "+ Montar" de um lugar vazio: abre o painel de
+// registo por cima do ecrã (sem navegar para Início), já no modo
+// Camião, com a matrícula e a categoria desse lugar preenchidas.
 async function montarNoLugar(matricula, lugar) {
-  toggleSecaoSemCarregar('registos');
-  navReg('registo-pneu', document.querySelector('.ni[data-page="registo-pneu"]'));
+  abrirPainelRegistoGeral();
   await toggleSegmentoRegisto('veiculo', true);
   document.getElementById('g-mat').value = matricula;
   atualizarCategoriasPosicao('g-mat', 'g-pos', listaVeiculos, SLOTS_VEICULO);
@@ -297,7 +296,7 @@ async function abrirPainel(id) {
   // Sugerir o KM atual do veículo (se for maior que o KM de montagem — não faz sentido sugerir um valor mais baixo)
   const veiculo = (listaVeiculos || []).find(v => v.matricula === data.matricula);
   if (veiculo && veiculo.km_atual != null && veiculo.km_atual > data.kms_mont) {
-    document.getElementById('d-kms').value = veiculo.km_atual;
+    setKmsInputValue('d-kms', veiculo.km_atual);
   }
 
   document.getElementById('painel').classList.add('open');
@@ -337,7 +336,6 @@ async function guardarDesmontagem() {
   if (painelId == null) return;
 
   const mes    = document.getElementById('d-mes').value.trim();
-  const kmsStr = document.getElementById('d-kms').value;
   const escStr = document.getElementById('d-esc').value;
   const dest   = document.getElementById('d-dest').value;
   const moStr  = document.getElementById('d-mo').value;
@@ -346,7 +344,7 @@ async function guardarDesmontagem() {
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
     showFeedback('d-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return;
   }
-  const kms = parseInt(kmsStr);
+  const kms = kmsInputValue('d-kms');
   if (!kms || kms <= 0) {
     showFeedback('d-feedback', 'KMs são obrigatórios.', true); return;
   }
@@ -395,7 +393,6 @@ async function guardarDesmontagemBulk() {
   if (!ids || ids.length === 0) return;
 
   const mes    = document.getElementById('d-mes').value.trim();
-  const kmsStr = document.getElementById('d-kms').value;
   const escStr = document.getElementById('d-esc').value;
   const dest   = document.getElementById('d-dest').value;
   const moStr  = document.getElementById('d-mo').value;
@@ -403,7 +400,7 @@ async function guardarDesmontagemBulk() {
   if (!mes || !/^\d{4}-\d{2}$/.test(mes)) {
     showFeedback('d-feedback', 'Mês inválido. Use o formato AAAA-MM.', true); return;
   }
-  const kms = parseInt(kmsStr);
+  const kms = kmsInputValue('d-kms');
   if (!kms || kms <= 0) {
     showFeedback('d-feedback', 'KMs são obrigatórios.', true); return;
   }
@@ -456,7 +453,7 @@ async function abrirEdicao(id) {
   // Preencher painel de edição
   document.getElementById('e-mat').value     = data.matricula    || '';
   document.getElementById('e-mes').value     = data.mes_mont     || '';
-  document.getElementById('e-kms').value     = data.kms_mont     || '';
+  setKmsInputValue('e-kms', data.kms_mont);
   const veiculoEd = listaVeiculos.find(v => v.matricula === data.matricula);
   await atualizarLugaresEdicao('e-pos', 'pneus', data.matricula, data.posicao, veiculoEd?.num_eixos, SLOTS_VEICULO, data.id);
   document.getElementById('e-marca').value   = data.marca        || '';
@@ -482,7 +479,7 @@ async function guardarEdicao() {
 
   const mat    = document.getElementById('e-mat').value.trim().toUpperCase();
   const mes    = document.getElementById('e-mes').value.trim();
-  const kms    = parseInt(document.getElementById('e-kms').value) || null;
+  const kms    = kmsInputValue('e-kms') || null;
   const pos    = document.getElementById('e-pos').value;
   const marca  = document.getElementById('e-marca').value.trim().toUpperCase();
   const medida = document.getElementById('e-medida').value.trim();

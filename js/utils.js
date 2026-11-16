@@ -39,6 +39,28 @@ function fmt(n) {
   return (neg ? '-' : '') + str;
 }
 
+// Campos de KMs são <input type="text"> (não "number", que não aceita
+// espaços) com uma máscara ao escrever — "10000" -> "10 000", mesmo
+// separador do fmt() — para ficarem legíveis à medida que se digita.
+// O valor numérico lê-se sempre com kmsInputValue(), nunca directamente
+// de .value.
+function maskKmsInput(el) {
+  const digitos = el.value.replace(/\D/g, '');
+  el.value = digitos.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+function kmsInputValue(elOuId) {
+  const el = typeof elOuId === 'string' ? document.getElementById(elOuId) : elOuId;
+  if (!el || el.value === '') return NaN;
+  return parseInt(el.value.replace(/\D/g, ''), 10);
+}
+
+function setKmsInputValue(elOuId, n) {
+  const el = typeof elOuId === 'string' ? document.getElementById(elOuId) : elOuId;
+  if (!el) return;
+  el.value = (n == null || n === '') ? '' : String(Math.round(Number(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 function fmtEur(n) {
   if (n == null || n === '') return '—';
   return '€\u202f' + Number(n).toLocaleString('pt-PT', {
@@ -125,7 +147,7 @@ function autoPreencherKms(matSelectId, kmsInputId) {
 
   const veiculo = (listaVeiculos || []).find(v => v.matricula === selMat.value);
   if (veiculo && veiculo.km_atual != null) {
-    inpKms.value = veiculo.km_atual;
+    setKmsInputValue(inpKms, veiculo.km_atual);
     inpKms.dataset.auto = '1';
   } else {
     inpKms.value = '';

@@ -2,8 +2,9 @@
 // Página central, comum a veículos e reboques: aviso de atenção +
 // resumo geral (KPIs e gráficos, antes espalhados por "Dashboard
 // Frota" e "Dashboard Reboques", agora fundidos aqui com um selector
-// Camiões/Reboques/Visão unificada). O registo de pneu tem a sua
-// própria aba ("Registos" > "Registar pneu" — ver nav.js/navReg).
+// Camiões/Reboques/Visão unificada) + atalho para o registo de pneu
+// (formulário num painel que abre por cima do ecrã, centrado — ver
+// abrirPainelRegistoGeral abaixo).
 
 let segmentoRegisto = 'veiculo';
 let inicioVista = 'unificada'; // 'veiculos' | 'reboques' | 'unificada'
@@ -318,6 +319,20 @@ function renderInicioAnaliseEixo(reboquesData) {
   }
 }
 
+// ── PAINEL — REGISTAR PNEU ──────────────────────────────────────────
+// Abre por cima do ecrã onde quer que se esteja (Início, Por veículo,
+// Por reboque, ...), centrado em vez de lateral — ver .panel-center
+// em style.css — para não obrigar a navegar até Início só para
+// registar um pneu.
+
+function abrirPainelRegistoGeral() {
+  document.getElementById('painel-registo-geral').classList.add('open');
+}
+
+function fecharPainelRegistoGeral() {
+  document.getElementById('painel-registo-geral').classList.remove('open');
+}
+
 // ── FORMULÁRIO UNIFICADO DE REGISTO ─────────────────────────────────
 
 // Troca entre Camião e Reboque: mostra/esconde os campos que só fazem
@@ -464,7 +479,7 @@ async function _guardarRegistoGeralUnico(pos) {
   const tabela = segmentoRegisto === 'veiculo' ? 'pneus' : 'reboques';
 
   if (segmentoRegisto === 'veiculo') {
-    const kms = parseInt(document.getElementById('g-kms').value);
+    const kms = kmsInputValue('g-kms');
     if (!kms || kms <= 0) { showFeedback('g-feedback', 'KMs do conta-quilómetros é obrigatório.', true); return false; }
     registo.kms_mont    = kms;
     registo.kms_desmont = null;

@@ -454,7 +454,7 @@ let alocSelecionados = new Set();
 const ALOC_LIMITE_RESULTADOS = 300;
 
 function cancelarAlocacao() {
-  ['alo-marca', 'alo-medida', 'alo-forn', 'alo-mes-de', 'alo-mes-ate'].forEach(id => {
+  ['alo-marca', 'alo-subtipo', 'alo-medida', 'alo-forn', 'alo-tipo', 'alo-mes-de', 'alo-mes-ate'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -465,13 +465,15 @@ function cancelarAlocacao() {
 }
 
 async function procurarPneusAlocar() {
-  const marca  = document.getElementById('alo-marca').value.trim();
-  const medida = document.getElementById('alo-medida').value.trim();
-  const forn   = document.getElementById('alo-forn').value.trim();
-  const mesDe  = document.getElementById('alo-mes-de').value.trim();
-  const mesAte = document.getElementById('alo-mes-ate').value.trim();
+  const marca   = document.getElementById('alo-marca').value.trim();
+  const subtipo = document.getElementById('alo-subtipo').value;
+  const medida  = document.getElementById('alo-medida').value.trim();
+  const forn    = document.getElementById('alo-forn').value.trim();
+  const tipo    = document.getElementById('alo-tipo').value;
+  const mesDe   = document.getElementById('alo-mes-de').value.trim();
+  const mesAte  = document.getElementById('alo-mes-ate').value.trim();
 
-  if (!marca && !medida && !forn && !mesDe && !mesAte) {
+  if (!marca && !subtipo && !medida && !forn && !tipo && !mesDe && !mesAte) {
     showFeedback('alo-feedback', 'Preenche pelo menos um critério de pesquisa.', true);
     return;
   }
@@ -486,9 +488,11 @@ async function procurarPneusAlocar() {
 
   const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
   let query = sb.from(tabela).select('*').eq('empresa_id', currentEmpresaId);
-  if (marca)  query = query.ilike('marca', marca);
-  if (medida) query = query.ilike('medida', '%' + medida + '%');
-  if (forn)   query = query.ilike('fornecedor', forn);
+  if (marca)   query = query.ilike('marca', marca);
+  if (subtipo) query = query.eq('subtipo', subtipo);
+  if (medida)  query = query.ilike('medida', '%' + medida + '%');
+  if (forn)    query = query.ilike('fornecedor', forn);
+  if (tipo)    query = query.eq('tipo', tipo);
   // Intervalo inclusivo [de, até]. Sem "até", vai até ao mês atual em
   // vez de ficar preso ao mês "de" (era esse o bug: sem data final,
   // aplicava-se gte(de) E lte(de), o que só devolvia esse mês exato).

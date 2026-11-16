@@ -209,12 +209,11 @@ function linhaHistoricoReboque(r, hoje) {
   </tr>`;
 }
 
-// Atalho do botão "+ Montar" de um lugar vazio: vai direto à aba de
-// registo, já no modo Reboque, com a matrícula e a categoria desse
-// lugar preenchidas.
+// Atalho do botão "+ Montar" de um lugar vazio: abre o painel de
+// registo por cima do ecrã (sem navegar para Início), já no modo
+// Reboque, com a matrícula e a categoria desse lugar preenchidas.
 async function montarNoLugarReboque(matricula, lugar) {
-  toggleSecaoSemCarregar('registos');
-  navReg('registo-pneu', document.querySelector('.ni[data-page="registo-pneu"]'));
+  abrirPainelRegistoGeral();
   await toggleSegmentoRegisto('reboque', true);
   document.getElementById('g-mat').value = matricula;
   atualizarCategoriasPosicao('g-mat', 'g-eixo', listaReboquesFrota, SLOTS_REBOQUE);
