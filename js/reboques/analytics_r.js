@@ -85,12 +85,15 @@ function calcularComparacaoCategoriaReboques(dataTodos, eixo) {
     const mesesArr   = comMeses.map(r => mesesEntre(r.mes_mont, r.mes_desmont));
     const mesesMed   = mesesArr.length > 0 ? mesesArr.reduce((s, v) => s + v, 0) / mesesArr.length : null;
 
-    const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+    const comCustoAtivos = regs.filter(r => !r.mes_desmont && r.custo_pneu != null && r.custo_pneu > 0);
 
-    // €/mês = custo dos pneus ACTIVOS deste eixo ÷ duração média — não o
-    // histórico todo, que faria o valor crescer sempre.
-    const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
-    const eurMes = (custoAtivos > 0 && mesesMed && mesesMed > 0) ? custoAtivos / mesesMed : null;
+    // Custo ativos (€) = total gasto neste eixo agora montado (coluna de
+    // detalhe). €/mês usa a MÉDIA por pneu, não a soma — configurações de
+    // rodado duplo têm o dobro dos pneus por eixo, o que inflava sempre o
+    // €/mês desses eixos se se somasse tudo.
+    const custoAtivos = comCustoAtivos.reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const custoMed = comCustoAtivos.length > 0 ? custoAtivos / comCustoAtivos.length : null;
+    const eurMes = (custoMed && custoMed > 0 && mesesMed && mesesMed > 0) ? custoMed / mesesMed : null;
     if (eurMes == null) return;
 
     linhas.push({ matricula: mat, nPneus: regs.length, mesesMed, custoAtivos, eurMes });

@@ -37,20 +37,33 @@ function abrirEdicaoBulkFrota() {
   abrirEdicaoBulk([...frotaSelecionados], 'pneus');
 }
 
-// €/km de uma categoria (Direção/Tração) — custo dos pneus activos dessa
-// categoria ÷ KMs médios dos mesmos (ver loadFrota). Direção desgasta a
-// um ritmo muito diferente de Tração, por isso deixou de fazer sentido
-// misturar as duas num único €/km da frota do veículo.
+// €/km de uma categoria (Direção/Tração) — custo MÉDIO por pneu dessa
+// categoria ÷ KMs médios por pneu (ver loadFrota). Tem de ser média por
+// pneu, não soma: Tração tem o dobro dos pneus de Direção, por isso
+// somar o custo de todos inflava sempre o €/km de Tração, mesmo quando
+// cada pneu de Tração é mais barato por km do que um de Direção.
 function eurKmPorCategoria(data, activosArr0, categoria, kmAtual) {
   const ativosCat = activosArr0.filter(r => categoriaPosicao(r.posicao) === categoria);
   const kmsArr = ativosCat.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, data, kmAtual));
   const kmsMed = kmsArr.length > 0 ? kmsArr.reduce((s, v) => s + v, 0) / kmsArr.length : null;
-  const custo  = ativosCat.filter(r => r.custo_pneu != null && r.custo_pneu > 0).reduce((s, r) => s + Number(r.custo_pneu), 0);
-  return (custo > 0 && kmsMed && kmsMed > 0) ? custo / kmsMed : null;
+  const comCusto = ativosCat.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+  const custoMed = comCusto.length > 0 ? comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0) / comCusto.length : null;
+  return (custoMed && custoMed > 0 && kmsMed && kmsMed > 0) ? custoMed / kmsMed : null;
 }
 
 function fmtEurKm(v) {
   return v == null ? '—' : '€ ' + v.toFixed(4);
+}
+
+// Clique no card "Mais urgente" — vai direto a Alertas já filtrado pelo
+// nível do pneu mostrado no card (crítico/médio/ok), em vez de o
+// utilizador ter de procurar lá a matrícula outra vez.
+function irParaMaisUrgenteVeiculo() {
+  const nivel = document.getElementById('fk5-card').dataset.nivel;
+  if (!nivel) return;
+  toggleSecaoSemCarregar('veiculos');
+  nav('alertas', document.querySelector('.ni[data-page="alertas"]'));
+  loadAlertas().then(() => filtrarAlertas(nivel));
 }
 
 function toggleFrotaHistorico() {
@@ -120,14 +133,20 @@ async function loadFrota() {
   const estimativas = calcularEstimativasDesgaste(data, kmAtualPorMat);
   const maisUrgente = estimativas[0] || null;
   const fk5Card = document.getElementById('fk5-card');
+  const fk5Dot  = document.getElementById('fk5-dot');
   if (maisUrgente) {
+    const corClasse = maisUrgente.nivel === 'critico' ? 'red' : maisUrgente.nivel === 'medio' ? 'amber' : 'green';
     document.getElementById('fk5').textContent = maisUrgente.escEstimada + ' mm';
     document.getElementById('fk5-sub').textContent = (categoriaPosicao(maisUrgente.posicao) || maisUrgente.posicao) + ' · ' + ALERTAS_NIVEL_INFO[maisUrgente.nivel].label;
-    fk5Card.className = 'kpi ' + (maisUrgente.nivel === 'critico' ? 'red' : maisUrgente.nivel === 'medio' ? 'amber' : 'green');
+    fk5Card.className = 'kpi kpi-clickable ' + corClasse;
+    fk5Card.dataset.nivel = maisUrgente.nivel;
+    fk5Dot.className = 'live-dot ' + corClasse;
   } else {
     document.getElementById('fk5').textContent = '—';
     document.getElementById('fk5-sub').textContent = 'sem estimativa disponível';
     fk5Card.className = 'kpi';
+    delete fk5Card.dataset.nivel;
+    fk5Dot.className = 'live-dot';
   }
 
   // 4 cartões finais (+ o de cima) — cada um a responder a uma pergunta

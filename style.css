@@ -1137,6 +1137,45 @@ tbody tr:hover td { background: var(--bg); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── CARD "MAIS URGENTE" — CLICÁVEL + INDICADOR "AO VIVO" ───────── */
+/* kpi.red/.amber/.green já davam a cor ao card; esta classe só junta o
+   afago visual (cursor + sombra ao passar o rato) dos cartões clicáveis
+   que já existiam (ver .alertas-stat). */
+.kpi-clickable { cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+.kpi-clickable:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+/* Ponto a pulsar — sugere que o desgaste está a ser calculado em tempo
+   real, não é só um número estático que fica parado até à próxima
+   visita à página. */
+.live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+  position: relative;
+  vertical-align: middle;
+  background: var(--text3);
+}
+.live-dot.red   { background: var(--red); }
+.live-dot.amber { background: var(--amber); }
+.live-dot.green { background: var(--green); }
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: live-pulse 1.8s ease-out infinite;
+}
+@keyframes live-pulse {
+  0%   { transform: scale(1);   opacity: 0.65; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot::after { animation: none; }
+}
+
 /* ── CONFIRMAR SAIR ───────────────────────────────────────────── */
 .confirm-overlay {
   position: fixed;

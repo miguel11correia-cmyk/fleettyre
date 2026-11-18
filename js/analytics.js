@@ -106,13 +106,16 @@ function calcularComparacaoCategoria(dataTodos, kmAtualPorMat, categoria) {
     const kmsAtivosArr = ativosArr.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, porMatTodos[mat], kmAtual));
     const kmsMed = kmsAtivosArr.length > 0 ? kmsAtivosArr.reduce((s, v) => s + v, 0) / kmsAtivosArr.length : null;
 
-    const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+    const comCustoAtivos = regs.filter(r => !r.mes_desmont && r.custo_pneu != null && r.custo_pneu > 0);
 
-    // €/km = custo dos pneus ACTIVOS (montados agora) ÷ KMs médios dos
-    // pneus ACTIVOS — não o histórico todo, que faria o valor crescer
-    // sempre à medida que mais pneus vão sendo substituídos.
-    const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
-    const eurKm = (custoAtivos > 0 && kmsMed && kmsMed > 0) ? custoAtivos / kmsMed : null;
+    // Custo ativos (€) = total gasto nos pneus desta categoria montados
+    // agora (para a coluna de detalhe). €/km usa a MÉDIA por pneu, não a
+    // soma — Tração tem o dobro dos pneus de Direção, por isso somar
+    // inflava sempre o €/km de quem tem mais pneus na categoria, mesmo
+    // quando cada pneu individual é mais barato por km.
+    const custoAtivos = comCustoAtivos.reduce((s, r) => s + Number(r.custo_pneu), 0);
+    const custoMed = comCustoAtivos.length > 0 ? custoAtivos / comCustoAtivos.length : null;
+    const eurKm = (custoMed && custoMed > 0 && kmsMed && kmsMed > 0) ? custoMed / kmsMed : null;
     if (eurKm == null) return; // só entram veículos com dados suficientes para comparar
 
     linhas.push({ matricula: mat, nPneus: regs.length, kmsMed, custoAtivos, eurKm });

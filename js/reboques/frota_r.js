@@ -36,14 +36,27 @@ function abrirEdicaoBulkReboque() {
   abrirEdicaoBulk([...rfrotaSelecionados], 'reboques');
 }
 
-// €/mês de um eixo — custo dos pneus activos desse eixo ÷ duração média
-// dos mesmos (meses desde a montagem até hoje). Ver loadFrotaReboques.
+// €/mês de um eixo — custo MÉDIO por pneu desse eixo ÷ duração média por
+// pneu (meses desde a montagem até hoje). Tem de ser média por pneu, não
+// soma: configurações de rodado duplo têm o dobro dos pneus por eixo,
+// por isso somar o custo de todos inflava sempre o €/mês desses eixos.
 function eurMesPorEixo(activos, eixo, hoje) {
   const ativosEixo = activos.filter(r => r.eixo === eixo);
   const mesesArr = ativosEixo.filter(r => r.mes_mont).map(r => mesesEntre(r.mes_mont, hoje));
   const mesesMed = mesesArr.length > 0 ? mesesArr.reduce((s, v) => s + v, 0) / mesesArr.length : null;
-  const custo = ativosEixo.filter(r => r.custo_pneu > 0).reduce((s, r) => s + Number(r.custo_pneu), 0);
-  return (custo > 0 && mesesMed && mesesMed > 0) ? fmtEur(custo / mesesMed) : '—';
+  const comCusto = ativosEixo.filter(r => r.custo_pneu > 0);
+  const custoMed = comCusto.length > 0 ? comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0) / comCusto.length : null;
+  return (custoMed && custoMed > 0 && mesesMed && mesesMed > 0) ? fmtEur(custoMed / mesesMed) : '—';
+}
+
+// Clique no card "Mais urgente" — vai direto a Alertas (Reboques) já
+// filtrado pelo nível do pneu mostrado no card.
+function irParaMaisUrgenteReboque() {
+  const nivel = document.getElementById('rfk5-card').dataset.nivel;
+  if (!nivel) return;
+  toggleSecaoSemCarregar('reboques');
+  navR('alertas-r', document.querySelector('.ni[data-page="alertas-r"]'));
+  loadAlertasReboques().then(() => filtrarAlertasReboques(nivel));
 }
 
 function toggleRfrotaHistorico() {
@@ -108,14 +121,20 @@ async function loadFrotaReboques() {
     if (maisUrgenteR == null || margem < maisUrgenteR.margem) maisUrgenteR = { ...r, margem };
   });
   const rfk5Card = document.getElementById('rfk5-card');
+  const rfk5Dot  = document.getElementById('rfk5-dot');
   if (maisUrgenteR) {
+    const corClasse = maisUrgenteR.nivel === 'critico' ? 'red' : maisUrgenteR.nivel === 'medio' ? 'amber' : 'green';
     document.getElementById('rfk5').textContent = maisUrgenteR.mesesActivo + ' meses';
     document.getElementById('rfk5-sub').textContent = (maisUrgenteR.eixo ? 'Eixo ' + maisUrgenteR.eixo : '—') + ' · ' + ALERTASR_NIVEL_INFO[maisUrgenteR.nivel].label;
-    rfk5Card.className = 'kpi ' + (maisUrgenteR.nivel === 'critico' ? 'red' : maisUrgenteR.nivel === 'medio' ? 'amber' : 'green');
+    rfk5Card.className = 'kpi kpi-clickable ' + corClasse;
+    rfk5Card.dataset.nivel = maisUrgenteR.nivel;
+    rfk5Dot.className = 'live-dot ' + corClasse;
   } else {
     document.getElementById('rfk5').textContent = '—';
     document.getElementById('rfk5-sub').textContent = 'sem estimativa disponível';
     rfk5Card.className = 'kpi';
+    delete rfk5Card.dataset.nivel;
+    rfk5Dot.className = 'live-dot';
   }
 
   // 4 cartões finais (+ o de cima) — cada um a responder a uma pergunta
