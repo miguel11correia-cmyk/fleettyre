@@ -49,6 +49,16 @@ function eurMesPorEixo(activos, eixo, hoje) {
   return (custoMed && custoMed > 0 && mesesMed && mesesMed > 0) ? fmtEur(custoMed / mesesMed) : '—';
 }
 
+// Clique no card "Mais urgente" — vai direto a Alertas (Reboques) já
+// filtrado pelo nível do pneu mostrado no card.
+function irParaMaisUrgenteReboque() {
+  const nivel = document.getElementById('rfk5-card').dataset.nivel;
+  if (!nivel) return;
+  toggleSecaoSemCarregar('reboques');
+  navR('alertas-r', document.querySelector('.ni[data-page="alertas-r"]'));
+  loadAlertasReboques().then(() => filtrarAlertasReboques(nivel));
+}
+
 function toggleRfrotaHistorico() {
   rfrotaHistoricoExpandido = !rfrotaHistoricoExpandido;
   document.getElementById('rfrota-historico-wrap').classList.toggle('hidden', !rfrotaHistoricoExpandido);
@@ -111,14 +121,20 @@ async function loadFrotaReboques() {
     if (maisUrgenteR == null || margem < maisUrgenteR.margem) maisUrgenteR = { ...r, margem };
   });
   const rfk5Card = document.getElementById('rfk5-card');
+  const rfk5Dot  = document.getElementById('rfk5-dot');
   if (maisUrgenteR) {
+    const corClasse = maisUrgenteR.nivel === 'critico' ? 'red' : maisUrgenteR.nivel === 'medio' ? 'amber' : 'green';
     document.getElementById('rfk5').textContent = maisUrgenteR.mesesActivo + ' meses';
     document.getElementById('rfk5-sub').textContent = (maisUrgenteR.eixo ? 'Eixo ' + maisUrgenteR.eixo : '—') + ' · ' + ALERTASR_NIVEL_INFO[maisUrgenteR.nivel].label;
-    rfk5Card.className = 'kpi ' + (maisUrgenteR.nivel === 'critico' ? 'red' : maisUrgenteR.nivel === 'medio' ? 'amber' : 'green');
+    rfk5Card.className = 'kpi kpi-clickable ' + corClasse;
+    rfk5Card.dataset.nivel = maisUrgenteR.nivel;
+    rfk5Dot.className = 'live-dot ' + corClasse;
   } else {
     document.getElementById('rfk5').textContent = '—';
     document.getElementById('rfk5-sub').textContent = 'sem estimativa disponível';
     rfk5Card.className = 'kpi';
+    delete rfk5Card.dataset.nivel;
+    rfk5Dot.className = 'live-dot';
   }
 
   // 4 cartões finais (+ o de cima) — cada um a responder a uma pergunta
