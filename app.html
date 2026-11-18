@@ -654,10 +654,22 @@
         <div class="card" id="frota-info-veiculo"></div>
         <div class="krow">
           <div class="kpi green"><div class="kpi-l">Pneus activos</div><div class="kpi-v green" id="fk1">—</div><div class="kpi-s">montados agora</div></div>
-          <div class="kpi kpi-highlight"><div class="kpi-l">€ por km</div><div class="kpi-v" id="fk2">—</div><div class="kpi-s">custo activo ÷ km médio activo</div></div>
+          <div class="kpi kpi-highlight">
+            <div class="kpi-l">€ por km</div>
+            <div style="display:flex;flex-direction:column;gap:3px;margin-top:2px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                <span style="font-size:10px;color:var(--text3)">Direção</span>
+                <span class="kpi-v" id="fk2-dir" style="font-size:15px">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                <span style="font-size:10px;color:var(--text3)">Tração</span>
+                <span class="kpi-v" id="fk2-tra" style="font-size:15px">—</span>
+              </div>
+            </div>
+          </div>
           <div class="kpi amber"><div class="kpi-l">Custo activo (€)</div><div class="kpi-v amber" id="fk3">—</div><div class="kpi-s">pneus montados agora</div></div>
           <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="fk4">—</div><div class="kpi-s">activos + substituídos</div></div>
-          <div class="kpi"><div class="kpi-l">KMs médios activos</div><div class="kpi-v" id="fk5">—</div><div class="kpi-s">por pneu, agora montado</div></div>
+          <div class="kpi" id="fk5-card"><div class="kpi-l">Mais urgente</div><div class="kpi-v" id="fk5">—</div><div class="kpi-s" id="fk5-sub">rasto estimado mais baixo</div></div>
         </div>
         <div class="card hidden" id="frota-lugares-card">
           <div class="ct" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -962,18 +974,28 @@
         </div>
       </div>
 
+      <div class="ct">Comparação entre veículos — Direção</div>
       <div class="krow">
-        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="an-media-frota">—</div><div class="kpi-s">custo por km</div></div>
-        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="an-mais-eficiente">—</div><div class="kpi-s">menor custo/km</div></div>
-        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="an-menos-eficiente">—</div><div class="kpi-s">maior custo/km</div></div>
-        <div class="kpi"><div class="kpi-l">Veículos comparados</div><div class="kpi-v" id="an-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
+        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="an-dir-media-frota">—</div><div class="kpi-s">custo por km</div></div>
+        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="an-dir-mais-eficiente">—</div><div class="kpi-s">menor custo/km</div></div>
+        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="an-dir-menos-eficiente">—</div><div class="kpi-s">maior custo/km</div></div>
+        <div class="kpi"><div class="kpi-l">Veículos comparados</div><div class="kpi-v" id="an-dir-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
       </div>
+
+      <div class="ct">Comparação entre veículos — Tração</div>
+      <div class="krow">
+        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="an-tra-media-frota">—</div><div class="kpi-s">custo por km</div></div>
+        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="an-tra-mais-eficiente">—</div><div class="kpi-s">menor custo/km</div></div>
+        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="an-tra-menos-eficiente">—</div><div class="kpi-s">maior custo/km</div></div>
+        <div class="kpi"><div class="kpi-l">Veículos comparados</div><div class="kpi-v" id="an-tra-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
+      </div>
+
       <div class="card">
-        <div class="ct">Detalhe por veículo</div>
+        <div class="ct">Detalhe por veículo — Direção e Tração</div>
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>#</th><th>Matrícula</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">KMs médios/pneu</th>
+              <th>Matrícula</th><th>Posição</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">KMs médios/pneu</th>
               <th style="text-align:right">Custo ativos (€)</th><th style="text-align:right">€/km</th><th>Estado</th>
             </tr></thead>
             <tbody id="an-veiculos-tbody"></tbody>

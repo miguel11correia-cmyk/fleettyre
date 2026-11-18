@@ -37,6 +37,22 @@ function abrirEdicaoBulkFrota() {
   abrirEdicaoBulk([...frotaSelecionados], 'pneus');
 }
 
+// €/km de uma categoria (Direção/Tração) — custo dos pneus activos dessa
+// categoria ÷ KMs médios dos mesmos (ver loadFrota). Direção desgasta a
+// um ritmo muito diferente de Tração, por isso deixou de fazer sentido
+// misturar as duas num único €/km da frota do veículo.
+function eurKmPorCategoria(data, activosArr0, categoria, kmAtual) {
+  const ativosCat = activosArr0.filter(r => categoriaPosicao(r.posicao) === categoria);
+  const kmsArr = ativosCat.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, data, kmAtual));
+  const kmsMed = kmsArr.length > 0 ? kmsArr.reduce((s, v) => s + v, 0) / kmsArr.length : null;
+  const custo  = ativosCat.filter(r => r.custo_pneu != null && r.custo_pneu > 0).reduce((s, r) => s + Number(r.custo_pneu), 0);
+  return (custo > 0 && kmsMed && kmsMed > 0) ? custo / kmsMed : null;
+}
+
+function fmtEurKm(v) {
+  return v == null ? '—' : '€ ' + v.toFixed(4);
+}
+
 function toggleFrotaHistorico() {
   frotaHistoricoExpandido = !frotaHistoricoExpandido;
   document.getElementById('frota-historico-wrap').classList.toggle('hidden', !frotaHistoricoExpandido);
@@ -83,34 +99,42 @@ async function loadFrota() {
   const activos  = activosArr0.length;
   const kmAtual  = veiculo?.km_atual ?? null;
 
-  // KMs médios dos pneus ATIVOS — usa kmsReaisOuEstimados (js/alertas.js),
-  // que já tinha a cascata real→estimativa desde antes de haver
-  // telemetria, para nunca ficar sem valor mesmo sem Cartrack ligado.
-  // Exige mes_mont/kms_mont preenchidos, tal como o uso original em
-  // Alertas — sem isso a estimativa cairia sempre no fallback de 0.
-  const kmsAtivosArr = activosArr0.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, data, kmAtual));
-  const kmsmedios = kmsAtivosArr.length > 0
-    ? Math.round(kmsAtivosArr.reduce((s, v) => s + v, 0) / kmsAtivosArr.length)
-    : null;
-
   const comCusto        = data.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
   const custoHistorico  = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
   // Só os pneus activos (montados agora) — o histórico completo faria o
   // valor crescer sempre, mesmo sem o custo real por km ter mudado.
   const custoAtivos     = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
 
-  // €/km = custo dos pneus activos ÷ KMs médios por pneu
-  const eurKm = (custoAtivos > 0 && kmsmedios && kmsmedios > 0)
-    ? (custoAtivos / kmsmedios).toFixed(4)
-    : null;
+  // €/km separado por Direção/Tração — Direção desgasta muito mais rápido
+  // que Tração, por isso uma média única das duas escondia qual das duas
+  // está de facto a custar mais por km percorrido.
+  document.getElementById('fk2-dir').textContent = fmtEurKm(eurKmPorCategoria(data, activosArr0, 'Direção', kmAtual));
+  document.getElementById('fk2-tra').textContent = fmtEurKm(eurKmPorCategoria(data, activosArr0, 'Tração',  kmAtual));
 
-  // 5 cartões finais — cada um a responder a uma pergunta real de quem
-  // gere a frota (ver README, secção "Cálculos").
+  // Pneu activo mais urgente (rasto estimado mais baixo) — usa a mesma
+  // estimativa de desgaste do Alertas (ver calcularEstimativasDesgaste em
+  // alertas.js), só que à escala de um único veículo: responde "qual dos
+  // pneus deste camião preciso de olhar primeiro", sem ter de ir a Alertas
+  // e filtrar pela matrícula.
+  const kmAtualPorMat = kmAtual != null ? { [mat]: kmAtual } : {};
+  const estimativas = calcularEstimativasDesgaste(data, kmAtualPorMat);
+  const maisUrgente = estimativas[0] || null;
+  const fk5Card = document.getElementById('fk5-card');
+  if (maisUrgente) {
+    document.getElementById('fk5').textContent = maisUrgente.escEstimada + ' mm';
+    document.getElementById('fk5-sub').textContent = (categoriaPosicao(maisUrgente.posicao) || maisUrgente.posicao) + ' · ' + ALERTAS_NIVEL_INFO[maisUrgente.nivel].label;
+    fk5Card.className = 'kpi ' + (maisUrgente.nivel === 'critico' ? 'red' : maisUrgente.nivel === 'medio' ? 'amber' : 'green');
+  } else {
+    document.getElementById('fk5').textContent = '—';
+    document.getElementById('fk5-sub').textContent = 'sem estimativa disponível';
+    fk5Card.className = 'kpi';
+  }
+
+  // 4 cartões finais (+ o de cima) — cada um a responder a uma pergunta
+  // real de quem gere a frota (ver README, secção "Cálculos").
   document.getElementById('fk1').textContent = activos;
-  document.getElementById('fk2').textContent = eurKm ? '€ ' + eurKm : '—';
   document.getElementById('fk3').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
   document.getElementById('fk4').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
-  document.getElementById('fk5').textContent = kmsmedios ? fmt(kmsmedios) : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_VEICULO[veiculo?.num_eixos];
