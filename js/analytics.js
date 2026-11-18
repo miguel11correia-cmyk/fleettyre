@@ -59,12 +59,38 @@ function renderRoiPorTipo(data) {
 }
 
 // ── ANÁLISE 2 — COMPARAÇÃO ENTRE VEÍCULOS ─────────────────────────
+// Direção desgasta a um ritmo muito diferente de Tração — comparar
+// veículos por um único €/km combinado escondia qual das duas estava
+// de facto a pesar mais no custo, por isso os KPIs passam a ser
+// calculados em separado (ver também o €/km de "Por veículo"), com os
+// dois resultados juntos numa única tabela, lado a lado por veículo.
 
 function renderComparacaoVeiculos(data, kmAtualPorMat) {
+  const dir = calcularComparacaoCategoria(data, kmAtualPorMat, 'Direção');
+  const tra = calcularComparacaoCategoria(data, kmAtualPorMat, 'Tração');
+
+  preencherKpisComparacao(dir, 'an-dir-');
+  preencherKpisComparacao(tra, 'an-tra-');
+  renderTabelaComparacaoCombinada(dir, tra);
+}
+
+// Linhas (uma por matrícula) + média da frota para uma categoria — sem
+// tocar no DOM, para ser usado tanto nos KPIs separados como na tabela
+// combinada (ver renderComparacaoVeiculos).
+function calcularComparacaoCategoria(dataTodos, kmAtualPorMat, categoria) {
+  const data = dataTodos.filter(r => categoriaPosicao(r.posicao) === categoria);
   const porMat = {};
   data.forEach(r => {
     if (!porMat[r.matricula]) porMat[r.matricula] = [];
     porMat[r.matricula].push(r);
+  });
+  // Contexto completo do veículo (todas as categorias) para a estimativa
+  // de KMs — kmsReaisOuEstimados usa o kms_mont mais alto conhecido do
+  // camião como pista, não só os da categoria em análise.
+  const porMatTodos = {};
+  dataTodos.forEach(r => {
+    if (!porMatTodos[r.matricula]) porMatTodos[r.matricula] = [];
+    porMatTodos[r.matricula].push(r);
   });
 
   const linhas = [];
@@ -77,7 +103,7 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
     // já tinha a cascata real→estimativa desde antes de haver telemetria,
     // por isso funciona sempre, mesmo sem Cartrack ligado. Exige
     // mes_mont/kms_mont preenchidos, tal como o uso original em Alertas.
-    const kmsAtivosArr = ativosArr.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, regs, kmAtual));
+    const kmsAtivosArr = ativosArr.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, porMatTodos[mat], kmAtual));
     const kmsMed = kmsAtivosArr.length > 0 ? kmsAtivosArr.reduce((s, v) => s + v, 0) / kmsAtivosArr.length : null;
 
     const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
@@ -92,37 +118,65 @@ function renderComparacaoVeiculos(data, kmAtualPorMat) {
     linhas.push({ matricula: mat, nPneus: regs.length, kmsMed, custoAtivos, eurKm });
   });
 
-  const kpis = { media: 'an-media-frota', maisEf: 'an-mais-eficiente', menosEf: 'an-menos-eficiente', n: 'an-n-veiculos' };
-  const tbody = document.getElementById('an-veiculos-tbody');
+  linhas.sort((a, b) => a.eurKm - b.eurKm);
+  const media = linhas.length > 0 ? linhas.reduce((s, l) => s + l.eurKm, 0) / linhas.length : null;
+  return { categoria, linhas, media };
+}
+
+function preencherKpisComparacao(resultado, prefixo) {
+  const linhas = resultado.linhas;
+  const media  = resultado.media;
+  const kpis = { media: prefixo + 'media-frota', maisEf: prefixo + 'mais-eficiente', menosEf: prefixo + 'menos-eficiente', n: prefixo + 'n-veiculos' };
 
   if (linhas.length === 0) {
     Object.values(kpis).forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem veículos com KMs e custo suficientes para comparar.</td></tr>';
     return;
   }
 
-  linhas.sort((a, b) => a.eurKm - b.eurKm); // mais eficiente (menor custo/km) primeiro
-  const media = linhas.reduce((s, l) => s + l.eurKm, 0) / linhas.length;
-
-  document.getElementById(kpis.media).textContent   = '€ ' + media.toFixed(4);
+  document.getElementById(kpis.media).textContent   = fmtEurKm(media);
   document.getElementById(kpis.maisEf).textContent  = linhas[0].matricula;
   document.getElementById(kpis.menosEf).textContent = linhas[linhas.length - 1].matricula;
   document.getElementById(kpis.n).textContent       = linhas.length;
+}
 
-  if (tbody) {
-    tbody.innerHTML = linhas.map((l, i) => {
-      const acima    = l.eurKm > media;
-      const badgeCls = acima ? 'b-alert' : 'b-ok';
-      const badgeTxt = acima ? 'Acima da média' : 'Abaixo da média';
-      return `<tr>
-        <td>${i + 1}</td>
-        <td><strong>${l.matricula}</strong></td>
-        <td style="text-align:center">${l.nPneus}</td>
-        <td style="text-align:right">${fmt(Math.round(l.kmsMed))}</td>
-        <td style="text-align:right">${fmtEur(l.custoAtivos)}</td>
-        <td style="text-align:right">€ ${l.eurKm.toFixed(4)}</td>
-        <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
-      </tr>`;
-    }).join('');
+// Uma só tabela, agrupada por matrícula, com Direção e Tração lado a
+// lado (uma linha cada) — mais fácil de comparar as duas posições do
+// mesmo veículo de relance do que em duas tabelas separadas.
+function renderTabelaComparacaoCombinada(dir, tra) {
+  const tbody = document.getElementById('an-veiculos-tbody');
+  if (!tbody) return;
+
+  const mats = [...new Set([...dir.linhas.map(l => l.matricula), ...tra.linhas.map(l => l.matricula)])].sort();
+  if (mats.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem veículos com KMs e custo suficientes para comparar.</td></tr>';
+    return;
   }
+
+  const porMatDir = {};
+  dir.linhas.forEach(l => { porMatDir[l.matricula] = l; });
+  const porMatTra = {};
+  tra.linhas.forEach(l => { porMatTra[l.matricula] = l; });
+
+  function linhaHtml(mat, l, categoria, media) {
+    if (!l) {
+      return '<tr style="color:var(--text3)"><td><strong>' + mat + '</strong></td><td>' + categoria + '</td><td colspan="5" class="empty-msg">Sem dados suficientes</td></tr>';
+    }
+    const acima    = media != null && l.eurKm > media;
+    const badgeCls = acima ? 'b-alert' : 'b-ok';
+    const badgeTxt = acima ? 'Acima da média' : 'Abaixo da média';
+    return '<tr>'
+      + '<td><strong>' + mat + '</strong></td>'
+      + '<td>' + categoria + '</td>'
+      + '<td style="text-align:center">' + l.nPneus + '</td>'
+      + '<td style="text-align:right">' + fmt(Math.round(l.kmsMed)) + '</td>'
+      + '<td style="text-align:right">' + fmtEur(l.custoAtivos) + '</td>'
+      + '<td style="text-align:right">' + fmtEurKm(l.eurKm) + '</td>'
+      + '<td><span class="badge ' + badgeCls + '">' + badgeTxt + '</span></td>'
+      + '</tr>';
+  }
+
+  tbody.innerHTML = mats.map(mat =>
+    linhaHtml(mat, porMatDir[mat], 'Direção', dir.media) +
+    linhaHtml(mat, porMatTra[mat], 'Tração', tra.media)
+  ).join('');
 }

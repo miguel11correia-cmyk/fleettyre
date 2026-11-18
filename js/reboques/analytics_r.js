@@ -52,8 +52,26 @@ function renderRoiPorTipoReboques(data) {
 }
 
 // ── ANÁLISE 2 — COMPARAÇÃO ENTRE REBOQUES ─────────────────────────
+// Mesma lógica da versão para camiões (js/analytics.js), mas por Eixo
+// (1/2/3) em vez de Direção/Tração — cada eixo tem limites de duração
+// muito diferentes (ver LIMITES_EIXO), por isso uma única €/mês
+// combinada escondia qual deles pesava mais no custo.
 
 function renderComparacaoReboques(data) {
+  const eixo1 = calcularComparacaoCategoriaReboques(data, 1);
+  const eixo2 = calcularComparacaoCategoriaReboques(data, 2);
+  const eixo3 = calcularComparacaoCategoriaReboques(data, 3);
+
+  preencherKpisComparacaoReboques(eixo1, 'ran-e1-');
+  preencherKpisComparacaoReboques(eixo2, 'ran-e2-');
+  preencherKpisComparacaoReboques(eixo3, 'ran-e3-');
+  renderTabelaComparacaoReboquesCombinada([eixo1, eixo2, eixo3]);
+}
+
+// Linhas (uma por matrícula) + média da frota para um eixo — sem tocar
+// no DOM, reutilizado nos KPIs separados e na tabela combinada.
+function calcularComparacaoCategoriaReboques(dataTodos, eixo) {
+  const data = dataTodos.filter(r => r.eixo === eixo);
   const porMat = {};
   data.forEach(r => {
     if (!porMat[r.matricula]) porMat[r.matricula] = [];
@@ -69,8 +87,8 @@ function renderComparacaoReboques(data) {
 
     const comCusto = regs.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
 
-    // €/mês = custo dos pneus ACTIVOS deste reboque ÷ duração média — não
-    // o histórico todo, que faria o valor crescer sempre.
+    // €/mês = custo dos pneus ACTIVOS deste eixo ÷ duração média — não o
+    // histórico todo, que faria o valor crescer sempre.
     const custoAtivos = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
     const eurMes = (custoAtivos > 0 && mesesMed && mesesMed > 0) ? custoAtivos / mesesMed : null;
     if (eurMes == null) return;
@@ -78,37 +96,64 @@ function renderComparacaoReboques(data) {
     linhas.push({ matricula: mat, nPneus: regs.length, mesesMed, custoAtivos, eurMes });
   });
 
-  const kpis = { media: 'ran-media-frota', maisEf: 'ran-mais-eficiente', menosEf: 'ran-menos-eficiente', n: 'ran-n-veiculos' };
-  const tbody = document.getElementById('ran-veiculos-tbody');
+  linhas.sort((a, b) => a.eurMes - b.eurMes);
+  const media = linhas.length > 0 ? linhas.reduce((s, l) => s + l.eurMes, 0) / linhas.length : null;
+  return { eixo, linhas, media };
+}
+
+function preencherKpisComparacaoReboques(resultado, prefixo) {
+  const linhas = resultado.linhas;
+  const media  = resultado.media;
+  const kpis = { media: prefixo + 'media-frota', maisEf: prefixo + 'mais-eficiente', menosEf: prefixo + 'menos-eficiente', n: prefixo + 'n-veiculos' };
 
   if (linhas.length === 0) {
     Object.values(kpis).forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
-    if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem reboques com meses e custo suficientes para comparar.</td></tr>';
     return;
   }
-
-  linhas.sort((a, b) => a.eurMes - b.eurMes);
-  const media = linhas.reduce((s, l) => s + l.eurMes, 0) / linhas.length;
 
   document.getElementById(kpis.media).textContent   = fmtEur(media);
   document.getElementById(kpis.maisEf).textContent  = linhas[0].matricula;
   document.getElementById(kpis.menosEf).textContent = linhas[linhas.length - 1].matricula;
   document.getElementById(kpis.n).textContent       = linhas.length;
+}
 
-  if (tbody) {
-    tbody.innerHTML = linhas.map((l, i) => {
-      const acima    = l.eurMes > media;
-      const badgeCls = acima ? 'b-alert' : 'b-ok';
-      const badgeTxt = acima ? 'Acima da média' : 'Abaixo da média';
-      return `<tr>
-        <td>${i + 1}</td>
-        <td><strong>${l.matricula}</strong></td>
-        <td style="text-align:center">${l.nPneus}</td>
-        <td style="text-align:right">${Math.round(l.mesesMed)} meses</td>
-        <td style="text-align:right">${fmtEur(l.custoAtivos)}</td>
-        <td style="text-align:right">${fmtEur(l.eurMes)}</td>
-        <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
-      </tr>`;
-    }).join('');
+// Uma só tabela, agrupada por matrícula, com os três eixos lado a lado
+// (uma linha cada) — em vez de três tabelas separadas.
+function renderTabelaComparacaoReboquesCombinada(resultados) {
+  const tbody = document.getElementById('ran-veiculos-tbody');
+  if (!tbody) return;
+
+  const mats = [...new Set(resultados.flatMap(r => r.linhas.map(l => l.matricula)))].sort();
+  if (mats.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-msg" style="text-align:center;padding:12px">Sem reboques com meses e custo suficientes para comparar.</td></tr>';
+    return;
   }
+
+  const porMatPorEixo = resultados.map(r => {
+    const porMat = {};
+    r.linhas.forEach(l => { porMat[l.matricula] = l; });
+    return { eixo: r.eixo, media: r.media, porMat };
+  });
+
+  function linhaHtml(mat, l, eixo, media) {
+    if (!l) {
+      return '<tr style="color:var(--text3)"><td><strong>' + mat + '</strong></td><td>Eixo ' + eixo + '</td><td colspan="5" class="empty-msg">Sem dados suficientes</td></tr>';
+    }
+    const acima    = media != null && l.eurMes > media;
+    const badgeCls = acima ? 'b-alert' : 'b-ok';
+    const badgeTxt = acima ? 'Acima da média' : 'Abaixo da média';
+    return '<tr>'
+      + '<td><strong>' + mat + '</strong></td>'
+      + '<td>Eixo ' + eixo + '</td>'
+      + '<td style="text-align:center">' + l.nPneus + '</td>'
+      + '<td style="text-align:right">' + Math.round(l.mesesMed) + ' meses</td>'
+      + '<td style="text-align:right">' + fmtEur(l.custoAtivos) + '</td>'
+      + '<td style="text-align:right">' + fmtEur(l.eurMes) + '</td>'
+      + '<td><span class="badge ' + badgeCls + '">' + badgeTxt + '</span></td>'
+      + '</tr>';
+  }
+
+  tbody.innerHTML = mats.map(mat =>
+    porMatPorEixo.map(({ eixo, media, porMat }) => linhaHtml(mat, porMat[mat], eixo, media)).join('')
+  ).join('');
 }

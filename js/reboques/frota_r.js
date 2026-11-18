@@ -36,6 +36,16 @@ function abrirEdicaoBulkReboque() {
   abrirEdicaoBulk([...rfrotaSelecionados], 'reboques');
 }
 
+// €/mês de um eixo — custo dos pneus activos desse eixo ÷ duração média
+// dos mesmos (meses desde a montagem até hoje). Ver loadFrotaReboques.
+function eurMesPorEixo(activos, eixo, hoje) {
+  const ativosEixo = activos.filter(r => r.eixo === eixo);
+  const mesesArr = ativosEixo.filter(r => r.mes_mont).map(r => mesesEntre(r.mes_mont, hoje));
+  const mesesMed = mesesArr.length > 0 ? mesesArr.reduce((s, v) => s + v, 0) / mesesArr.length : null;
+  const custo = ativosEixo.filter(r => r.custo_pneu > 0).reduce((s, r) => s + Number(r.custo_pneu), 0);
+  return (custo > 0 && mesesMed && mesesMed > 0) ? fmtEur(custo / mesesMed) : '—';
+}
+
 function toggleRfrotaHistorico() {
   rfrotaHistoricoExpandido = !rfrotaHistoricoExpandido;
   document.getElementById('rfrota-historico-wrap').classList.toggle('hidden', !rfrotaHistoricoExpandido);
@@ -74,27 +84,45 @@ async function loadFrotaReboques() {
   if (error || !data) return;
 
   const activos    = data.filter(r => !r.mes_desmont);
-  // Duração dos pneus ACTIVOS (meses desde a montagem até hoje) — é esta
-  // que entra no €/mês, não a duração dos já desmontados (esses já não
-  // estão a gerar custo nenhum agora).
-  const mesesAtivosArr = activos.filter(r => r.mes_mont).map(r => mesesEntre(r.mes_mont, hoje));
-  const mesesMedAtivos = mesesAtivosArr.length > 0
-    ? Math.round(mesesAtivosArr.reduce((s,v) => s+v, 0) / mesesAtivosArr.length) : null;
   const comCusto       = data.filter(r => r.custo_pneu > 0);
   const custoHistorico = comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0);
   // Só os pneus activos (montados agora) — o histórico completo faria o
   // valor crescer sempre, mesmo sem o custo real por mês ter mudado.
   const custoAtivos    = comCusto.filter(r => !r.mes_desmont).reduce((s, r) => s + Number(r.custo_pneu), 0);
-  const custoMes = (custoAtivos > 0 && mesesMedAtivos && mesesMedAtivos > 0)
-    ? fmtEur(custoAtivos / mesesMedAtivos) : '—';
 
-  // 5 cartões finais — cada um a responder a uma pergunta real de quem
-  // gere a frota (ver README, secção "Cálculos").
+  // €/mês separado por eixo — Eixo 2 aguenta muito mais tempo que Eixo 1/3
+  // (ver LIMITES_EIXO), por isso uma média única escondia qual dos três
+  // estava de facto a pesar mais no custo.
+  document.getElementById('rfk2-e1').textContent = eurMesPorEixo(activos, 1, hoje);
+  document.getElementById('rfk2-e2').textContent = eurMesPorEixo(activos, 2, hoje);
+  document.getElementById('rfk2-e3').textContent = eurMesPorEixo(activos, 3, hoje);
+
+  // Pneu activo mais urgente — não é o de mais meses em absoluto, é o
+  // mais perto do limite crítico DO SEU eixo (Eixo 2 aguenta muito mais
+  // do que Eixo 1/3, ver LIMITES_EIXO), tal como o "Mais urgente" de
+  // "Por veículo" usa o rasto estimado em vez dos KMs em bruto.
+  const comAlertas = calcularAlertasReboques(data);
+  let maisUrgenteR = null;
+  comAlertas.forEach(r => {
+    const margem = r.lim.critico - r.mesesActivo;
+    if (maisUrgenteR == null || margem < maisUrgenteR.margem) maisUrgenteR = { ...r, margem };
+  });
+  const rfk5Card = document.getElementById('rfk5-card');
+  if (maisUrgenteR) {
+    document.getElementById('rfk5').textContent = maisUrgenteR.mesesActivo + ' meses';
+    document.getElementById('rfk5-sub').textContent = (maisUrgenteR.eixo ? 'Eixo ' + maisUrgenteR.eixo : '—') + ' · ' + ALERTASR_NIVEL_INFO[maisUrgenteR.nivel].label;
+    rfk5Card.className = 'kpi ' + (maisUrgenteR.nivel === 'critico' ? 'red' : maisUrgenteR.nivel === 'medio' ? 'amber' : 'green');
+  } else {
+    document.getElementById('rfk5').textContent = '—';
+    document.getElementById('rfk5-sub').textContent = 'sem estimativa disponível';
+    rfk5Card.className = 'kpi';
+  }
+
+  // 4 cartões finais (+ o de cima) — cada um a responder a uma pergunta
+  // real de quem gere a frota (ver README, secção "Cálculos").
   document.getElementById('rfk1').textContent = activos.length;
-  document.getElementById('rfk2').textContent = custoMes;
   document.getElementById('rfk3').textContent = custoAtivos > 0 ? fmtEur(custoAtivos) : '—';
   document.getElementById('rfk4').textContent = custoHistorico > 0 ? fmtEur(custoHistorico) : '—';
-  document.getElementById('rfk5').textContent = mesesMedAtivos ? mesesMedAtivos + ' meses' : '—';
 
   // ── Tabelas: lugares fixos (se a configuração for conhecida) + histórico ──
   const slots        = SLOTS_REBOQUE[reboque?.num_eixos];
