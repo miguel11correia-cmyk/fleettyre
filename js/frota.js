@@ -96,9 +96,15 @@ async function loadFrota() {
   if (!mat) return;
 
   loading(true);
-  const [{ data, error }, { data: veiculo }] = await Promise.all([
+  const [{ data, error }, { data: veiculo }, { data: todosPneus }] = await Promise.all([
     sb.from('pneus').select('*').eq('matricula', mat).eq('empresa_id', currentEmpresaId).order('mes_mont', { ascending: true }),
-    sb.from('veiculos').select('*').eq('matricula', mat).eq('empresa_id', currentEmpresaId).maybeSingle()
+    sb.from('veiculos').select('*').eq('matricula', mat).eq('empresa_id', currentEmpresaId).maybeSingle(),
+    // Frota toda — necessário para a taxa de desgaste por marca/tipo/posição
+    // usada no "Mais urgente" (ver abaixo) dar exatamente o mesmo rasto
+    // estimado que a página de Alertas mostra para este veículo; calculada
+    // só com os pneus deste veículo, dava uma taxa (e por isso um rasto
+    // estimado) diferente consoante a página.
+    fetchAllRows(() => sb.from('pneus').select('*').eq('empresa_id', currentEmpresaId)),
   ]);
   loading(false);
 
@@ -124,13 +130,15 @@ async function loadFrota() {
   document.getElementById('fk2-dir').textContent = fmtEurKm(eurKmPorCategoria(data, activosArr0, 'Direção', kmAtual));
   document.getElementById('fk2-tra').textContent = fmtEurKm(eurKmPorCategoria(data, activosArr0, 'Tração',  kmAtual));
 
-  // Pneu activo mais urgente (rasto estimado mais baixo) — usa a mesma
-  // estimativa de desgaste do Alertas (ver calcularEstimativasDesgaste em
-  // alertas.js), só que à escala de um único veículo: responde "qual dos
-  // pneus deste camião preciso de olhar primeiro", sem ter de ir a Alertas
-  // e filtrar pela matrícula.
+  // Pneu activo mais urgente (rasto estimado mais baixo) — exatamente a
+  // mesma estimativa de desgaste do Alertas (ver calcularEstimativasDesgaste
+  // em alertas.js), calculada com a frota toda (para a taxa por marca/tipo/
+  // posição dar o mesmo valor nas duas páginas) e depois filtrada só para
+  // este veículo: responde "qual dos pneus deste camião preciso de olhar
+  // primeiro", sem ter de ir a Alertas e filtrar pela matrícula.
   const kmAtualPorMat = kmAtual != null ? { [mat]: kmAtual } : {};
-  const estimativas = calcularEstimativasDesgaste(data, kmAtualPorMat);
+  const estimativasFrota = calcularEstimativasDesgaste(todosPneus || data, kmAtualPorMat);
+  const estimativas = estimativasFrota.filter(r => r.matricula === mat);
   const maisUrgente = estimativas[0] || null;
   const fk5Card = document.getElementById('fk5-card');
   const fk5Dot  = document.getElementById('fk5-dot');
