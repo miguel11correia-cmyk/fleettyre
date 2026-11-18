@@ -1316,10 +1316,26 @@
         <div class="card" id="frota-info-reboque"></div>
         <div class="krow">
           <div class="kpi green"><div class="kpi-l">Pneus activos</div><div class="kpi-v green" id="rfk1">—</div><div class="kpi-s">montados agora</div></div>
-          <div class="kpi kpi-highlight"><div class="kpi-l">€ por mês</div><div class="kpi-v" id="rfk2">—</div><div class="kpi-s">custo activo ÷ duração activos</div></div>
+          <div class="kpi kpi-highlight">
+            <div class="kpi-l">€ por mês</div>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                <span style="font-size:10px;color:var(--text3)">Eixo 1</span>
+                <span class="kpi-v" id="rfk2-e1" style="font-size:14px">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                <span style="font-size:10px;color:var(--text3)">Eixo 2</span>
+                <span class="kpi-v" id="rfk2-e2" style="font-size:14px">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                <span style="font-size:10px;color:var(--text3)">Eixo 3</span>
+                <span class="kpi-v" id="rfk2-e3" style="font-size:14px">—</span>
+              </div>
+            </div>
+          </div>
           <div class="kpi amber"><div class="kpi-l">Custo activo (€)</div><div class="kpi-v amber" id="rfk3">—</div><div class="kpi-s">pneus montados agora</div></div>
           <div class="kpi"><div class="kpi-l">Custo histórico (€)</div><div class="kpi-v" id="rfk4">—</div><div class="kpi-s">activos + substituídos</div></div>
-          <div class="kpi"><div class="kpi-l">Duração média</div><div class="kpi-v" id="rfk5">—</div><div class="kpi-s">pneus activos, até hoje</div></div>
+          <div class="kpi" id="rfk5-card"><div class="kpi-l">Mais urgente</div><div class="kpi-v" id="rfk5">—</div><div class="kpi-s" id="rfk5-sub">duração mais perto do limite</div></div>
         </div>
         <div class="card hidden" id="rfrota-lugares-card">
           <div class="ct" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -1447,18 +1463,36 @@
         </div>
       </div>
 
+      <div class="ct">Comparação entre reboques — Eixo 1</div>
       <div class="krow">
-        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="ran-media-frota">—</div><div class="kpi-s">custo por mês</div></div>
-        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="ran-mais-eficiente">—</div><div class="kpi-s">menor custo/mês</div></div>
-        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="ran-menos-eficiente">—</div><div class="kpi-s">maior custo/mês</div></div>
-        <div class="kpi"><div class="kpi-l">Reboques comparados</div><div class="kpi-v" id="ran-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
+        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="ran-e1-media-frota">—</div><div class="kpi-s">custo por mês</div></div>
+        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="ran-e1-mais-eficiente">—</div><div class="kpi-s">menor custo/mês</div></div>
+        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="ran-e1-menos-eficiente">—</div><div class="kpi-s">maior custo/mês</div></div>
+        <div class="kpi"><div class="kpi-l">Reboques comparados</div><div class="kpi-v" id="ran-e1-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
       </div>
+
+      <div class="ct">Comparação entre reboques — Eixo 2</div>
+      <div class="krow">
+        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="ran-e2-media-frota">—</div><div class="kpi-s">custo por mês</div></div>
+        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="ran-e2-mais-eficiente">—</div><div class="kpi-s">menor custo/mês</div></div>
+        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="ran-e2-menos-eficiente">—</div><div class="kpi-s">maior custo/mês</div></div>
+        <div class="kpi"><div class="kpi-l">Reboques comparados</div><div class="kpi-v" id="ran-e2-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
+      </div>
+
+      <div class="ct">Comparação entre reboques — Eixo 3</div>
+      <div class="krow">
+        <div class="kpi blue"><div class="kpi-l">Média da frota</div><div class="kpi-v blue" id="ran-e3-media-frota">—</div><div class="kpi-s">custo por mês</div></div>
+        <div class="kpi green"><div class="kpi-l">Mais eficiente</div><div class="kpi-v green" id="ran-e3-mais-eficiente">—</div><div class="kpi-s">menor custo/mês</div></div>
+        <div class="kpi red"><div class="kpi-l">Menos eficiente</div><div class="kpi-v red" id="ran-e3-menos-eficiente">—</div><div class="kpi-s">maior custo/mês</div></div>
+        <div class="kpi"><div class="kpi-l">Reboques comparados</div><div class="kpi-v" id="ran-e3-n-veiculos">—</div><div class="kpi-s">com dados suficientes</div></div>
+      </div>
+
       <div class="card">
-        <div class="ct">Detalhe por reboque</div>
+        <div class="ct">Detalhe por reboque — Eixo 1, 2 e 3</div>
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>#</th><th>Matrícula</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">Duração média</th>
+              <th>Matrícula</th><th>Eixo</th><th style="text-align:center">Nº pneus</th><th style="text-align:right">Duração média</th>
               <th style="text-align:right">Custo ativos (€)</th><th style="text-align:right">€/mês</th><th>Estado</th>
             </tr></thead>
             <tbody id="ran-veiculos-tbody"></tbody>
