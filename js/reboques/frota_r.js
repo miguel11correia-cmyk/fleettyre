@@ -36,14 +36,17 @@ function abrirEdicaoBulkReboque() {
   abrirEdicaoBulk([...rfrotaSelecionados], 'reboques');
 }
 
-// €/mês de um eixo — custo dos pneus activos desse eixo ÷ duração média
-// dos mesmos (meses desde a montagem até hoje). Ver loadFrotaReboques.
+// €/mês de um eixo — custo MÉDIO por pneu desse eixo ÷ duração média por
+// pneu (meses desde a montagem até hoje). Tem de ser média por pneu, não
+// soma: configurações de rodado duplo têm o dobro dos pneus por eixo,
+// por isso somar o custo de todos inflava sempre o €/mês desses eixos.
 function eurMesPorEixo(activos, eixo, hoje) {
   const ativosEixo = activos.filter(r => r.eixo === eixo);
   const mesesArr = ativosEixo.filter(r => r.mes_mont).map(r => mesesEntre(r.mes_mont, hoje));
   const mesesMed = mesesArr.length > 0 ? mesesArr.reduce((s, v) => s + v, 0) / mesesArr.length : null;
-  const custo = ativosEixo.filter(r => r.custo_pneu > 0).reduce((s, r) => s + Number(r.custo_pneu), 0);
-  return (custo > 0 && mesesMed && mesesMed > 0) ? fmtEur(custo / mesesMed) : '—';
+  const comCusto = ativosEixo.filter(r => r.custo_pneu > 0);
+  const custoMed = comCusto.length > 0 ? comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0) / comCusto.length : null;
+  return (custoMed && custoMed > 0 && mesesMed && mesesMed > 0) ? fmtEur(custoMed / mesesMed) : '—';
 }
 
 function toggleRfrotaHistorico() {

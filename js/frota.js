@@ -37,16 +37,18 @@ function abrirEdicaoBulkFrota() {
   abrirEdicaoBulk([...frotaSelecionados], 'pneus');
 }
 
-// €/km de uma categoria (Direção/Tração) — custo dos pneus activos dessa
-// categoria ÷ KMs médios dos mesmos (ver loadFrota). Direção desgasta a
-// um ritmo muito diferente de Tração, por isso deixou de fazer sentido
-// misturar as duas num único €/km da frota do veículo.
+// €/km de uma categoria (Direção/Tração) — custo MÉDIO por pneu dessa
+// categoria ÷ KMs médios por pneu (ver loadFrota). Tem de ser média por
+// pneu, não soma: Tração tem o dobro dos pneus de Direção, por isso
+// somar o custo de todos inflava sempre o €/km de Tração, mesmo quando
+// cada pneu de Tração é mais barato por km do que um de Direção.
 function eurKmPorCategoria(data, activosArr0, categoria, kmAtual) {
   const ativosCat = activosArr0.filter(r => categoriaPosicao(r.posicao) === categoria);
   const kmsArr = ativosCat.filter(r => r.mes_mont && r.kms_mont).map(r => kmsReaisOuEstimados(r, data, kmAtual));
   const kmsMed = kmsArr.length > 0 ? kmsArr.reduce((s, v) => s + v, 0) / kmsArr.length : null;
-  const custo  = ativosCat.filter(r => r.custo_pneu != null && r.custo_pneu > 0).reduce((s, r) => s + Number(r.custo_pneu), 0);
-  return (custo > 0 && kmsMed && kmsMed > 0) ? custo / kmsMed : null;
+  const comCusto = ativosCat.filter(r => r.custo_pneu != null && r.custo_pneu > 0);
+  const custoMed = comCusto.length > 0 ? comCusto.reduce((s, r) => s + Number(r.custo_pneu), 0) / comCusto.length : null;
+  return (custoMed && custoMed > 0 && kmsMed && kmsMed > 0) ? custoMed / kmsMed : null;
 }
 
 function fmtEurKm(v) {
