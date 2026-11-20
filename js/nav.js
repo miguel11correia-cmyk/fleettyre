@@ -103,7 +103,6 @@ function navReg(id, el) {
   else if (id === 'marcas-registo')       renderGestaoMarcas();
   else if (id === 'frota-cadastro')       initFrotaCadastro();
   else if (id === 'frota-cadastro-r')     initFrotaCadastroReboques();
-  else if (id === 'emails-fornecedores')  initEmailsFornecedores();
   else if (id === 'telemetria')           initTelemetria();
 }
 

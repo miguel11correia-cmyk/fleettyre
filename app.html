@@ -242,7 +242,7 @@
 
       <!-- MENU REGISTOS -->
       <div id="menu-registos" class="hidden">
-        <div class="nav-section">Configuração</div>
+        <div class="nav-section">Registos</div>
         <div class="ni" onclick="navReg('fornecedores-registo',this)" data-page="fornecedores-registo">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="15" height="9" rx="1"/><path d="M2.5 8 4 3h12l1.5 5"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="13" y1="12" x2="13" y2="17"/></svg></span>Fornecedores
         </div>
@@ -255,9 +255,7 @@
         <div class="ni" onclick="navReg('frota-cadastro-r',this)" data-page="frota-cadastro-r">
           <span class="ni-icon"><svg viewBox="0 0 512 512"><use href="#icon-trailer"/></svg></span>Registar reboque
         </div>
-        <div class="ni" onclick="navReg('emails-fornecedores',this)" data-page="emails-fornecedores">
-          <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="15" height="12" rx="1.5"/><path d="M2.5 5.5 10 11l7.5-5.5"/></svg></span>Faturas por email
-        </div>
+        <div class="nav-section">Integrações</div>
         <div class="ni" onclick="navReg('telemetria',this)" data-page="telemetria">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5a7.5 7.5 0 1 0 7.5 7.5"/><path d="M10 5.5v5l3.5 2"/><circle cx="10" cy="10" r="1"/></svg></span>Telemetria (KMs)
         </div>
@@ -342,6 +340,7 @@
         <h2>Início</h2>
         <div style="display:flex;gap:8px">
           <button class="btn btn-sm" onclick="loadInicio()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
+          <button class="btn btn-sm" onclick="abrirPainelEmailsFornecedores()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg> Faturas</button>
           <button class="btn btn-p btn-sm" onclick="abrirPainelRegistoGeral()"><svg viewBox="0 0 24 24"><use href="#icon-plus"/></svg> Registar pneu</button>
         </div>
       </div>
@@ -360,8 +359,12 @@
         </div>
       </div>
 
-      <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <div class="ct" style="margin:0">Visão geral</div>
+      <div class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <div class="dash-panel-eyebrow">Dashboard</div>
+          <h3>Visão geral da frota</h3>
+        </div>
         <div class="frow" style="margin:0;max-width:200px;flex:1">
           <select id="inicio-vista" data-fancy onchange="escolherVistaInicio(this.value)">
             <option value="unificada">Visão unificada</option>
@@ -423,6 +426,7 @@
             </table>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -1108,10 +1112,12 @@
       </div>
     </div>
 
-    <!-- REGISTOS — FATURAS POR EMAIL -->
+    <!-- FATURAS POR EMAIL — aba de ecrã inteiro, só abre a partir do botão
+         "Faturas" em Início; o botão "Voltar" fecha-a e volta para lá. -->
     <div class="page hidden" id="page-emails-fornecedores">
       <div class="page-header">
         <h2>Faturas por email</h2>
+        <button class="btn btn-sm" onclick="fecharPainelEmailsFornecedores()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5 5 12l7 7"/><path d="M5 12h14"/></svg> Voltar</button>
       </div>
       <div class="card">
         <div class="ct">Ligação à caixa de email</div>
