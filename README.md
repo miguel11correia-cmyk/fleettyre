@@ -215,7 +215,7 @@ Variável de ambiente necessária no Railway: `RESEND_API_KEY`.
 
 ## Testes
 
-`npm test` (`node --test`, nativo do Node — sem dependências novas nem build step, como o resto da app). Preparado para correr automaticamente em CI a cada push/PR via `.github/workflows/tests.yml` — ver nota no topo desse ficheiro sobre como o activar.
+`npm test` (`node --test`, nativo do Node — sem dependências novas nem build step, como o resto da app). Corre automaticamente em CI a cada push para `main` e em cada PR, via `.github/workflows/tests.yml`.
 
 Cobre a **lógica de cálculo e de agregação/render** de `js/*.js` (`tests/*.test.js`): €/km e €/mês por categoria, taxa de desgaste, "Mais urgente", comparação de preços entre fornecedores, desempenho por marca, KPIs e tabelas do Início, e os geradores de linha das tabelas "Lugares"/"Histórico" (veículos e reboques). `tests/helpers/load-app-scripts.js` carrega os ficheiros reais de `js/` para dentro de um contexto Node isolado (`vm`), para testar o código tal como ele é em produção, sem o duplicar nos testes — só funciona para ficheiros sem chamadas DOM a nível de topo (fora de funções). Para as funções que escrevem `innerHTML`/`textContent`, `tests/helpers/dom-stub.js` simula o `document` minimamente (sem fazer parsing de HTML nenhum), suficiente para verificar o conteúdo gerado com regex/`includes`.
 
