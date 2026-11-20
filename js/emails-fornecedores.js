@@ -25,6 +25,18 @@ async function initEmailsFornecedores() {
   await carregarEmailsPendentes();
 }
 
+// Painel acessível a partir de Início (ver botão "Faturas") — tarefa do
+// dia a dia (conferir/alocar/arquivar faturas), não uma configuração,
+// por isso deixou de estar dentro de "Registos".
+function abrirPainelEmailsFornecedores() {
+  document.getElementById('painel-emails-fornecedores').classList.add('open');
+  initEmailsFornecedores();
+}
+
+function fecharPainelEmailsFornecedores() {
+  document.getElementById('painel-emails-fornecedores').classList.remove('open');
+}
+
 const NOME_FORNECEDOR = { outlook: 'Outlook', google: 'Google', imap: 'IMAP' };
 
 async function carregarStatusEmail() {

@@ -405,6 +405,53 @@ body {
 .kpi-highlight { border-top-color: var(--brand-red); }
 .kpi-highlight .kpi-v { font-size: 20px; color: var(--brand-red); }
 
+/* ── PAINEL DE DASHBOARD (Início) ─────────────────────────────────
+   KPIs + gráficos viviam como cartões soltos directamente sobre o fundo
+   da página, sem nada a dizer que pertenciam todos à mesma coisa — este
+   invólucro dá-lhes uma identidade própria (um "ecrã dentro do ecrã"),
+   com o selector de vista integrado no cabeçalho em vez de ser mais um
+   cartão isolado por cima. */
+.dash-panel {
+  background: var(--bg2);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 18px 6px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.dash-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--brand-red);
+}
+.dash-panel .card,
+.dash-panel .kpi { margin-bottom: 14px; }
+.dash-panel-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.dash-panel-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-red);
+  margin-bottom: 3px;
+}
+.dash-panel-head h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
 /* ── CARDS ────────────────────────────────────────────────────── */
 .card {
   background: var(--surface);

@@ -122,12 +122,11 @@ async function mostrarApp() {
   await Promise.all([carregarListaVeiculos(), carregarListaReboquesFrota()]);
   navInicio();
 
-  // Voltar de "Ligar Outlook" (email-oauth-callback) — abre logo a
-  // página de Faturas por email com o resultado, e limpa o URL.
+  // Voltar de "Ligar Outlook" (email-oauth-callback) — abre logo o
+  // painel de Faturas por email com o resultado, e limpa o URL.
   const params = new URLSearchParams(location.search);
   if (params.has('email_ligado') || params.has('email_erro')) {
-    toggleSecao('registos');
-    navReg('emails-fornecedores', document.querySelector('[data-page="emails-fornecedores"]'));
+    abrirPainelEmailsFornecedores();
     setTimeout(() => {
       showFeedback('email-forn-feedback', params.has('email_ligado') ? 'Conta ligada com sucesso.' : 'Erro ao ligar a conta. Tenta novamente.', params.has('email_erro'));
     }, 300);
