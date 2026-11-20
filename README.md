@@ -32,37 +32,58 @@ js/                                — lógica da secção "Veículos" + partilh
   config.js                        — cria o cliente Supabase (sb)
   auth.js                          — login, logout, mudar password (2 passos), esqueci-me da
                                      password
-  nav.js                           — troca de página dentro da app (nav/navR/navReg/navInicio)
-  utils.js                         — helpers partilhados: formatação, cálculos de desgaste,
-                                     SLOTS_VEICULO/SLOTS_REBOQUE (lugares fixos), loading()
-                                     (com atraso de 200ms, para não "piscar" em operações rápidas)
+  nav.js                           — troca de página dentro da app (nav/navR/navReg/navInicio/
+                                     navCompras); páginas acessíveis só a partir de um botão
+                                     (nunca têm entrada própria na barra lateral — Registar pneu,
+                                     Faturas por email) são abertas directamente pela função do
+                                     próprio botão, não por aqui
+  utils.js                         — helpers partilhados: formatação (`fmt`/`fmtEur`, separador
+                                     de milhares sempre a espaço, nunca a depender do locale do
+                                     browser), cálculos de desgaste, SLOTS_VEICULO/SLOTS_REBOQUE
+                                     (lugares fixos), edição/desmontagem em massa
+                                     (`abrirEdicaoBulk`, partilhada por veículos e reboques),
+                                     loading() (com atraso de 200ms, para não "piscar" em
+                                     operações rápidas)
   frota_cadastro.js                — ficha de veículos (marca/modelo/nº eixos), lista de marcas
-  frota.js                         — "Por matrícula": lugares fixos + histórico de um veículo
-  inicio.js                        — página "Início": resumo de alertas críticos (veículos +
-                                     reboques juntos) e o formulário único de registo de
-                                     montagem — um selector Camião/Reboque no topo decide a
-                                     tabela de destino (`pneus`/`reboques`) e que campos mostrar
-                                     (ex.: KMs só em camiões); substituiu os antigos registar.js/
-                                     registar_r.js, que só serviam uma secção de cada vez
-  dashboard.js, alertas.js,
-  analytics.js, marcas.js,
-  fornecedores.js, stock.js        — cada página da app, um ficheiro por secção
+  frota.js                         — "Por veículo": lugares fixos + histórico de um veículo,
+                                     selecção múltipla de pneus activos (desmontar/editar vários
+                                     de uma vez — ex.: todo o eixo de Direção)
+  inicio.js                        — página "Início", sempre acessível independentemente da
+                                     secção onde se está: aviso de "Precisa da tua atenção"
+                                     (críticos de veículos + reboques juntos), o dashboard da
+                                     frota (KPIs + gráficos, com identidade visual própria — ver
+                                     "Interações e animações") e o formulário único de registo de
+                                     montagem (painel "Registar pneu", aberto a pedido, nunca
+                                     ocupa o ecrã principal) — um selector Camião/Reboque no
+                                     topo do formulário decide a tabela de destino
+                                     (`pneus`/`reboques`) e que campos mostrar (ex.: KMs só em
+                                     camiões)
+  alertas.js, analytics.js,
+  marcas.js, compras.js, stock.js  — cada página da app, um ficheiro por secção; `compras.js`
+                                     junta fornecedores (comparação de preços por marca/modelo/
+                                     tipo, sempre com a frota toda) e o desempenho por marca
+                                     (antiga página "Marcas", fundida aqui); `marcas.js` ficou só
+                                     com a gestão do catálogo (marcas e os seus modelos/subtipos)
   custom-select.js                 — substitui os <select> [data-fancy] por um combobox à parte,
                                      mantendo o <select> original escondido como fonte da verdade
   pdf-anexo.js                     — anexar/ver PDF em registos, faturas e pneus em oficina
                                      (mecanismo único partilhado pelos três contextos)
-  emails-fornecedores.js           — página "Faturas por email": ligar/desligar a caixa de email
-                                     da empresa, sincronizar manualmente, listar/abrir/arquivar
-                                     os emails de fornecedores encontrados (ver secção própria)
-  telemetria.js                    — página "Telemetria (KMs)": ligar/desligar/sincronizar a
-                                     integração de telemetria da própria empresa (self-service)
+  emails-fornecedores.js           — "Faturas por email": ligar/desligar a caixa de email da
+                                     empresa, sincronizar manualmente, listar/abrir/arquivar os
+                                     emails de fornecedores encontrados (ver secção própria) —
+                                     não é uma página de configuração, é uma aba de ecrã inteiro
+                                     que só abre a partir do botão "Faturas" em Início (tarefa do
+                                     dia a dia, não uma definição que se mexe uma vez e esquece)
+  telemetria.js                    — "Telemetria (KMs)": ligar/desligar/sincronizar a integração
+                                     de telemetria da própria empresa (self-service) — esta sim
+                                     fica em Configuração, num grupo "Integrações" à parte de
+                                     "Registos" (Fornecedores/Marcas/Registar veículo/reboque),
+                                     por ser uma ligação a um serviço externo, não um registo
 
 js/reboques/                       — equivalentes dos ficheiros acima, para a secção "Reboques"
-                                     (frota_cadastro_r.js, frota_r.js, dashboard_r.js, …) — não
-                                     tem registar_r.js próprio (ver inicio.js, partilhado pelas
-                                     duas secções); não é um espelho perfeito: fornecedores_
-                                     marcas_r.js junta o que em "Veículos" são dois ficheiros
-                                     separados (fornecedores.js + marcas.js)
+                                     (frota_cadastro_r.js, frota_r.js, analytics_r.js, alertas_r.js,
+                                     …) — não tem registar_r.js nem compras_r.js próprios (ver
+                                     inicio.js/compras.js, partilhados pelas duas secções)
 
 migrations/                        — alterações à base de dados, ficheiros .sql numerados por
                                      ordem, corridos manualmente no SQL Editor do Supabase
@@ -126,13 +147,15 @@ Cada veículo/reboque com uma configuração de eixos conhecida (`num_eixos` nã
 - **Edição individual**: mostra o selector granular completo (todos os lugares livres + o lugar actual do próprio pneu), para corrigir uma posição específica.
 - Veículos/reboques sem ficha, ou com configuração "Outro", mantêm uma lista solta sem lugares fixos (comportamento anterior a esta funcionalidade).
 
+**Selecção múltipla**: pneus de Direção/Tração (ou de um eixo inteiro, nos reboques) saem quase sempre ao mesmo tempo — em "Por veículo"/"Por reboque", cada pneu activo tem uma checkbox; seleccionar vários mostra uma barra de acções (contagem + "Desmontar seleção"/"Editar seleção") dentro do próprio cartão "Posições". "Desmontar seleção" reutiliza o mesmo painel da desmontagem individual, só que aplica o mesmo mês/KMs/rasto/destino a todos os seleccionados de uma vez. "Editar seleção" (`abrirEdicaoBulk`, `js/utils.js`, partilhada por veículos e reboques) só tem os campos que fazem sentido partilhar entre vários pneus (marca/modelo, medida, fornecedor, tipo, custos) — nunca matrícula/posição/mês de montagem/KMs, que são sempre individuais — e só aplica os campos que forem preenchidos; os deixados em branco mantêm o valor que cada registo já tinha.
+
 ---
 
 ## Integração de telemetria (km actual)
 
 `veiculos.km_atual`/`km_atual_em` é preenchido automaticamente (quando configurado) a partir do sistema de GPS/telemetria de cada empresa, e usado como fallback para estimar KMs percorridos quando um pneu ainda não foi desmontado. É só informativo — nunca substitui os KMs manuais dos registos de pneus.
 
-**Self-service**: página "Telemetria (KMs)" (Configuração), `js/telemetria.js` — qualquer empresa introduz as suas próprias credenciais do fornecedor e liga a integração sem intervenção manual na base de dados. `integracoes_telemetria` é só-admin (RLS), por isso a página nunca lê a tabela directamente — só chama as Edge Functions autenticadas abaixo, que derivam sempre a `empresa_id` do JWT de quem chama:
+**Self-service**: página "Telemetria (KMs)" (Configuração → grupo "Integrações"), `js/telemetria.js` — qualquer empresa introduz as suas próprias credenciais do fornecedor e liga a integração sem intervenção manual na base de dados. `integracoes_telemetria` é só-admin (RLS), por isso a página nunca lê a tabela directamente — só chama as Edge Functions autenticadas abaixo, que derivam sempre a `empresa_id` do JWT de quem chama:
 
 - `telemetria-ligar` — valida as credenciais com uma chamada leve à API do fornecedor (`testarCredenciais`) antes de gravar.
 - `telemetria-status` — devolve só `{ligado, fornecedor, ultima_sincronizacao}`, nunca as credenciais.
@@ -149,7 +172,7 @@ Cada fornecedor é um adaptador em `supabase/functions/_shared/<fornecedor>.ts`,
 
 Problema real que resolve: a oficina regista montagens/desmontagens em papel; o valor em € só chega semanas depois, por email, da parte do fornecedor — e encontrar essa factura no meio de centenas de emails não relacionados é o trabalho manual. Esta funcionalidade liga-se à caixa de email da empresa, filtra os emails que parecem facturas de pneus e deixa-os prontos (com o PDF já descarregado) para o utilizador consultar. **Não extrai valores automaticamente** — o utilizador continua a introduzir o custo manualmente no "Editar" de sempre, usando o PDF só como referência.
 
-Página "Faturas por email" (Configuração), `js/emails-fornecedores.js`. `integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
+Aba de ecrã inteiro aberta pelo botão "Faturas" em Início (`js/emails-fornecedores.js`) — deliberadamente fora de Configuração: é uma tarefa do dia a dia (conferir, alocar e arquivar facturas), não uma definição que se liga uma vez e se esquece. Fecha sempre com o botão "Voltar" (volta para Início, de onde é sempre aberta); o regresso do fluxo OAuth do Outlook/Google abre-a directamente, sem passar por mais nenhuma página. `integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
 
 - `email-status` — `{ligado, conta_email, ultima_sincronizacao}`, nunca os tokens.
 - `email-oauth-iniciar` / `email-oauth-callback` / `email-oauth-desligar` — fluxo OAuth partilhado por qualquer fornecedor OAuth (`?fornecedor=outlook` ou `?fornecedor=google`): "Ligar Outlook"/"Ligar Google" chama `-iniciar` (autenticado, gera um `state` assinado por HMAC com `empresa_id`+`fornecedor`+expiração curta) e o browser é redireccionado para o fornecedor; `-callback` (pública, sem verificação de JWT — é o fornecedor que a chama, nunca o utilizador directamente) lê o `fornecedor` do `state`, valida-o, troca o código pelos tokens através do adaptador certo e grava a integração — mesma função para os dois fornecedores, nunca precisou de ramificação por fornecedor.
@@ -187,6 +210,16 @@ Variável de ambiente necessária no Railway: `RESEND_API_KEY`.
 - Login por email/password (Supabase Auth). Depois de autenticar, se o utilizador tiver acesso a mais do que uma empresa (só acontece para admins), escolhe qual quer usar; a escolha fica em `localStorage`.
 - **Mudar password**: painel lateral acessível a partir do menu, a dois passos — primeiro confirma a password actual (`sb.auth.signInWithPassword`, que também satisfaz o requisito de sessão recente do Supabase para alterar a password), só depois revela os campos de nova password/confirmar (`sb.auth.updateUser`).
 - **Esqueci-me da password**: link no login → email com link de recuperação (`resetPasswordForEmail`) → o link traz o utilizador de volta a `app.html` com uma sessão temporária (evento `PASSWORD_RECOVERY`), que mostra um formulário de nova password antes de entrar normalmente.
+
+---
+
+## Testes
+
+`npm test` (`node --test`, nativo do Node — sem dependências novas nem build step, como o resto da app). Corre automaticamente em CI a cada push/PR (`.github/workflows/tests.yml`).
+
+Cobre só a **lógica de cálculo pura** (`tests/*.test.js`) — as funções que decidem €/km, taxa de desgaste, "Mais urgente", etc., que já causaram bugs reais e silenciosos (ver "Cálculos" acima). `tests/helpers/load-app-scripts.js` carrega os ficheiros reais de `js/` para dentro de um contexto Node isolado (`vm`), para testar o código tal como ele é em produção, sem o duplicar nos testes — só funciona para ficheiros sem chamadas DOM a nível de topo (fora de funções); as funções de *render* (que escrevem `innerHTML`) continuam só verificadas manualmente no browser, como até agora.
+
+Ao adicionar uma fórmula nova (custo, desgaste, comparação entre categorias/veículos/reboques), vale a pena escrever já aqui o cenário que a pode pôr em causa — foi assim que se apanhou o bug do €/km por categoria (ver `tests/custo-por-km.test.js`) e o da taxa de desgaste do "Mais urgente" (`tests/mais-urgente.test.js`).
 
 ---
 
@@ -251,16 +284,21 @@ Se o pneu ainda estiver montado e o veículo tiver `km_atual` (via telemetria), 
 Custo médio = Soma dos custos de pneu ÷ Nº de pneus com custo preenchido
 ```
 
-### Custo por km (por veículo)
+### Custo por km (por veículo) — sempre por categoria, nunca combinado
 ```
-€/km = Custo dos pneus ACTIVOS (montados agora) ÷ KMs médios dos pneus ACTIVOS
+€/km = Custo MÉDIO por pneu ACTIVO da categoria ÷ KMs médios dos pneus ACTIVOS da categoria
 ```
-Numerador e denominador usam só os pneus activos (não o histórico completo) — senão o custo (uma soma) cresceria sempre com o tempo enquanto os KMs médios (uma média) ficam estáveis, inflacionando o rácio artificialmente. Os KMs médios dos activos vêm de `kmsReaisOuEstimados` (`js/alertas.js`) — cascata real (telemetria) → KMs máximos conhecidos do veículo → média mensal entre montagens passadas → constante de 7500km/mês, a mesma lógica já usada nos Alertas desde antes de existir telemetria, por isso funciona sempre. Usado em "Por matrícula" e em "Análise → Comparação entre veículos". Para reboques, o denominador continua a ser a duração média (meses) — não têm conta-quilómetros próprio — e o custo é sempre só dos pneus activos (`€/mês`).
+"Categoria" é Direção ou Tração (veículos) / Eixo 1, 2 ou 3 (reboques, `€/mês` em vez de `€/km` — não têm conta-quilómetros próprio). **Nunca** um €/km único combinando todas as posições: Direção tem metade dos pneus de Tração (e, nos reboques, configurações de rodado duplo têm o dobro dos pneus por eixo), por isso cada categoria desgasta e pesa no custo a um ritmo muito diferente — uma média combinada escondia sempre qual delas estava de facto a custar mais por km.
 
-### "Por matrícula"/"Por reboque" — 5 cartões, não mais
-Reduzido de propósito (chegou a ter 8) para as perguntas que quem gere a frota realmente faz ao abrir esta página: quantos pneus tem agora (**Pneus activos**), está a sair caro por km (**€/km**, em destaque visual — é o número mais importante), quanto tenho investido agora (**Custo activo**), quanto já gastei ao todo neste veículo (**Custo histórico**), e quanto duram os pneus (**KMs médios/pneu**, histórico — não activos, por ser mais representativo da duração real). Números de apoio ao cálculo que não respondem a uma pergunta própria (contagem total de pneus, custo médio/pneu, KMs médios só dos activos) ficaram de fora — continuam calculáveis no código, só não têm cartão próprio.
+O numerador é o custo **médio** por pneu, não a soma — foi um bug real: somar o custo de todos os pneus activos da categoria e dividir pela média de KMs/meses inflacionava sempre o rácio de quem tem mais pneus nessa categoria (ex.: Tração, com o dobro de Direção), mesmo quando cada pneu individual era mais barato por km. Custo e KMs usam sempre só os pneus activos (não o histórico completo) — senão o custo (uma soma) cresceria sempre com o tempo enquanto os KMs médios (uma média) ficam estáveis, inflacionando o rácio artificialmente. Os KMs médios dos activos vêm de `kmsReaisOuEstimados` (`js/alertas.js`) — cascata real (telemetria) → KMs máximos conhecidos do veículo → média mensal entre montagens passadas → constante de 7500km/mês, a mesma lógica já usada nos Alertas desde antes de existir telemetria, por isso funciona sempre. Usado em "Por veículo"/"Por reboque" (`eurKmPorCategoria`/`eurMesPorEixo`) e em "Análise → Comparação entre veículos/reboques" (`calcularComparacaoCategoria(Reboques)`) — nesta última, os KPIs (média/mais eficiente/menos eficiente) calculam-se por categoria, mas a tabela de detalhe fica combinada numa só, com as categorias lado a lado por veículo/reboque.
 
-Em **"Marcas"** (veículos e reboques) o cálculo é diferente por natureza: não há uma entidade única a acumular histórico para sempre (são vários pneus independentes de vários veículos), por isso usa-se antes o **histórico completo** da marca — `€/km = custo médio por pneu ÷ KMs médios por pneu` (ou `€/mês` nos reboques), mais amostras dão uma média mais robusta. Tabela ordenada por ranking (mais barata primeiro).
+### "Por veículo"/"Por reboque" — 5 cartões, não mais
+Reduzido de propósito (chegou a ter 8) para as perguntas que quem gere a frota realmente faz ao abrir esta página: quantos pneus tem agora (**Pneus activos**), está a sair caro por km (**€/km, por Direção e Tração** — ver acima), quanto tenho investido agora (**Custo activo**), quanto já gastei ao todo neste veículo (**Custo histórico**), e qual o pneu que precisa de atenção primeiro (**Mais urgente** — ver "Taxa de desgaste" abaixo; nos reboques, o pneu mais perto do limite crítico do seu próprio eixo, por margem até ao limite, não por meses em bruto, já que o Eixo 2 aguenta muito mais tempo que o Eixo 1/3). O card "Mais urgente" é clicável e leva directo a Alertas já filtrado pelo nível do pneu mostrado. Números de apoio ao cálculo que não respondem a uma pergunta própria ficaram de fora — continuam calculáveis no código, só não têm cartão próprio.
+
+Em **"Compras" → Desempenho por marca** (fundiu a antiga página "Marcas") o cálculo é diferente por natureza: não há uma entidade única a acumular histórico para sempre (são vários pneus independentes de vários veículos), por isso usa-se antes o **histórico completo** da marca, detalhado por Marca → Modelo (subtipo) → Tipo, só com registos desmontados completos — `€/1000km` (veículos) ou `€/mês` (reboques) é a média das razões custo/eficiência de cada registo individual, não "custo médio ÷ KMs médios"; isto já evita por construção o mesmo viés de contagem de pneus descrito acima. Ausente na vista unificada (não combinável entre as duas métricas). Tabela ordenada por ranking (mais barata/eficiente primeiro).
+
+### Comparação de preços (Compras)
+Por marca + modelo (+ filtro de tipo), fornecedores ordenados do mais barato ao mais caro, sempre com a **frota toda** (ignora o selector "Visão geral" da página, que só se aplica ao Desempenho por marca). A percentagem de cada fornecedor é sempre contra o **fornecedor mais barato actual**, nunca contra uma média histórica — decisão deliberada: uma média histórica desce sozinha à medida que mais compras vão para o fornecedor mais barato, tornando a percentagem cada vez menos informativa com o tempo; ancorar no mais barato actual mantém o sinal sempre claro ("és X% mais caro que a melhor opção disponível agora").
 
 ### Taxa de desgaste
 ```
@@ -268,13 +306,16 @@ Taxa (mm/1000km) = (Rasto inicial − Rasto final) ÷ KMs efectuados × 1000
 ```
 Rasto inicial assumido: 16mm (Novo), 14mm (Remix/Rechapado), 10mm (Piso Aberto). Só calculada para registos com rasto final entre 0 e 20mm, agrupada por família de posição (Direção/Tração/Pusher/Tag/Eixo N), não pelo lugar exacto.
 
+Esta mesma estimativa (`calcularEstimativasDesgaste`, `js/alertas.js`) alimenta tanto a página Alertas como o cartão "Mais urgente" de "Por veículo" — para os dois darem sempre o mesmo valor para o mesmo pneu, "Mais urgente" tem de calcular a taxa com os pneus da **frota toda**, nunca só os do veículo seleccionado (`loadFrota` busca a frota toda só para este cálculo, depois filtra o resultado pela matrícula) — foi outro bug real: calculado só com o histórico do veículo, a taxa caía quase sempre no valor-padrão fixo (0.08mm/1000km) em vez da taxa real observada na frota por marca/tipo/posição.
+
 ---
 
 ## Interações e animações
 
 Segue o guia próprio `SKILL_design.md` (na raiz do repo). Pontos concretos já aplicados em `style.css`/`js/utils.js`:
 
-- Painéis laterais (ex. mudar password, lugares) deslizam (`transform: translateX`) em vez de aparecer/desaparecer instantaneamente.
+- O bloco de KPIs + gráficos de Início (`.dash-panel`, `style.css`) tem fundo e friso (vermelho da marca) próprios, com o selector "Visão geral" integrado no cabeçalho — antes eram cartões soltos directamente sobre o fundo da página, sem nada a dizer que pertenciam todos à mesma coisa.
+- Painéis laterais (ex. mudar password, lugares) deslizam (`transform: translateX`) em vez de aparecer/desaparecer instantaneamente; alguns (Registar pneu) abrem antes centrados (`.panel-center`) em vez de laterais, por serem acessíveis de qualquer página, não só de uma em concreto.
 - Botões têm feedback de pressão (`:active { transform: scale(0.97) }`), excepto os itens de navegação da sidebar (clicados dezenas de vezes por dia — animá-los seria ruído, não feedback).
 - `prefers-reduced-motion` desliga estas transformações.
 - `loading()` só mostra o overlay se a operação ainda estiver pendente passados 200ms (`LOADING_DELAY_MS`), para não "piscar" em cliques/trocas de página rápidas.
