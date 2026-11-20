@@ -50,7 +50,6 @@ function navInicio() {
   toggleMobileSidebar(false);
   fecharPainel();
   fecharPainelRegistoGeral();
-  fecharPainelEmailsFornecedores();
   document.getElementById('btn-inicio').classList.add('active');
   document.getElementById('btn-compras')?.classList.remove('active');
   document.getElementById('btn-registos')?.classList.remove('active');
@@ -73,7 +72,6 @@ function navCompras() {
   toggleMobileSidebar(false);
   fecharPainel();
   fecharPainelRegistoGeral();
-  fecharPainelEmailsFornecedores();
   document.getElementById('btn-compras').classList.add('active');
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-registos')?.classList.remove('active');
@@ -96,7 +94,6 @@ function navReg(id, el) {
   document.getElementById('btn-compras')?.classList.remove('active');
   toggleMobileSidebar(false);
   fecharPainelRegistoGeral();
-  fecharPainelEmailsFornecedores();
   const page = document.getElementById('page-' + id);
   if (!page) return;
   page.classList.remove('hidden');
@@ -121,7 +118,6 @@ function nav(id, el) {
   if (el) el.classList.add('active');
   fecharPainel();
   fecharPainelRegistoGeral();
-  fecharPainelEmailsFornecedores();
 
   if      (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
@@ -136,7 +132,6 @@ function navR(id, el) {
   document.getElementById('btn-compras')?.classList.remove('active');
   toggleMobileSidebar(false);
   fecharPainelRegistoGeral();
-  fecharPainelEmailsFornecedores();
 
   // Stock é partilhado — usa a página de veículos com um contexto de
   // reboques (Fornecedores/Marcas saíram para a página "Compras").

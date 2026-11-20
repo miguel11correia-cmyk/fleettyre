@@ -25,16 +25,19 @@ async function initEmailsFornecedores() {
   await carregarEmailsPendentes();
 }
 
-// Painel acessível a partir de Início (ver botão "Faturas") — tarefa do
-// dia a dia (conferir/alocar/arquivar faturas), não uma configuração,
-// por isso deixou de estar dentro de "Registos".
+// Aba de ecrã inteiro acessível a partir de Início (ver botão "Faturas")
+// — tarefa do dia a dia (conferir/alocar/arquivar faturas), não uma
+// configuração, por isso deixou de estar dentro de "Registos". Só abre
+// a pedido (nunca tem entrada própria na barra lateral) e o botão
+// "Voltar" fecha-a sempre para Início, de onde é sempre aberta.
 function abrirPainelEmailsFornecedores() {
-  document.getElementById('painel-emails-fornecedores').classList.add('open');
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.getElementById('page-emails-fornecedores').classList.remove('hidden');
   initEmailsFornecedores();
 }
 
 function fecharPainelEmailsFornecedores() {
-  document.getElementById('painel-emails-fornecedores').classList.remove('open');
+  navInicio();
 }
 
 const NOME_FORNECEDOR = { outlook: 'Outlook', google: 'Google', imap: 'IMAP' };

@@ -1111,27 +1111,25 @@
       </div>
     </div>
 
-    <!-- REGISTOS — FATURAS POR EMAIL -->
-    <!-- PAINEL — FATURAS POR EMAIL (abre por cima do ecrã, a partir de Início) -->
-    <div class="panel panel-center" id="painel-emails-fornecedores">
-      <div class="panel-head">
-        <span>Faturas por email</span>
-        <button class="btn-close" onclick="fecharPainelEmailsFornecedores()"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
+    <!-- FATURAS POR EMAIL — aba de ecrã inteiro, só abre a partir do botão
+         "Faturas" em Início; o botão "Voltar" fecha-a e volta para lá. -->
+    <div class="page hidden" id="page-emails-fornecedores">
+      <div class="page-header">
+        <h2>Faturas por email</h2>
+        <button class="btn btn-sm" onclick="fecharPainelEmailsFornecedores()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5 5 12l7 7"/><path d="M5 12h14"/></svg> Voltar</button>
       </div>
-      <div class="panel-body">
-        <div class="card">
-          <div class="ct">Ligação à caixa de email</div>
-          <div id="email-forn-status"><p class="empty-msg">A carregar...</p></div>
-          <div id="email-forn-feedback" class="feedback hidden"></div>
-        </div>
-        <div class="card">
-          <div class="ct">Emails por processar</div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Recebido</th><th>Remetente</th><th>Assunto</th><th>Mensagem</th><th>PDF</th><th>Ação</th></tr></thead>
-              <tbody id="email-forn-tbody"></tbody>
-            </table>
-          </div>
+      <div class="card">
+        <div class="ct">Ligação à caixa de email</div>
+        <div id="email-forn-status"><p class="empty-msg">A carregar...</p></div>
+        <div id="email-forn-feedback" class="feedback hidden"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Emails por processar</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Recebido</th><th>Remetente</th><th>Assunto</th><th>Mensagem</th><th>PDF</th><th>Ação</th></tr></thead>
+            <tbody id="email-forn-tbody"></tbody>
+          </table>
         </div>
       </div>
 
