@@ -3,7 +3,10 @@
 // Marca os KMs/leituras que vêm da telemetria (GPS), não de registo manual.
 const ICON_TELEMETRIA = '<span class="ico-telemetria" title="Via telemetria"><svg viewBox="0 0 24 24"><use href="#icon-telemetria"/></svg></span>';
 
-// Agrupa a taxa de desgaste (mm/1000km) de registos históricos por uma chave à escolha.
+// Agrupa a taxa de desgaste (mm/1000km) de registos históricos por uma
+// chave à escolha — devolve a média E o nº de registos de cada chave,
+// já que taxaEstimada usa o nº de registos para decidir o quanto
+// confiar nessa média (ver CREDIBILIDADE_TAXA_DESGASTE).
 function calcularTaxasPor(dados, chaveFn) {
   const taxas = {};
   dados.forEach(r => {
@@ -13,33 +16,65 @@ function calcularTaxasPor(dados, chaveFn) {
     if (!taxas[chave]) taxas[chave] = [];
     taxas[chave].push(t);
   });
-  const medias = {};
+  const resultado = {};
   Object.keys(taxas).forEach(k => {
     const arr = taxas[k];
-    medias[k] = arr.reduce((s, v) => s + v, 0) / arr.length;
+    resultado[k] = { media: arr.reduce((s, v) => s + v, 0) / arr.length, n: arr.length };
   });
-  return medias;
+  return resultado;
 }
 
-// Cascata de fallback, da estimativa mais específica para a mais genérica:
-// marca+tipo+posição → marca+tipo → marca → média global → constante fixa.
+// Nº de registos a partir do qual a média de um nível (ex: só uma
+// marca) passa a pesar tanto quanto a estimativa do nível mais geral a
+// seguir — com menos registos do que isto, a mistura fica sobretudo
+// presa ao nível mais geral (mais fiável, por ter mais dados); com
+// muitos mais, aproxima-se da média desse nível específico. Evita que
+// um único registo atípico (ex: um pneu furado, saído cedo) domine por
+// completo uma combinação marca+tipo+posição só porque é a mais
+// específica disponível — ver README, "Cálculos".
+const CREDIBILIDADE_TAXA_DESGASTE = 5;
+
+// Mistura a média de um nível (com `n` registos) com a estimativa do
+// nível mais geral a seguir, pesada por quanto esse `n` se aproxima de
+// CREDIBILIDADE_TAXA_DESGASTE — nunca troca de repente de um extremo
+// para o outro, só desliza gradualmente à medida que `n` cresce.
+function misturarTaxa(n, mediaDoNivel, estimativaMaisGeral) {
+  const peso = n / (n + CREDIBILIDADE_TAXA_DESGASTE);
+  return peso * mediaDoNivel + (1 - peso) * estimativaMaisGeral;
+}
+
+// Cascata de fallback pesada por confiança, da estimativa mais
+// específica para a mais genérica: marca+tipo+posição → marca+tipo →
+// marca → média global → constante fixa do sector (0.08mm/1000km).
+// Cada nível mistura-se com o nível mais geral a seguir (nunca
+// directamente com a constante fixa, a não ser que não haja dados
+// nenhuns em lado nenhum) pesado pelo seu próprio nº de registos — ao
+// contrário da versão antiga, que confiava cegamente no primeiro nível
+// com pelo menos 1 registo, ficando cada vez mais preciso à medida que
+// há mais histórico em vez de poder piorar com uma amostra pequena.
 function taxaEstimada(r, taxasPorMTP, taxasPorMT, taxasPorM, todasTaxas) {
   const marca = r.marca    || 'DESCONHECIDA';
   const tipo  = r.tipo     || 'Novo';
   const posic = categoriaPosicao(r.posicao) || 'DESCONHECIDA';
+  const FALLBACK_SECTOR = 0.08;
 
-  const chaveMTP = `${marca}|${tipo}|${posic}`;
-  if (taxasPorMTP[chaveMTP] != null) return taxasPorMTP[chaveMTP];
+  const global = todasTaxas.length > 0
+    ? misturarTaxa(todasTaxas.length, todasTaxas.reduce((s, v) => s + v, 0) / todasTaxas.length, FALLBACK_SECTOR)
+    : FALLBACK_SECTOR;
+
+  const porMarca = taxasPorM[marca]
+    ? misturarTaxa(taxasPorM[marca].n, taxasPorM[marca].media, global)
+    : global;
 
   const chaveMT = `${marca}|${tipo}`;
-  if (taxasPorMT[chaveMT] != null) return taxasPorMT[chaveMT];
+  const porMarcaTipo = taxasPorMT[chaveMT]
+    ? misturarTaxa(taxasPorMT[chaveMT].n, taxasPorMT[chaveMT].media, porMarca)
+    : porMarca;
 
-  if (taxasPorM[marca] != null) return taxasPorM[marca];
-
-  if (todasTaxas.length > 0) {
-    return todasTaxas.reduce((s, v) => s + v, 0) / todasTaxas.length;
-  }
-  return 0.08; // fallback sector pesados
+  const chaveMTP = `${marca}|${tipo}|${posic}`;
+  return taxasPorMTP[chaveMTP]
+    ? misturarTaxa(taxasPorMTP[chaveMTP].n, taxasPorMTP[chaveMTP].media, porMarcaTipo)
+    : porMarcaTipo;
 }
 
 function kmsReaisOuEstimados(pneu, todosDoCamiao, kmAtualVeiculo) {
