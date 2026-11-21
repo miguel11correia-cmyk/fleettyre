@@ -19,6 +19,18 @@ test('calcularTaxasPor — agrupa a taxa de desgaste por uma chave à escolha, d
   assert.equal(porTipo.Remix.n, 1);
 });
 
+test('calcularTaxasPor — um registo implausível (erro de registo ou rebentamento) não entra na média do seu grupo', () => {
+  const ctx = loadAppScripts(['js/utils.js', 'js/alertas.js']);
+  const dados = [
+    { tipo: 'Novo', kms_mont: 0, kms_desmont: 100000, rasto_final: 3 },  // 0.13
+    { tipo: 'Novo', kms_mont: 0, kms_desmont: 100000, rasto_final: 3 },  // 0.13
+    { tipo: 'Novo', kms_mont: 0, kms_desmont: 9000, rasto_final: 3 },    // 1.444 -- rebentamento/erro, rejeitado por taxaDesgaste
+  ];
+  const porTipo = ctx.calcularTaxasPor(dados, r => r.tipo);
+  assert.ok(Math.abs(porTipo.Novo.media - 0.13) < 1e-9, 'a média fica nos 0.13 reais, sem o registo implausível a puxá-la para cima');
+  assert.equal(porTipo.Novo.n, 2, 'só 2 registos contam -- o 3º nem chega a ser considerado');
+});
+
 // taxaEstimada deixou de trocar de nível de repente ao encontrar o
 // primeiro com 1 registo — cada nível mistura-se com o nível mais
 // geral a seguir, pesado por quanto o seu nº de registos se aproxima

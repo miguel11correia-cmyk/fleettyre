@@ -57,6 +57,16 @@ test('taxaDesgaste — (rasto inicial - final) / KMs efectuados x 1000', () => {
   assert.equal(ctx.taxaDesgaste({ tipo: 'Novo', kms_mont: 0, kms_desmont: 100000, rasto_final: 20 }), null, 'desgaste negativo (rasto final > inicial), não calcula');
 });
 
+test('taxaDesgaste — rejeita taxas fisicamente implausíveis (erro de registo ou rebentamento, não desgaste gradual)', () => {
+  const ctx = loadAppScripts(['js/utils.js']);
+  // Novo (16mm) -> 3mm final (13mm de desgaste) em só 9000km -> 1.444
+  // mm/1000km, bem acima do limite de 0.5 -- quase de certeza um erro
+  // de KMs ou um rebentamento, não desgaste normal.
+  assert.equal(ctx.taxaDesgaste({ tipo: 'Novo', kms_mont: 0, kms_desmont: 9000, rasto_final: 3 }), null);
+  // Mesmo desgaste (13mm), mas em 30000km -> 0.433, dentro do limite -> calcula normalmente.
+  assert.ok(Math.abs(ctx.taxaDesgaste({ tipo: 'Novo', kms_mont: 0, kms_desmont: 30000, rasto_final: 3 }) - 0.4333) < 1e-3);
+});
+
 test('kmsEfectuados — real quando já desmontado, estimado via km_atual quando ainda montado', () => {
   const ctx = loadAppScripts(['js/utils.js']);
   const real = ctx.kmsEfectuados({ kms_mont: 1000, kms_desmont: 5000 }, null);
