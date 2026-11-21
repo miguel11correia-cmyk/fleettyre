@@ -103,15 +103,16 @@ function escIni(tipo) {
   return 16;
 }
 
-// Acima disto, um "Novo" (16mm) chegaria a crítico (3mm) em menos de
-// 26 000km — implausível para desgaste normal de pneus de pesados.
-// Quase sempre é um erro de registo (ex: KMs trocados) ou um evento
-// catastrófico (rebentamento, picada grande) que levou à desmontagem
-// antecipada, não desgaste gradual — por isso não deve entrar nas
-// médias usadas para estimar o desgaste de outros pneus (ver
-// taxaEstimada/calcularTaxasPor, js/alertas.js). Ajustável aqui se a
-// experiência real da frota mostrar que devia ser mais alto/baixo.
-const TAXA_DESGASTE_MAX = 0.5;
+// Acima disto, um "Novo" (16mm) chegaria a crítico (3mm, 13mm de
+// desgaste) em menos de 50 000km — mínimo aceitável para desgaste
+// normal de pneus de pesados. Quase sempre é um erro de registo (ex:
+// KMs trocados) ou um evento catastrófico (rebentamento, picada
+// grande) que levou à desmontagem antecipada, não desgaste gradual —
+// por isso não deve entrar nas médias usadas para estimar o desgaste
+// de outros pneus (ver taxaEstimada/calcularTaxasPor, js/alertas.js).
+// Ajustável aqui se a experiência real da frota mostrar que devia ser
+// mais alto/baixo.
+const TAXA_DESGASTE_MAX = 0.26;
 
 function taxaDesgaste(r) {
   const kmsEf = (r.kms_desmont || 0) - (r.kms_mont || 0);
