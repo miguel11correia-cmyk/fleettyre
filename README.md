@@ -215,9 +215,11 @@ Variável de ambiente necessária no Railway: `RESEND_API_KEY`.
 
 ## Testes
 
-`npm test` (`node --test`, nativo do Node — sem dependências novas nem build step, como o resto da app). Preparado para correr automaticamente em CI a cada push/PR via `.github/workflows/tests.yml` — ver nota no topo desse ficheiro sobre como o activar.
+`npm test` (`node --test`, nativo do Node — sem dependências novas nem build step, como o resto da app). Corre automaticamente em CI a cada push para `main` e em cada PR, via `.github/workflows/tests.yml`.
 
-Cobre só a **lógica de cálculo pura** (`tests/*.test.js`) — as funções que decidem €/km, taxa de desgaste, "Mais urgente", etc., que já causaram bugs reais e silenciosos (ver "Cálculos" acima). `tests/helpers/load-app-scripts.js` carrega os ficheiros reais de `js/` para dentro de um contexto Node isolado (`vm`), para testar o código tal como ele é em produção, sem o duplicar nos testes — só funciona para ficheiros sem chamadas DOM a nível de topo (fora de funções); as funções de *render* (que escrevem `innerHTML`) continuam só verificadas manualmente no browser, como até agora.
+Cobre a **lógica de cálculo e de agregação/render** de `js/*.js` (`tests/*.test.js`): €/km e €/mês por categoria, taxa de desgaste, "Mais urgente", comparação de preços entre fornecedores, desempenho por marca, KPIs e tabelas do Início, e os geradores de linha das tabelas "Lugares"/"Histórico" (veículos e reboques). `tests/helpers/load-app-scripts.js` carrega os ficheiros reais de `js/` para dentro de um contexto Node isolado (`vm`), para testar o código tal como ele é em produção, sem o duplicar nos testes — só funciona para ficheiros sem chamadas DOM a nível de topo (fora de funções). Para as funções que escrevem `innerHTML`/`textContent`, `tests/helpers/dom-stub.js` simula o `document` minimamente (sem fazer parsing de HTML nenhum), suficiente para verificar o conteúdo gerado com regex/`includes`.
+
+**Fora do âmbito destes testes** (por ora só verificado manualmente no browser): tudo o que é assíncrono/depende do Supabase (`loadFrota`, `loadStock`, `guardarEdicaoBulk`, etc.) — precisaria de um mock do cliente `sb` ou de testes de integração contra um projecto Supabase de teste, uma abordagem diferente desta; e as Edge Functions (`supabase/functions/`), que correm em runtime Deno, não Node.
 
 Ao adicionar uma fórmula nova (custo, desgaste, comparação entre categorias/veículos/reboques), vale a pena escrever já aqui o cenário que a pode pôr em causa — foi assim que se apanhou o bug do €/km por categoria (ver `tests/custo-por-km.test.js`) e o da taxa de desgaste do "Mais urgente" (`tests/mais-urgente.test.js`).
 
