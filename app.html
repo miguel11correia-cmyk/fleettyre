@@ -1069,6 +1069,11 @@
         <div class="kpi"><div class="kpi-l">Aguardam oficina</div><div class="kpi-v" id="sk-desmont">—</div><div class="kpi-s">Remix / Rechapar / Abrir Piso / Stock</div></div>
       </div>
 
+      <!-- FATURAS — antes de "Pneus desmontados" porque os cartões de
+           destino podem crescer bastante, empurrando as faturas para
+           muito mais baixo do que deviam estar. -->
+      <div id="stock-faturas-container"></div>
+
       <!-- PNEUS DESMONTADOS EM ARMAZÉM — por destino -->
       <div class="g2" id="stock-destinos-container"></div>
 
@@ -1079,9 +1084,6 @@
           <p class="empty-msg">Nenhum pneu pronto a montar.</p>
         </div>
       </div>
-
-      <!-- FATURAS -->
-      <div id="stock-faturas-container"></div>
 
       <!-- PAINEL NOVA FATURA -->
       <div class="panel" id="painel-fatura">
