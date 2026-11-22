@@ -856,6 +856,40 @@
         <button class="btn btn-sm" onclick="loadCompras()"><svg viewBox="0 0 24 24"><use href="#icon-refresh"/></svg> Atualizar</button>
       </div>
 
+      <!-- ATRIBUIR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS — ao
+           topo, sem card, para não ficar a competir visualmente com a
+           "Visão geral"/análises abaixo; é uma ferramenta de pesquisa,
+           não uma leitura. -->
+      <div class="alo-bar-head">Atribuir preço de fatura antiga a pneus já montados</div>
+      <div class="alo-searchbar">
+        <div class="alo-tipo-toggle">
+          <button type="button" class="alo-tipo-btn active" data-tipo="veiculos" onclick="escolherTipoAlocacao('veiculos',this)">Camiões</button>
+          <button type="button" class="alo-tipo-btn" data-tipo="reboques" onclick="escolherTipoAlocacao('reboques',this)">Reboques</button>
+        </div>
+        <span class="alo-sep"></span>
+        <select id="alo-marca" data-fancy onchange="popularSelectorSubtipo('alo-marca','alo-subtipo')"><option value="">Marca</option></select>
+        <select id="alo-subtipo" data-fancy><option value="">Modelo</option></select>
+        <input type="text" id="alo-medida" placeholder="Medida">
+        <select id="alo-forn" data-fancy><option value="">Fornecedor</option></select>
+        <select id="alo-tipo" data-fancy>
+          <option value="">Tipo</option>
+          <option value="Novo">Novo</option>
+          <option value="Remix">Remix</option>
+          <option value="Rechapado">Rechapado</option>
+          <option value="Piso Aberto">Piso Aberto</option>
+        </select>
+        <div class="alo-daterange">
+          <input type="text" id="alo-mes-de" placeholder="AAAA-MM" maxlength="7" oninput="maskMesInput(this)">
+          <span class="alo-daterange-sep">–</span>
+          <input type="text" id="alo-mes-ate" placeholder="atual" maxlength="7" oninput="maskMesInput(this)">
+        </div>
+        <span class="alo-sep"></span>
+        <button class="alo-filter-clear" onclick="cancelarAlocacao()" title="Limpar filtros"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
+        <button class="alo-filter-go" onclick="procurarPneusAlocar()" title="Procurar"><svg viewBox="0 0 24 24"><use href="#icon-search"/></svg></button>
+      </div>
+      <div id="alo-feedback" class="feedback hidden"></div>
+      <div id="alo-resultados" style="margin-bottom:14px"></div>
+
       <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div class="ct" style="margin:0">Visão geral</div>
         <div class="frow" style="margin:0;max-width:200px;flex:1">
@@ -901,44 +935,6 @@
         </div>
       </div>
 
-      <!-- APLICAR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS — não é
-           stock (não mexe em armazém), é atribuição de custo a pneus
-           já activos, por isso vive aqui e não em Stock. -->
-      <div class="card">
-        <div class="ct">Atribuir preço de fatura antiga a pneus já montados</div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Procura registos de montagem que batam com uma fatura em papel, e aplica o preço a todos os selecionados de uma só vez.</p>
-        <div class="frow" style="max-width:200px;margin-bottom:10px">
-          <label>Tipo</label>
-          <select id="aloc-tipo" data-fancy onchange="escolherTipoAlocacao(this.value)">
-            <option value="veiculos">Camiões</option>
-            <option value="reboques">Reboques</option>
-          </select>
-        </div>
-        <div class="alo-searchbar">
-          <svg viewBox="0 0 24 24"><use href="#icon-search"/></svg>
-          <select id="alo-marca" data-fancy onchange="popularSelectorSubtipo('alo-marca','alo-subtipo')"><option value="">Marca</option></select>
-          <select id="alo-subtipo" data-fancy><option value="">Modelo</option></select>
-          <input type="text" id="alo-medida" placeholder="Medida">
-          <select id="alo-forn" data-fancy><option value="">Fornecedor</option></select>
-          <select id="alo-tipo" data-fancy>
-            <option value="">Tipo</option>
-            <option value="Novo">Novo</option>
-            <option value="Remix">Remix</option>
-            <option value="Rechapado">Rechapado</option>
-            <option value="Piso Aberto">Piso Aberto</option>
-          </select>
-          <div class="alo-daterange">
-            <svg viewBox="0 0 24 24"><use href="#icon-calendar"/></svg>
-            <input type="text" id="alo-mes-de" placeholder="AAAA-MM" maxlength="7" oninput="maskMesInput(this)">
-            <span class="alo-daterange-sep">–</span>
-            <input type="text" id="alo-mes-ate" placeholder="atual" maxlength="7" oninput="maskMesInput(this)">
-          </div>
-          <button class="alo-filter-clear" onclick="cancelarAlocacao()" title="Limpar filtros"><svg viewBox="0 0 24 24"><use href="#icon-x"/></svg></button>
-          <button class="alo-filter-go" onclick="procurarPneusAlocar()" title="Procurar"><svg viewBox="0 0 24 24"><use href="#icon-search"/></svg></button>
-        </div>
-        <div id="alo-feedback" class="feedback hidden"></div>
-        <div id="alo-resultados" style="margin-top:12px"></div>
-      </div>
     </div>
 
     <!-- REGISTOS — FORNECEDORES -->
