@@ -890,17 +890,6 @@
       <div id="alo-feedback" class="feedback hidden"></div>
       <div id="alo-resultados" style="margin-bottom:14px"></div>
 
-      <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <div class="ct" style="margin:0">Visão geral</div>
-        <div class="frow" style="margin:0;max-width:200px;flex:1">
-          <select id="compras-vista" data-fancy onchange="escolherVistaCompras(this.value)">
-            <option value="unificada">Visão unificada</option>
-            <option value="veiculos">Camiões</option>
-            <option value="reboques">Reboques</option>
-          </select>
-        </div>
-      </div>
-
       <div class="card">
         <div class="ct">Comparação de Preços</div>
         <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Por marca e modelo, fornecedores ordenados do mais barato ao mais caro.</p>
@@ -926,7 +915,14 @@
       </div>
 
       <div class="card">
-        <div class="ct">Desempenho por marca</div>
+        <div class="ct" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <span>Desempenho por marca</span>
+          <select id="compras-vista" data-fancy onchange="escolherVistaCompras(this.value)" style="height:26px;font-size:11px;padding:0 24px 0 8px;max-width:130px">
+            <option value="unificada">Unificada</option>
+            <option value="veiculos">Camiões</option>
+            <option value="reboques">Reboques</option>
+          </select>
+        </div>
         <div class="table-wrap">
           <table>
             <thead id="marc-thead"></thead>
