@@ -100,8 +100,10 @@ function renderStockVista() {
     const totalFat   = linhasDisp.reduce((s, l) => s + l.quantidade_disp * (l.preco_unitario || 0), 0);
     const fId        = f.id;
     // Só mostra a etiqueta de tipo quando os dois podem aparecer juntos.
+    // Ícones reais (os mesmos de "Por veículo"/"Por reboque", ver
+    // ICON_VEICULO/ICON_REBOQUE), não emojis.
     const ctxBadge = stockVista === 'unificada'
-      ? '<span style="color:var(--text3);font-size:11px;margin-left:8px">' + (f.contexto === 'reboques' ? '🔗 Reboque' : '🚛 Camião') + '</span>'
+      ? '<span style="color:var(--text3);font-size:11px;margin-left:8px;display:inline-flex;align-items:center">' + (f.contexto === 'reboques' ? ICON_REBOQUE + 'Reboque' : ICON_VEICULO + 'Camião') + '</span>'
       : '';
 
     let linhasHTML = '';
