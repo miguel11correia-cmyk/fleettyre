@@ -325,7 +325,7 @@ Esta mesma estimativa (`calcularEstimativasDesgaste`, `js/alertas.js`) alimenta 
 
 Segue o guia próprio `SKILL_design.md` (na raiz do repo). Pontos concretos já aplicados em `style.css`/`js/utils.js`:
 
-- O bloco de KPIs + gráficos de Início (`.dash-panel`, `style.css`) tem fundo e friso (vermelho da marca) próprios, com o selector "Visão geral" integrado no cabeçalho — antes eram cartões soltos directamente sobre o fundo da página, sem nada a dizer que pertenciam todos à mesma coisa.
+- O bloco de KPIs + gráficos de Início (`.dash-panel`, `style.css`) tem fundo e friso (vermelho da marca) próprios, com o selector "Visão geral" integrado no cabeçalho — antes eram cartões soltos directamente sobre o fundo da página, sem nada a dizer que pertenciam todos à mesma coisa. O rótulo "DASHBOARD" (`.dash-panel-eyebrow`) é o único título do cabeçalho (sem subtítulo por baixo), acompanhado do ícone `assets/icon-dashboard.png` — usado tal como foi fornecido, nunca redesenhado; a cor vermelha vem de o aplicar como `mask-image` com `background-color`, não de editar o PNG.
 - Painéis laterais (ex. mudar password, lugares) deslizam (`transform: translateX`) em vez de aparecer/desaparecer instantaneamente; alguns (Registar pneu) abrem antes centrados (`.panel-center`) em vez de laterais, por serem acessíveis de qualquer página, não só de uma em concreto.
 - Botões têm feedback de pressão (`:active { transform: scale(0.97) }`), excepto os itens de navegação da sidebar (clicados dezenas de vezes por dia — animá-los seria ruído, não feedback).
 - `prefers-reduced-motion` desliga estas transformações.

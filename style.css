@@ -438,18 +438,31 @@ body {
   flex-wrap: wrap;
 }
 .dash-panel-eyebrow {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--brand-red);
-  margin-bottom: 3px;
 }
-.dash-panel-head h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: -0.2px;
+/* Ícone fornecido tal como está (assets/icon-dashboard.png) — nunca
+   redesenhado; a cor vem de o usar como máscara, não de o editar. */
+.dash-panel-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  flex-shrink: 0;
+  background-color: var(--brand-red);
+  -webkit-mask-image: url('assets/icon-dashboard.png');
+  mask-image: url('assets/icon-dashboard.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 
 /* ── CARDS ────────────────────────────────────────────────────── */
