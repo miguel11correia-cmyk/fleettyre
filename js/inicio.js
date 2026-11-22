@@ -76,7 +76,7 @@ function renderInicioAtencao(criticosVeic, criticosReb) {
   const total = matsVeic.size + matsReb.size;
 
   if (total === 0) {
-    icon.textContent = '🟢';
+    icon.className = 'atencao-icon ok';
     tit.textContent  = 'Nenhum alerta crítico';
     sub.textContent  = 'Todos os pneus activos estão em bom estado.';
     btnV.classList.add('hidden');
@@ -84,7 +84,7 @@ function renderInicioAtencao(criticosVeic, criticosReb) {
     return;
   }
 
-  icon.textContent = '🔴';
+  icon.className = 'atencao-icon critico';
   tit.textContent  = total === 1 ? '1 veículo/reboque com pneus críticos' : total + ' veículos/reboques com pneus críticos';
 
   const linhas = [];

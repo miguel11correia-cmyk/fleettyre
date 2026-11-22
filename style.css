@@ -246,6 +246,22 @@ body {
 }
 .ni-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .ni-icon svg { width: 16px; height: 16px; }
+/* Ícone de Alertas fornecido como imagem — mesma técnica dos ícones
+   da sidebar (mask-image + currentColor), ver .nav-inicio-icon. */
+.ni-icon-img {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask-image: url('assets/icon-bell.png');
+  mask-image: url('assets/icon-bell.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
 
 .badge-n {
   margin-left: auto;
@@ -1334,6 +1350,52 @@ tbody tr:hover td { background: var(--bg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .live-dot::after { animation: none; }
+}
+
+/* Ícone do cartão "Precisa da tua atenção" (Início) — sino fornecido
+   como imagem (assets/icon-bell.png), tal como está, via mask-image;
+   crítico pulsa a vermelho (chama a atenção), ok fica verde parado
+   (não é um alerta, não precisa de pulsar). */
+.atencao-icon {
+  --icon: url('assets/icon-bell.png');
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  position: relative;
+  background-color: var(--text3);
+  -webkit-mask-image: var(--icon);
+  mask-image: var(--icon);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+.atencao-icon.critico { background-color: var(--red); }
+.atencao-icon.ok      { background-color: var(--green); }
+.atencao-icon.critico::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: inherit;
+  -webkit-mask-image: var(--icon);
+  mask-image: var(--icon);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  animation: atencao-pulse 1.8s ease-out infinite;
+}
+@keyframes atencao-pulse {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atencao-icon.critico::after { animation: none; }
 }
 
 /* ── CONFIRMAR SAIR ───────────────────────────────────────────── */
