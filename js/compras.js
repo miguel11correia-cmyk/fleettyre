@@ -251,8 +251,11 @@ let alocSelecionados = new Set();
 // tecto for mesmo atingido, é preciso avisar — ver renderAlocResultados.
 const ALOC_LIMITE_RESULTADOS = 300;
 
-function escolherTipoAlocacao(v) {
+function escolherTipoAlocacao(v, btn) {
   alocTipo = v;
+  if (btn) {
+    btn.parentElement.querySelectorAll('.alo-tipo-btn').forEach(b => b.classList.toggle('active', b === btn));
+  }
   cancelarAlocacao();
 }
 
