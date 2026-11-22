@@ -604,6 +604,13 @@ input[type="number"].qty-spin::-webkit-outer-spin-button {
 }
 .fsel-list {
   position: fixed;
+  /* custom-select.js dá-lhe a mesma largura do trigger que a abriu —
+     a maioria dos triggers já é larga o suficiente, mas um trigger
+     deliberadamente estreito (ex: pill da barra de pesquisa de
+     compras.js) cortaria o texto das opções sem este mínimo. A lista é
+     anexada directamente a <body> (não é descendente do trigger), por
+     isso o mínimo tem de estar aqui, não num selector com âmbito. */
+  min-width: 170px;
   max-height: 260px;
   overflow-y: auto;
   background: rgba(255,255,255,0.92);
@@ -1051,21 +1058,60 @@ tbody tr:hover td { background: var(--bg); }
 .lsq { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
 
 /* ── ALOCAR FATURA ANTIGA (resultados de pesquisa) ───────────────── */
-/* Barra decorativa — não é um campo de texto, só dá ao cartão a
-   identidade visual de "pesquisa" antes dos filtros reais abaixo. */
+/* Barra de pesquisa interactiva — todos os filtros vivem dentro dela
+   (em vez de campos empilhados por baixo), cada um um "fsel"/input
+   compacto; a lupa no fim é o próprio botão de procurar, não um
+   elemento decorativo. Os componentes de dentro (selects data-fancy,
+   alo-daterange) são os mesmos usados no resto da app — só o
+   dimensionamento muda aqui, para caberem numa única linha. */
 .alo-searchbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
+  gap: 6px;
+  padding: 6px 6px 6px 12px;
   background: var(--bg2);
   border: 0.5px solid var(--border);
   border-radius: 999px;
-  color: var(--text3);
-  font-size: 12.5px;
   margin-bottom: 14px;
+  flex-wrap: wrap;
 }
-.alo-searchbar svg { width: 15px; height: 15px; flex-shrink: 0; }
+.alo-searchbar > svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--text3); }
+.alo-searchbar .fsel { width: auto; flex: 0 0 auto; }
+.alo-searchbar .fsel-trigger {
+  width: auto; min-width: 64px; max-width: 120px;
+  height: 28px; padding: 0 22px 0 10px;
+  border-radius: 999px; font-size: 11.5px;
+  background-size: 11px 11px; background-position: right 7px center;
+}
+.alo-searchbar input[type="text"] {
+  height: 28px; width: 86px; flex-shrink: 0;
+  border-radius: 999px; font-size: 11.5px; padding: 0 12px;
+}
+.alo-filter-clear, .alo-filter-go {
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; border: none; cursor: pointer;
+  transition: background-color 120ms ease, transform 120ms var(--ease-out);
+}
+.alo-filter-clear {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: none; color: var(--text3);
+}
+@media (hover: hover) and (pointer: fine) {
+  .alo-filter-clear:hover { background: var(--border); color: var(--text); }
+}
+.alo-filter-clear:active { transform: scale(0.9); }
+.alo-filter-clear svg { width: 13px; height: 13px; }
+.alo-filter-go {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--surface); color: var(--text2);
+  border: 0.5px solid var(--border2);
+  margin-left: auto;
+}
+@media (hover: hover) and (pointer: fine) {
+  .alo-filter-go:hover { background: var(--bg2); color: var(--text); }
+}
+.alo-filter-go:active { transform: scale(0.92); }
+.alo-filter-go svg { width: 14px; height: 14px; }
 /* Um único campo visual para o intervalo de meses — dois inputs sem
    borda própria dentro de um invólucro comum, para não parecerem
    dois campos separados. */
@@ -1073,29 +1119,31 @@ tbody tr:hover td { background: var(--bg); }
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 34px;
+  height: 28px;
   padding: 0 10px;
   border: 0.5px solid var(--border2);
-  border-radius: var(--radius);
+  border-radius: 999px;
   background: var(--surface);
   color: var(--text3);
+  flex-shrink: 0;
   transition: border-color .15s, box-shadow .15s;
 }
 .alo-daterange:focus-within {
   border-color: #71717a;
   box-shadow: 0 0 0 3px rgba(113,113,122,0.10);
 }
-.alo-daterange svg { width: 15px; height: 15px; flex-shrink: 0; }
+.alo-daterange svg { width: 14px; height: 14px; flex-shrink: 0; }
 .alo-daterange input {
   border: none;
   padding: 0;
   height: auto;
-  width: 68px;
+  width: 58px;
+  font-size: 11.5px;
   flex-shrink: 0;
   text-align: center;
 }
 .alo-daterange input:focus { outline: none; box-shadow: none; border-color: transparent; }
-.alo-daterange-sep { font-size: 11px; flex-shrink: 0; }
+.alo-daterange-sep { font-size: 10.5px; flex-shrink: 0; }
 .alo-summary { font-size: 11.5px; color: var(--text2); margin-bottom: 8px; }
 .alo-summary-aviso { color: var(--amber); font-weight: 500; }
 .alo-list {
