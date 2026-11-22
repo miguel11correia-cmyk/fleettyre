@@ -22,7 +22,7 @@ const { loadAppScripts } = require('./helpers/load-app-scripts');
 const { criarDomStub } = require('./helpers/dom-stub');
 
 function carregar(document) {
-  const ctx = loadAppScripts(['js/utils.js', 'js/compras.js', 'js/pdf-anexo.js', 'js/stock.js'], { document });
+  const ctx = loadAppScripts(['js/utils.js', 'js/frota.js', 'js/compras.js', 'js/pdf-anexo.js', 'js/reboques/frota_r.js', 'js/stock.js'], { document });
   vm.runInContext(
     'globalThis.__setStockDados = (fV, fR, dV, dR) => { stockFaturasVeic = fV; stockFaturasReb = fR; stockDesmontadosVeic = dV; stockDesmontadosReb = dR; };',
     ctx
@@ -95,8 +95,8 @@ test('renderStockVista — vista "unificada": combina faturas/desmontados de ve�
   assert.equal(dom.obter('sk-valor').textContent, '€ 800,00', '4x100 (veículos) + 2x200 (reboques) = 800');
 
   const html = dom.obter('stock-faturas-container').innerHTML;
-  assert.match(html, /🚛 Camião/);
-  assert.match(html, /🔗 Reboque/);
+  assert.match(html, /icon-truck[\s\S]*?Camião/, 'usa o ícone real (ICON_VEICULO), não um emoji');
+  assert.match(html, /icon-trailer[\s\S]*?Reboque/, 'usa o ícone real (ICON_REBOQUE), não um emoji');
 });
 
 test('renderStockVista — vistas específicas (não unificada) não mostram o selo de tipo nas faturas', () => {
@@ -106,5 +106,5 @@ test('renderStockVista — vistas específicas (não unificada) não mostram o s
   ctx.__setStockDados([faturaV], [], [], []);
   ctx.escolherVistaStock('veiculos');
   const html = dom.obter('stock-faturas-container').innerHTML;
-  assert.doesNotMatch(html, /🚛 Camião|🔗 Reboque/, 'sem ambiguidade a resolver, o selo seria ruído');
+  assert.doesNotMatch(html, /icon-truck|icon-trailer/, 'sem ambiguidade a resolver, o selo seria ruído');
 });
