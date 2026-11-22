@@ -232,6 +232,162 @@ function renderDesempenhoMarcasDetalhe(thead, tbody, dados, modo) {
       </tr>`).join('');
 }
 
+// ── APLICAR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS ──────────────
+// Fluxo: o utilizador tem uma fatura em papel (marca/medida/fornecedor/
+// mês) sem veículo associado, porque foi comprada avulso. Em vez de
+// procurar manualmente em "Por veículo" pneu a pneu, pesquisa aqui
+// os registos de montagem que batem com essas condições e aplica o
+// preço da fatura a todos os selecionados de uma só vez. Vive aqui
+// (não em Stock) porque não mexe em armazém — é atribuição de custo a
+// pneus JÁ montados/activos.
+
+let alocTipo = 'veiculos'; // 'veiculos' | 'reboques' -- qual tabela pesquisar
+let alocResultados = [];
+let alocSelecionados = new Set();
+
+// Tecto intencional de resultados — isto é uma pesquisa para
+// selecionar à mão, não uma listagem que tenha de estar sempre
+// completa (ao contrário dos gráficos/totais do Dashboard). Mas se o
+// tecto for mesmo atingido, é preciso avisar — ver renderAlocResultados.
+const ALOC_LIMITE_RESULTADOS = 300;
+
+function escolherTipoAlocacao(v) {
+  alocTipo = v;
+  cancelarAlocacao();
+}
+
+function cancelarAlocacao() {
+  ['alo-marca', 'alo-subtipo', 'alo-medida', 'alo-forn', 'alo-tipo', 'alo-mes-de', 'alo-mes-ate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  alocResultados = [];
+  alocSelecionados = new Set();
+  document.getElementById('alo-resultados').innerHTML = '';
+  document.getElementById('alo-feedback').classList.add('hidden');
+}
+
+async function procurarPneusAlocar() {
+  const marca   = document.getElementById('alo-marca').value.trim();
+  const subtipo = document.getElementById('alo-subtipo').value;
+  const medida  = document.getElementById('alo-medida').value.trim();
+  const forn    = document.getElementById('alo-forn').value.trim();
+  const tipo    = document.getElementById('alo-tipo').value;
+  const mesDe   = document.getElementById('alo-mes-de').value.trim();
+  const mesAte  = document.getElementById('alo-mes-ate').value.trim();
+
+  if (!marca && !subtipo && !medida && !forn && !tipo && !mesDe && !mesAte) {
+    showFeedback('alo-feedback', 'Preenche pelo menos um critério de pesquisa.', true);
+    return;
+  }
+  if (mesDe && !/^\d{4}-\d{2}$/.test(mesDe)) {
+    showFeedback('alo-feedback', 'Mês (de) inválido. Usa o formato AAAA-MM.', true);
+    return;
+  }
+  if (mesAte && !/^\d{4}-\d{2}$/.test(mesAte)) {
+    showFeedback('alo-feedback', 'Mês (até) inválido. Usa o formato AAAA-MM.', true);
+    return;
+  }
+
+  const tabela = alocTipo === 'reboques' ? 'reboques' : 'pneus';
+  let query = sb.from(tabela).select('*').eq('empresa_id', currentEmpresaId);
+  if (marca)   query = query.ilike('marca', marca);
+  if (subtipo) query = query.eq('subtipo', subtipo);
+  if (medida)  query = query.ilike('medida', '%' + medida + '%');
+  if (forn)    query = query.ilike('fornecedor', forn);
+  if (tipo)    query = query.eq('tipo', tipo);
+  // Intervalo inclusivo [de, até]. Sem "até", vai até ao mês atual em
+  // vez de ficar preso ao mês "de" (era esse o bug: sem data final,
+  // aplicava-se gte(de) E lte(de), o que só devolvia esse mês exato).
+  if (mesDe || mesAte) {
+    query = query.gte('mes_mont', mesDe || '0000-01');
+    query = query.lte('mes_mont', mesAte || mesAtual());
+  }
+
+  loading(true);
+  const { data, error } = await query.order('mes_mont', { ascending: false }).limit(ALOC_LIMITE_RESULTADOS);
+  loading(false);
+
+  if (error) { showFeedback('alo-feedback', 'Erro na pesquisa.', true); return; }
+
+  alocResultados = data || [];
+  alocSelecionados = new Set();
+  renderAlocResultados();
+}
+
+function renderAlocResultados() {
+  const container = document.getElementById('alo-resultados');
+  if (alocResultados.length === 0) {
+    container.innerHTML = '<p class="empty-msg">Nenhum pneu montado corresponde a estes critérios.</p>';
+    return;
+  }
+
+  const count = alocSelecionados.size;
+  const atingiuTecto = alocResultados.length >= ALOC_LIMITE_RESULTADOS;
+  let html = atingiuTecto
+    ? '<div class="alo-summary alo-summary-aviso">⚠ ' + alocResultados.length + '+ pneus encontrados — a mostrar só os ' + ALOC_LIMITE_RESULTADOS + ' mais recentes. Restringe a pesquisa (ex: um intervalo de meses mais curto) para veres os restantes.</div>'
+    : '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ': seleciona os que correspondem à fatura</div>';
+  html += '<div class="alo-list">';
+  alocResultados.forEach(r => {
+    const sel = alocSelecionados.has(r.id);
+    const pos = r.posicao || (r.eixo ? 'Eixo ' + r.eixo : '—');
+    const custoTxt = r.custo_pneu > 0
+      ? '<span class="alo-custo alo-custo-atual">' + fmtEur(r.custo_pneu) + '</span>'
+      : '<span class="alo-custo alo-custo-vazio">sem custo</span>';
+    html += '<div class="alo-row' + (sel ? ' selected' : '') + '" data-id="' + r.id + '" onclick="toggleAlocSel(' + r.id + ')">'
+      + '<span class="alo-check"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></span>'
+      + '<span class="alo-info"><strong>' + r.matricula + '</strong> · ' + pos + ' · ' + (r.marca || '—') + ' ' + (r.medida || '') + (r.subtipo ? ' ' + r.subtipo : '') + ' · ' + tipoBadge(r.tipo) + ' · ' + (r.mes_mont || '—') + (r.fornecedor ? ' · ' + r.fornecedor : '') + '</span>'
+      + custoTxt
+      + '</div>';
+  });
+  html += '</div>';
+  html += '<div class="alo-apply">'
+    + '<div class="frow" style="margin:0"><label>Preço unitário do pneu (€)</label><input type="number" id="alo-preco" min="0" step="0.01" placeholder="ex: 320"></div>'
+    + '<div class="frow" style="margin:0"><label>Custo mão de obra (€, opcional)</label><input type="number" id="alo-mo" min="0" step="0.01" placeholder="ex: 15"></div>'
+    + '<button class="btn btn-p" id="alo-btn-aplicar" onclick="aplicarPrecoAosSelecionados()"' + (count === 0 ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg> Aplicar a <span id="alo-count">' + count + '</span> selecionados</button>'
+    + '</div>';
+  container.innerHTML = html;
+}
+
+function toggleAlocSel(id) {
+  const row = document.querySelector('.alo-row[data-id="' + id + '"]');
+  if (alocSelecionados.has(id)) { alocSelecionados.delete(id); row.classList.remove('selected'); }
+  else { alocSelecionados.add(id); row.classList.add('selected'); }
+  const count = alocSelecionados.size;
+  document.getElementById('alo-count').textContent = count;
+  document.getElementById('alo-btn-aplicar').disabled = count === 0;
+}
+
+async function aplicarPrecoAosSelecionados() {
+  const preco = parseFloat(document.getElementById('alo-preco').value);
+  const mo = parseFloat(document.getElementById('alo-mo').value) || 0;
+
+  if (!Number.isFinite(preco) || preco <= 0) {
+    showFeedback('alo-feedback', 'Indica um preço unitário válido.', true);
+    return;
+  }
+  if (alocSelecionados.size === 0) return;
+
+  const ids = Array.from(alocSelecionados);
+  const aviso = 'Aplicar ' + fmtEur(preco) + (mo > 0 ? ' + ' + fmtEur(mo) + ' de mão de obra' : '') + ' a ' + ids.length + ' pneu' + (ids.length === 1 ? '' : 's') + '? Isto substitui o custo atual, se já existir algum.';
+  if (!confirm(aviso)) return;
+
+  const tabela = alocTipo === 'reboques' ? 'reboques' : 'pneus';
+  const updates = { custo_pneu: preco };
+  if (mo > 0) updates.custo_mo = mo;
+
+  loading(true);
+  const { error } = await sb.from(tabela).update(updates).in('id', ids);
+  loading(false);
+
+  if (error) { showFeedback('alo-feedback', 'Erro ao aplicar o preço.', true); return; }
+
+  alocResultados.forEach(r => { if (alocSelecionados.has(r.id)) { r.custo_pneu = preco; if (mo > 0) r.custo_mo = mo; } });
+  alocSelecionados = new Set();
+  showFeedback('alo-feedback', 'Preço aplicado a ' + ids.length + ' pneu' + (ids.length === 1 ? '' : 's') + '.');
+  renderAlocResultados();
+}
+
 // ── GESTÃO (Configuração > Fornecedores) ─────────────────────────────
 
 let listaFornecedores = [];
@@ -255,7 +411,7 @@ function preencherSelectores() {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    const placeholder = id === 'alo-forn' ? '— todos —' : id === 'be-forn' ? '— manter —' : '— selecionar —';
+    const placeholder = id === 'alo-forn' ? 'Fornecedor' : id === 'be-forn' ? '— manter —' : '— selecionar —';
     // "PARQUE" é uma opção fixa da app (não um fornecedor registado) —
     // indica que o pneu já estava na frota antes de haver registo de
     // fornecedor, por isso aparece sempre, a cinzento, e não entra na
@@ -269,7 +425,7 @@ function preencherSelectores() {
     const el = document.getElementById(id);
     if (!el) return;
     const val = el.value;
-    const placeholder = id === 'alo-marca' ? '— todas —' : id === 'be-marca' ? '— manter —' : '— selecionar —';
+    const placeholder = id === 'alo-marca' ? 'Marca' : id === 'be-marca' ? '— manter —' : '— selecionar —';
     el.innerHTML = `<option value="">${placeholder}</option>` +
       listaMarcas.map(m => `<option value="${m.nome}" ${m.nome === val ? 'selected' : ''}>${m.codigo} · ${m.nome}</option>`).join('');
   });

@@ -21,7 +21,8 @@ const { criarDomStub } = require('./helpers/dom-stub');
 function carregar(document) {
   const ctx = loadAppScripts(['js/utils.js', 'js/compras.js'], { document });
   vm.runInContext(
-    'globalThis.__setDadosCompras = (veic, reb) => { fornDadosVeic = veic; fornDadosReb = reb; };',
+    'globalThis.__setDadosCompras = (veic, reb) => { fornDadosVeic = veic; fornDadosReb = reb; };' +
+    'globalThis.__setAloc = (r, s) => { alocResultados = r; alocSelecionados = s; };',
     ctx
   );
   return ctx;
@@ -122,4 +123,48 @@ test('registosCompletosVeiculos/Reboques — só entram registos desmontados com
 
   const tbody = dom.obter('marc-tbody').innerHTML;
   assert.match(tbody, /Sem registos desmontados/);
+});
+
+// "Atribuir preço de fatura antiga a pneus já montados" — mudou-se de
+// stock.js para aqui (não é stock, é atribuição de custo a pneus já
+// activos). alocTipo substitui o antigo stockContexto (ver
+// escolherTipoAlocacao), para decidir se a pesquisa é à tabela
+// 'pneus' ou 'reboques'.
+test('renderAlocResultados — mostra o resumo normal, ou o aviso de tecto quando atinge o limite de 300 resultados', () => {
+  const dom = criarDomStub();
+  const ctx = carregar(dom.document);
+
+  const umPneu = [{ id: 1, matricula: 'AA-00-AA', marca: 'MICHELIN', tipo: 'Novo', mes_mont: '2026-01', custo_pneu: 0 }];
+  ctx.__setAloc(umPneu, new Set());
+  ctx.renderAlocResultados();
+  let html = dom.obter('alo-resultados').innerHTML;
+  assert.match(html, /1 pneu encontrado/);
+  assert.doesNotMatch(html, /mais recentes/, 'abaixo do tecto, sem aviso de limite');
+  assert.match(html, /disabled/, 'nenhum seleccionado -> botão de aplicar desactivado');
+
+  const trezentos = Array.from({ length: 300 }, (_, i) => ({ id: i, matricula: 'X-' + i, marca: 'M', tipo: 'Novo', mes_mont: '2026-01' }));
+  ctx.__setAloc(trezentos, new Set([0, 1]));
+  ctx.renderAlocResultados();
+  html = dom.obter('alo-resultados').innerHTML;
+  assert.match(html, /300\+ pneus encontrados[\s\S]*?mais recentes/, 'no tecto exacto, mostra o aviso de limite');
+  assert.doesNotMatch(html, />2<\s*disabled|disabled[\s\S]*?>2</, 'com 2 seleccionados, o botão não fica desactivado');
+});
+
+test('renderAlocResultados — sem resultados, mostra a mensagem vazia', () => {
+  const dom = criarDomStub();
+  const ctx = carregar(dom.document);
+  ctx.__setAloc([], new Set());
+  ctx.renderAlocResultados();
+  assert.match(dom.obter('alo-resultados').innerHTML, /Nenhum pneu montado corresponde/);
+});
+
+test('escolherTipoAlocacao — trocar de Camiões para Reboques limpa a pesquisa anterior (evita aplicar a um resultado da tabela errada)', () => {
+  const dom = criarDomStub();
+  const ctx = carregar(dom.document);
+  ctx.__setAloc([{ id: 1, matricula: 'AA' }], new Set([1]));
+  ctx.renderAlocResultados();
+  assert.match(dom.obter('alo-resultados').innerHTML, /1 pneu encontrado/);
+
+  ctx.escolherTipoAlocacao('reboques');
+  assert.equal(dom.obter('alo-resultados').innerHTML, '', 'cancelarAlocacao esvazia os resultados ao trocar de tipo');
 });

@@ -2,38 +2,69 @@
 // stockLinhaSelId, stockDesmontadoSelId declarados em config.js
 
 let linhasFatura  = [];
-let stockContexto = 'veiculos'; // definido pelo nav antes de loadStock()
+let stockVista    = 'unificada'; // 'veiculos' | 'reboques' | 'unificada' — ver padrão em compras.js/inicio.js
+let stockFaturasVeic     = [];
+let stockFaturasReb      = [];
+let stockDesmontadosVeic = [];
+let stockDesmontadosReb  = [];
 
 // Destinos que implicam trabalho de oficina antes de estarem prontos a montar.
 // 'Stock' está sempre pronto por definição (não precisa de confirmação).
 const DESTINOS_OFICINA = ['Abrir Piso', 'Remix', 'Rechapar'];
 
 // ── CARREGAR STOCK ────────────────────────────────────────────────
+// Página partilhada entre veículos e reboques (um fornecedor ou uma
+// fatura de stock é o mesmo conceito independentemente do destino) —
+// mesmo padrão de "Visão geral" usado em compras.js/inicio.js: busca
+// sempre os dois contextos de uma vez, e a vista escolhida só decide
+// como combinar o que já está em memória, sem nova busca ao Supabase.
 
-async function loadStock() {
+async function loadStock(vistaInicial) {
+  if (vistaInicial) stockVista = vistaInicial;
+  const sel = document.getElementById('stock-vista');
+  if (sel) sel.value = stockVista;
+
   loading(true);
-
-  const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
-
-  const [resFaturas, resDesmontados] = await Promise.all([
-    sb.from('stock_faturas')
-      .select('*, stock_linhas(*)')
-      .eq('contexto', stockContexto)
-      .eq('empresa_id', currentEmpresaId)
-      .order('created_at', { ascending: false }),
-    sb.from(tabela)
-      .select('*')
-      .in('destino', [...DESTINOS_OFICINA, 'Stock'])
-      .not('mes_desmont', 'is', null)
-      .eq('remontado', false)
-      .eq('empresa_id', currentEmpresaId)
-      .order('mes_desmont', { ascending: false })
+  const [resFaturasV, resFaturasR, resDV, resDR] = await Promise.all([
+    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto', 'veiculos').eq('empresa_id', currentEmpresaId).order('created_at', { ascending: false }),
+    sb.from('stock_faturas').select('*, stock_linhas(*)').eq('contexto', 'reboques').eq('empresa_id', currentEmpresaId).order('created_at', { ascending: false }),
+    fetchAllRows(() => sb.from('pneus').select('*')
+      .in('destino', [...DESTINOS_OFICINA, 'Stock']).not('mes_desmont', 'is', null).eq('remontado', false).eq('empresa_id', currentEmpresaId)
+      .order('mes_desmont', { ascending: false })),
+    fetchAllRows(() => sb.from('reboques').select('*')
+      .in('destino', [...DESTINOS_OFICINA, 'Stock']).not('mes_desmont', 'is', null).eq('remontado', false).eq('empresa_id', currentEmpresaId)
+      .order('mes_desmont', { ascending: false })),
   ]);
-
   loading(false);
 
-  const faturas     = resFaturas.data     || [];
-  const desmontados = resDesmontados.data || [];
+  stockFaturasVeic     = resFaturasV.data || [];
+  stockFaturasReb      = resFaturasR.data || [];
+  stockDesmontadosVeic = resDV.data || [];
+  stockDesmontadosReb  = resDR.data || [];
+
+  renderStockVista();
+}
+
+function escolherVistaStock(v) {
+  stockVista = v;
+  renderStockVista();
+}
+
+function renderStockVista() {
+  const faturas = stockVista === 'veiculos' ? stockFaturasVeic
+                : stockVista === 'reboques' ? stockFaturasReb
+                : [...stockFaturasVeic, ...stockFaturasReb];
+
+  // Cada pneu/reboque desmontado fica marcado com a tabela a que
+  // pertence — necessário na vista unificada, onde a mesma lista
+  // junta registos das duas tabelas (ações como "Desfazer" ou anexar
+  // PDF têm de saber a qual delas atualizar).
+  const desmontados = stockVista === 'veiculos' ? stockDesmontadosVeic.map(r => ({ ...r, _tabela: 'pneus' }))
+                     : stockVista === 'reboques' ? stockDesmontadosReb.map(r => ({ ...r, _tabela: 'reboques' }))
+                     : [
+                         ...stockDesmontadosVeic.map(r => ({ ...r, _tabela: 'pneus' })),
+                         ...stockDesmontadosReb.map(r => ({ ...r, _tabela: 'reboques' })),
+                       ];
 
   // KPIs
   const faturasAtivas = faturas.filter(f =>
@@ -54,7 +85,7 @@ async function loadStock() {
   if (skD) skD.textContent = desmontados.filter(r => !r.pronto).length;
 
   // Pneus desmontados
-  renderStockDesmontados(desmontados, tabela);
+  renderStockDesmontados(desmontados);
 
   // Faturas
   const container = document.getElementById('stock-faturas-container');
@@ -68,6 +99,10 @@ async function loadStock() {
     const linhasDisp = f.stock_linhas.filter(l => l.quantidade_disp > 0);
     const totalFat   = linhasDisp.reduce((s, l) => s + l.quantidade_disp * (l.preco_unitario || 0), 0);
     const fId        = f.id;
+    // Só mostra a etiqueta de tipo quando os dois podem aparecer juntos.
+    const ctxBadge = stockVista === 'unificada'
+      ? '<span style="color:var(--text3);font-size:11px;margin-left:8px">' + (f.contexto === 'reboques' ? '🔗 Reboque' : '🚛 Camião') + '</span>'
+      : '';
 
     let linhasHTML = '';
     linhasDisp.forEach(l => {
@@ -90,6 +125,7 @@ async function loadStock() {
     html += '<span style="font-size:14px;font-weight:500">📄 ' + f.num_fatura + '</span>';
     html += '<span style="color:var(--text2);font-size:12px;margin-left:10px">' + f.fornecedor + '</span>';
     if (f.data_fatura) html += '<span style="color:var(--text3);font-size:11px;margin-left:8px">' + f.data_fatura + '</span>';
+    html += ctxBadge;
     html += '</div>';
     html += '<div style="display:flex;align-items:center;gap:10px">';
     html += '<span style="font-size:12px;font-weight:500;color:var(--amber)">' + fmtEur(totalFat) + ' em stock</span>';
@@ -117,7 +153,7 @@ const DESTINOS_CARTAO = [
   { destino: 'Stock',      icone: '<svg viewBox="0 0 640 640" style="width:14px;height:14px;vertical-align:-2px"><use href="#icon-warehouse"/></svg>', cls: 'b-novo' },
 ];
 
-function renderStockDesmontados(pneus, tabela) {
+function renderStockDesmontados(pneus) {
   const destinos  = document.getElementById('stock-destinos-container');
   const prontosEl = document.getElementById('stock-prontos-container');
   if (!destinos || !prontosEl) return;
@@ -130,7 +166,7 @@ function renderStockDesmontados(pneus, tabela) {
     const doDestino = pendentes.filter(r => r.destino === d.destino);
     const linhas = doDestino.length === 0
       ? '<p class="empty-msg" style="padding:8px 0">Nada pendente.</p>'
-      : doDestino.map(r => linhaPendenteStock(r, tabela, optsForn)).join('');
+      : doDestino.map(r => linhaPendenteStock(r, optsForn)).join('');
     return '<div class="card" style="margin-bottom:0">'
       + '<div class="ct">' + d.icone + ' ' + d.destino + ' <span class="badge ' + d.cls + '" style="margin-left:4px">' + doDestino.length + '</span></div>'
       + linhas
@@ -145,7 +181,7 @@ function renderStockDesmontados(pneus, tabela) {
   let html = '<div class="table-wrap"><table style="min-width:1200px">';
   html += '<thead><tr><th>Matrícula</th><th>Mês desmont.</th><th>Posição</th><th>Marca</th><th>Medida</th><th>Tipo</th><th>Destino</th><th>Fornecedor / Custo</th><th>Duração</th><th>Ação</th></tr></thead><tbody>';
   prontos.forEach(r => {
-    const duracao = tabela === 'pneus'
+    const duracao = r._tabela === 'pneus'
       ? (r.kms_desmont && r.kms_mont ? fmt(r.kms_desmont - r.kms_mont) + ' km' : '—')
       : (r.mes_desmont && r.mes_mont ? mesesEntre(r.mes_mont, r.mes_desmont) + ' meses' : '—');
     const destCls = (DESTINOS_CARTAO.find(d => d.destino === r.destino) || {}).cls || 'b-remix';
@@ -162,8 +198,8 @@ function renderStockDesmontados(pneus, tabela) {
       + '<td style="font-size:11px;color:var(--text2)">' + fornCusto + '</td>'
       + '<td>' + duracao + '</td>'
       + '<td style="white-space:nowrap">'
-      + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button> '
-      + pdfAnexoBtnHtml(tabela, r.id, r.pdf_path, 'loadStock', 'width:22px;height:22px;vertical-align:middle')
+      + '<button class="btn btn-sm" onclick="marcarProntoDesmontado(' + r.id + ',\'' + r._tabela + '\',false)" style="height:22px;padding:0 6px;font-size:10px">Desfazer</button> '
+      + pdfAnexoBtnHtml(r._tabela, r.id, r.pdf_path, 'loadStock', 'width:22px;height:22px;vertical-align:middle')
       + '</td>'
       + '</tr>';
   });
@@ -171,7 +207,7 @@ function renderStockDesmontados(pneus, tabela) {
   prontosEl.innerHTML = html;
 }
 
-function linhaPendenteStock(r, tabela, optsForn) {
+function linhaPendenteStock(r, optsForn) {
   const escStr = r.rasto_final != null ? r.rasto_final + ' mm' : '—';
   return '<div style="border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;margin-bottom:6px">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px">'
@@ -181,8 +217,8 @@ function linhaPendenteStock(r, tabela, optsForn) {
     + '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">'
     + '<select id="forn-pronto-' + r.id + '" style="height:24px;font-size:10px;padding:0 2px;border:0.5px solid var(--border2);border-radius:4px;flex:1;min-width:90px">' + optsForn + '</select>'
     + '<input type="number" id="custo-pronto-' + r.id + '" placeholder="€ serviço" min="0" step="0.01" style="width:76px;height:24px;font-size:10px;padding:0 4px;border:0.5px solid var(--border2);border-radius:4px">'
-    + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + tabela + '\',true)" style="height:24px;padding:0 8px;font-size:10px;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:11px;height:11px"><use href="#icon-check"/></svg> Pronto</button>'
-    + pdfAnexoBtnHtml(tabela, r.id, r.pdf_path, 'loadStock', 'width:24px;height:24px')
+    + '<button class="btn btn-p" onclick="marcarProntoDesmontado(' + r.id + ',\'' + r._tabela + '\',true)" style="height:24px;padding:0 8px;font-size:10px;flex-shrink:0"><svg viewBox="0 0 24 24" style="width:11px;height:11px"><use href="#icon-check"/></svg> Pronto</button>'
+    + pdfAnexoBtnHtml(r._tabela, r.id, r.pdf_path, 'loadStock', 'width:24px;height:24px')
     + '</div>'
     + '</div>';
 }
@@ -219,6 +255,11 @@ function abrirNovaFatura() {
   ['f-num','f-forn','f-data','f-notas'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  // Pré-preenche com a vista actual quando é uma das específicas — em
+  // "unificada" não há ambiguidade a resolver por omissão, fica em
+  // "Camiões" (1ª opção do select) e o utilizador escolhe explicitamente.
+  const contextoEl = document.getElementById('f-contexto');
+  if (contextoEl) contextoEl.value = stockVista === 'reboques' ? 'reboques' : 'veiculos';
   const fb = document.getElementById('f-feedback');
   if (fb) fb.classList.add('hidden');
   renderLinhasFatura();
@@ -283,6 +324,7 @@ function renderLinhasFatura() {
 }
 
 async function guardarFatura() {
+  const contexto = document.getElementById('f-contexto').value;
   const numFat = document.getElementById('f-num').value.trim().toUpperCase();
   const forn   = document.getElementById('f-forn').value;
   const data   = document.getElementById('f-data').value.trim() || null;
@@ -300,7 +342,7 @@ async function guardarFatura() {
   loading(true);
   const { data: faturaData, error: errF } = await sb
     .from('stock_faturas')
-    .insert([{ empresa_id: currentEmpresaId, num_fatura: numFat, fornecedor: forn, data_fatura: data, notas, contexto: stockContexto }])
+    .insert([{ empresa_id: currentEmpresaId, num_fatura: numFat, fornecedor: forn, data_fatura: data, notas, contexto }])
     .select().single();
 
   if (errF) { loading(false); showFeedback('f-feedback', 'Erro: ' + errF.message, true); return; }
@@ -437,153 +479,9 @@ async function abrirSelStock() {
   document.getElementById('stock-overlay').style.display = 'block';
 }
 
-// ── APLICAR PREÇO DE FATURA ANTIGA A PNEUS JÁ MONTADOS ──────────────
-// Fluxo: o utilizador tem uma fatura em papel (marca/medida/fornecedor/
-// mês) sem veículo associado, porque foi comprada avulso. Em vez de
-// procurar manualmente em "Por veículo" pneu a pneu, pesquisa aqui
-// os registos de montagem que batem com essas condições e aplica o
-// preço da fatura a todos os selecionados de uma só vez.
-
-let alocResultados = [];
-let alocSelecionados = new Set();
-
-// Tecto intencional de resultados — isto é uma pesquisa para
-// selecionar à mão, não uma listagem que tenha de estar sempre
-// completa (ao contrário dos gráficos/totais do Dashboard). Mas se o
-// tecto for mesmo atingido, é preciso avisar — ver renderAlocResultados.
-const ALOC_LIMITE_RESULTADOS = 300;
-
-function cancelarAlocacao() {
-  ['alo-marca', 'alo-subtipo', 'alo-medida', 'alo-forn', 'alo-tipo', 'alo-mes-de', 'alo-mes-ate'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  alocResultados = [];
-  alocSelecionados = new Set();
-  document.getElementById('alo-resultados').innerHTML = '';
-  document.getElementById('alo-feedback').classList.add('hidden');
-}
-
-async function procurarPneusAlocar() {
-  const marca   = document.getElementById('alo-marca').value.trim();
-  const subtipo = document.getElementById('alo-subtipo').value;
-  const medida  = document.getElementById('alo-medida').value.trim();
-  const forn    = document.getElementById('alo-forn').value.trim();
-  const tipo    = document.getElementById('alo-tipo').value;
-  const mesDe   = document.getElementById('alo-mes-de').value.trim();
-  const mesAte  = document.getElementById('alo-mes-ate').value.trim();
-
-  if (!marca && !subtipo && !medida && !forn && !tipo && !mesDe && !mesAte) {
-    showFeedback('alo-feedback', 'Preenche pelo menos um critério de pesquisa.', true);
-    return;
-  }
-  if (mesDe && !/^\d{4}-\d{2}$/.test(mesDe)) {
-    showFeedback('alo-feedback', 'Mês (de) inválido. Usa o formato AAAA-MM.', true);
-    return;
-  }
-  if (mesAte && !/^\d{4}-\d{2}$/.test(mesAte)) {
-    showFeedback('alo-feedback', 'Mês (até) inválido. Usa o formato AAAA-MM.', true);
-    return;
-  }
-
-  const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
-  let query = sb.from(tabela).select('*').eq('empresa_id', currentEmpresaId);
-  if (marca)   query = query.ilike('marca', marca);
-  if (subtipo) query = query.eq('subtipo', subtipo);
-  if (medida)  query = query.ilike('medida', '%' + medida + '%');
-  if (forn)    query = query.ilike('fornecedor', forn);
-  if (tipo)    query = query.eq('tipo', tipo);
-  // Intervalo inclusivo [de, até]. Sem "até", vai até ao mês atual em
-  // vez de ficar preso ao mês "de" (era esse o bug: sem data final,
-  // aplicava-se gte(de) E lte(de), o que só devolvia esse mês exato).
-  if (mesDe || mesAte) {
-    query = query.gte('mes_mont', mesDe || '0000-01');
-    query = query.lte('mes_mont', mesAte || mesAtual());
-  }
-
-  loading(true);
-  const { data, error } = await query.order('mes_mont', { ascending: false }).limit(ALOC_LIMITE_RESULTADOS);
-  loading(false);
-
-  if (error) { showFeedback('alo-feedback', 'Erro na pesquisa.', true); return; }
-
-  alocResultados = data || [];
-  alocSelecionados = new Set();
-  renderAlocResultados();
-}
-
-function renderAlocResultados() {
-  const container = document.getElementById('alo-resultados');
-  if (alocResultados.length === 0) {
-    container.innerHTML = '<p class="empty-msg">Nenhum pneu montado corresponde a estes critérios.</p>';
-    return;
-  }
-
-  const count = alocSelecionados.size;
-  const atingiuTecto = alocResultados.length >= ALOC_LIMITE_RESULTADOS;
-  let html = atingiuTecto
-    ? '<div class="alo-summary alo-summary-aviso">⚠ ' + alocResultados.length + '+ pneus encontrados — a mostrar só os ' + ALOC_LIMITE_RESULTADOS + ' mais recentes. Restringe a pesquisa (ex: um intervalo de meses mais curto) para veres os restantes.</div>'
-    : '<div class="alo-summary">' + alocResultados.length + ' pneu' + (alocResultados.length === 1 ? '' : 's') + ' encontrado' + (alocResultados.length === 1 ? '' : 's') + ': seleciona os que correspondem à fatura</div>';
-  html += '<div class="alo-list">';
-  alocResultados.forEach(r => {
-    const sel = alocSelecionados.has(r.id);
-    const pos = r.posicao || (r.eixo ? 'Eixo ' + r.eixo : '—');
-    const custoTxt = r.custo_pneu > 0
-      ? '<span class="alo-custo alo-custo-atual">' + fmtEur(r.custo_pneu) + '</span>'
-      : '<span class="alo-custo alo-custo-vazio">sem custo</span>';
-    html += '<div class="alo-row' + (sel ? ' selected' : '') + '" data-id="' + r.id + '" onclick="toggleAlocSel(' + r.id + ')">'
-      + '<span class="alo-check"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></span>'
-      + '<span class="alo-info"><strong>' + r.matricula + '</strong> · ' + pos + ' · ' + (r.marca || '—') + ' ' + (r.medida || '') + (r.subtipo ? ' ' + r.subtipo : '') + ' · ' + tipoBadge(r.tipo) + ' · ' + (r.mes_mont || '—') + (r.fornecedor ? ' · ' + r.fornecedor : '') + '</span>'
-      + custoTxt
-      + '</div>';
-  });
-  html += '</div>';
-  html += '<div class="alo-apply">'
-    + '<div class="frow" style="margin:0"><label>Preço unitário do pneu (€)</label><input type="number" id="alo-preco" min="0" step="0.01" placeholder="ex: 320"></div>'
-    + '<div class="frow" style="margin:0"><label>Custo mão de obra (€, opcional)</label><input type="number" id="alo-mo" min="0" step="0.01" placeholder="ex: 15"></div>'
-    + '<button class="btn btn-p" id="alo-btn-aplicar" onclick="aplicarPrecoAosSelecionados()"' + (count === 0 ? ' disabled' : '') + '><svg viewBox="0 0 24 24"><use href="#icon-save"/></svg> Aplicar a <span id="alo-count">' + count + '</span> selecionados</button>'
-    + '</div>';
-  container.innerHTML = html;
-}
-
-function toggleAlocSel(id) {
-  const row = document.querySelector('.alo-row[data-id="' + id + '"]');
-  if (alocSelecionados.has(id)) { alocSelecionados.delete(id); row.classList.remove('selected'); }
-  else { alocSelecionados.add(id); row.classList.add('selected'); }
-  const count = alocSelecionados.size;
-  document.getElementById('alo-count').textContent = count;
-  document.getElementById('alo-btn-aplicar').disabled = count === 0;
-}
-
-async function aplicarPrecoAosSelecionados() {
-  const preco = parseFloat(document.getElementById('alo-preco').value);
-  const mo = parseFloat(document.getElementById('alo-mo').value) || 0;
-
-  if (!Number.isFinite(preco) || preco <= 0) {
-    showFeedback('alo-feedback', 'Indica um preço unitário válido.', true);
-    return;
-  }
-  if (alocSelecionados.size === 0) return;
-
-  const ids = Array.from(alocSelecionados);
-  const aviso = 'Aplicar ' + fmtEur(preco) + (mo > 0 ? ' + ' + fmtEur(mo) + ' de mão de obra' : '') + ' a ' + ids.length + ' pneu' + (ids.length === 1 ? '' : 's') + '? Isto substitui o custo atual, se já existir algum.';
-  if (!confirm(aviso)) return;
-
-  const tabela = stockContexto === 'reboques' ? 'reboques' : 'pneus';
-  const updates = { custo_pneu: preco };
-  if (mo > 0) updates.custo_mo = mo;
-
-  loading(true);
-  const { error } = await sb.from(tabela).update(updates).in('id', ids);
-  loading(false);
-
-  if (error) { showFeedback('alo-feedback', 'Erro ao aplicar o preço.', true); return; }
-
-  alocResultados.forEach(r => { if (alocSelecionados.has(r.id)) { r.custo_pneu = preco; if (mo > 0) r.custo_mo = mo; } });
-  alocSelecionados = new Set();
-  showFeedback('alo-feedback', 'Preço aplicado a ' + ids.length + ' pneu' + (ids.length === 1 ? '' : 's') + '.');
-  renderAlocResultados();
-}
+// Nota: "Atribuir preço de fatura antiga a pneus já montados" (pesquisa
+// alo-*) mudou-se para js/compras.js — não é stock (não mexe em
+// armazém), é atribuição de custo a pneus já activos.
 
 function fecharSelStock() {
   document.getElementById('painel-stock-sel').style.display = 'none';

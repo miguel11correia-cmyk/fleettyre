@@ -33,7 +33,7 @@ js/                                — lógica da secção "Veículos" + partilh
   auth.js                          — login, logout, mudar password (2 passos), esqueci-me da
                                      password
   nav.js                           — troca de página dentro da app (nav/navR/navReg/navInicio/
-                                     navCompras); páginas acessíveis só a partir de um botão
+                                     navCompras/navStock); páginas acessíveis só a partir de um botão
                                      (nunca têm entrada própria na barra lateral — Registar pneu,
                                      Faturas por email) são abertas directamente pela função do
                                      próprio botão, não por aqui
@@ -61,9 +61,15 @@ js/                                — lógica da secção "Veículos" + partilh
   alertas.js, analytics.js,
   marcas.js, compras.js, stock.js  — cada página da app, um ficheiro por secção; `compras.js`
                                      junta fornecedores (comparação de preços por marca/modelo/
-                                     tipo, sempre com a frota toda) e o desempenho por marca
-                                     (antiga página "Marcas", fundida aqui); `marcas.js` ficou só
-                                     com a gestão do catálogo (marcas e os seus modelos/subtipos)
+                                     tipo, sempre com a frota toda), o desempenho por marca
+                                     (antiga página "Marcas", fundida aqui), e a pesquisa de
+                                     "Atribuir preço de fatura antiga a pneus já montados" (não é
+                                     stock, é atribuição de custo a pneus já activos); `marcas.js`
+                                     ficou só com a gestão do catálogo (marcas e os seus modelos/
+                                     subtipos); `stock.js` é partilhado por veículos e reboques
+                                     (um fornecedor ou fatura de stock é o mesmo conceito
+                                     independentemente do destino — ver secção "Visão geral", igual
+                                     à de `compras.js`/`inicio.js`)
   custom-select.js                 — substitui os <select> [data-fancy] por um combobox à parte,
                                      mantendo o <select> original escondido como fonte da verdade
   pdf-anexo.js                     — anexar/ver PDF em registos, faturas e pneus em oficina
@@ -82,8 +88,9 @@ js/                                — lógica da secção "Veículos" + partilh
 
 js/reboques/                       — equivalentes dos ficheiros acima, para a secção "Reboques"
                                      (frota_cadastro_r.js, frota_r.js, analytics_r.js, alertas_r.js,
-                                     …) — não tem registar_r.js nem compras_r.js próprios (ver
-                                     inicio.js/compras.js, partilhados pelas duas secções)
+                                     …) — não tem registar_r.js, compras_r.js nem stock_r.js
+                                     próprios (ver inicio.js/compras.js/stock.js, partilhados pelas
+                                     duas secções)
 
 migrations/                        — alterações à base de dados, ficheiros .sql numerados por
                                      ordem, corridos manualmente no SQL Editor do Supabase
@@ -323,6 +330,7 @@ Segue o guia próprio `SKILL_design.md` (na raiz do repo). Pontos concretos já 
 - Botões têm feedback de pressão (`:active { transform: scale(0.97) }`), excepto os itens de navegação da sidebar (clicados dezenas de vezes por dia — animá-los seria ruído, não feedback).
 - `prefers-reduced-motion` desliga estas transformações.
 - `loading()` só mostra o overlay se a operação ainda estiver pendente passados 200ms (`LOADING_DELAY_MS`), para não "piscar" em cliques/trocas de página rápidas.
+- A pesquisa de "Atribuir preço de fatura antiga" (Compras) é uma barra interactiva única (`.alo-searchbar`) — todos os filtros (Marca/Modelo/Medida/Fornecedor/Tipo/Mês) vivem dentro dela como "pills" compactas, não empilhados por baixo; a lupa no fim é o próprio botão de procurar. Reaproveita o combobox customizado (`custom-select.js`) com dimensões mais pequenas — a lista aberta tem um `min-width` próprio (`.fsel-list`) para não cortar o texto das opções, já que o trigger que a abre é deliberadamente estreito.
 
 ---
 

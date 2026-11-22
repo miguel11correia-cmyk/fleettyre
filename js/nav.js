@@ -29,6 +29,7 @@ function toggleSecaoSemCarregar(secao) {
   document.getElementById('btn-reboques').classList.toggle('secao-active', secao === 'reboques');
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-compras')?.classList.remove('active');
+  document.getElementById('btn-stock')?.classList.remove('active');
 }
 
 function toggleSecao(secao) {
@@ -52,6 +53,7 @@ function navInicio() {
   fecharPainelRegistoGeral();
   document.getElementById('btn-inicio').classList.add('active');
   document.getElementById('btn-compras')?.classList.remove('active');
+  document.getElementById('btn-stock')?.classList.remove('active');
   document.getElementById('btn-registos')?.classList.remove('active');
   // Início não pertence a nenhuma das secções — esconde sempre o
   // submenu de quem quer que tenha sido a última visitada.
@@ -74,6 +76,7 @@ function navCompras() {
   fecharPainelRegistoGeral();
   document.getElementById('btn-compras').classList.add('active');
   document.getElementById('btn-inicio')?.classList.remove('active');
+  document.getElementById('btn-stock')?.classList.remove('active');
   document.getElementById('btn-registos')?.classList.remove('active');
   document.getElementById('menu-registos').classList.add('hidden');
   document.getElementById('menu-veiculos').classList.add('hidden');
@@ -84,6 +87,29 @@ function navCompras() {
   loadCompras();
 }
 
+// Página "Stock" — tal como Início/Compras, fora das três secções,
+// sempre acessível independentemente de onde se está (uma fatura de
+// stock não é mais ou menos "de camião" do que "de reboque" enquanto
+// conceito de navegação — ver "Visão geral" dentro da própria página).
+function navStock() {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  toggleMobileSidebar(false);
+  fecharPainel();
+  fecharPainelRegistoGeral();
+  document.getElementById('btn-stock').classList.add('active');
+  document.getElementById('btn-inicio')?.classList.remove('active');
+  document.getElementById('btn-compras')?.classList.remove('active');
+  document.getElementById('btn-registos')?.classList.remove('active');
+  document.getElementById('menu-registos').classList.add('hidden');
+  document.getElementById('menu-veiculos').classList.add('hidden');
+  document.getElementById('menu-reboques').classList.add('hidden');
+  document.getElementById('btn-veiculos').classList.remove('secao-active');
+  document.getElementById('btn-reboques').classList.remove('secao-active');
+  document.getElementById('page-stock').classList.remove('hidden');
+  loadStock();
+}
+
 // Secção "Registos" — partilhada entre veículos e reboques (fornecedores,
 // marcas, e as fichas de frota), para não ficar escondida dentro de um
 // dos dois modos.
@@ -92,6 +118,7 @@ function navReg(id, el) {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-compras')?.classList.remove('active');
+  document.getElementById('btn-stock')?.classList.remove('active');
   toggleMobileSidebar(false);
   fecharPainelRegistoGeral();
   const page = document.getElementById('page-' + id);
@@ -111,6 +138,7 @@ function nav(id, el) {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-compras')?.classList.remove('active');
+  document.getElementById('btn-stock')?.classList.remove('active');
   toggleMobileSidebar(false);
   const page = document.getElementById('page-' + id);
   if (!page) return;
@@ -122,7 +150,6 @@ function nav(id, el) {
   if      (id === 'frota')         initFrotaSelect();
   else if (id === 'alertas')       loadAlertas();
   else if (id === 'analytics')     loadAnalytics();
-  else if (id === 'stock')         { stockContexto = 'veiculos'; loadStock(); }
 }
 
 function navR(id, el) {
@@ -130,13 +157,11 @@ function navR(id, el) {
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   document.getElementById('btn-inicio')?.classList.remove('active');
   document.getElementById('btn-compras')?.classList.remove('active');
+  document.getElementById('btn-stock')?.classList.remove('active');
   toggleMobileSidebar(false);
   fecharPainelRegistoGeral();
 
-  // Stock é partilhado — usa a página de veículos com um contexto de
-  // reboques (Fornecedores/Marcas saíram para a página "Compras").
-  const pageId = id === 'stock-r' ? 'stock' : id;
-  const page = document.getElementById('page-' + pageId);
+  const page = document.getElementById('page-' + id);
   if (!page) return;
   page.classList.remove('hidden');
   if (el) el.classList.add('active');
@@ -144,5 +169,4 @@ function navR(id, el) {
   if      (id === 'frota-r')        initFrotaSelectReboques();
   else if (id === 'alertas-r')      loadAlertasReboques();
   else if (id === 'analytics-r')    loadAnalyticsReboques();
-  else if (id === 'stock-r')        { stockContexto = 'reboques'; loadStock(); }
 }
