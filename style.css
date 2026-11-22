@@ -295,6 +295,26 @@ body {
   transition: background .1s, color .1s;
 }
 .nav-inicio-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+/* Ícones fornecidos como imagem (Configuração/Compras/Stock) — usados
+   tal como foram dados, nunca redesenhados em SVG; a cor segue o
+   estado do próprio botão (currentColor) exactamente como as SVG ao
+   lado, via mask-image em vez de editar os ficheiros. */
+.nav-inicio-icon {
+  display: inline-block;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+.nav-inicio-icon.icon-config  { -webkit-mask-image: url('assets/icon-config.png');  mask-image: url('assets/icon-config.png'); }
+.nav-inicio-icon.icon-compras { -webkit-mask-image: url('assets/icon-compras.png'); mask-image: url('assets/icon-compras.png'); }
+.nav-inicio-icon.icon-stock   { -webkit-mask-image: url('assets/icon-stock.png');   mask-image: url('assets/icon-stock.png'); }
 .nav-inicio-btn:hover { background: var(--bg2); color: var(--text); }
 .nav-inicio-btn.active {
   background: var(--brand-red-lt);
