@@ -340,6 +340,25 @@ body {
    recortar/editar os próprios ficheiros. */
 .nav-inicio-icon.icon-stock   { transform: scale(1.2); }
 .nav-inicio-icon.icon-compras { transform: scale(1.06); }
+/* Camião/Reboque fornecidos como imagem — substituem os antigos
+   #icon-truck/#icon-trailer (SVG desenhadas aqui) em todos os sítios
+   onde apareciam. Sem tamanho por omissão: cada utilização define o
+   seu próprio width/height, para bater certo com o tamanho que a SVG
+   tinha nesse sítio exacto (iam de 13px a 16px consoante o contexto). */
+.icon-truck-img, .icon-trailer-img {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.icon-truck-img   { -webkit-mask-image: url('assets/icon-truck.png');   mask-image: url('assets/icon-truck.png'); }
+.icon-trailer-img { -webkit-mask-image: url('assets/icon-trailer.png'); mask-image: url('assets/icon-trailer.png'); }
 .nav-inicio-btn:hover { background: var(--bg2); color: var(--text); }
 .nav-inicio-btn.active {
   background: var(--brand-red-lt);
