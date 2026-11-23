@@ -1,6 +1,6 @@
 // ── FROTA ──────────────────────────────────────────────
 
-const ICON_VEICULO = '<svg viewBox="0 0 512.001 512.001" width="14" height="14" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><use href="#icon-truck"/></svg>';
+const ICON_VEICULO = '<span class="icon-truck-img" style="width:14px;height:14px;margin-right:4px"></span>';
 
 let frotaHistoricoExpandido = false;
 

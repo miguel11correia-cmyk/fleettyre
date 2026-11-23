@@ -340,6 +340,25 @@ body {
    recortar/editar os próprios ficheiros. */
 .nav-inicio-icon.icon-stock   { transform: scale(1.2); }
 .nav-inicio-icon.icon-compras { transform: scale(1.06); }
+/* Camião/Reboque fornecidos como imagem — substituem os antigos
+   #icon-truck/#icon-trailer (SVG desenhadas aqui) em todos os sítios
+   onde apareciam. Sem tamanho por omissão: cada utilização define o
+   seu próprio width/height, para bater certo com o tamanho que a SVG
+   tinha nesse sítio exacto (iam de 13px a 16px consoante o contexto). */
+.icon-truck-img, .icon-trailer-img {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.icon-truck-img   { -webkit-mask-image: url('assets/icon-truck.png');   mask-image: url('assets/icon-truck.png'); }
+.icon-trailer-img { -webkit-mask-image: url('assets/icon-trailer.png'); mask-image: url('assets/icon-trailer.png'); }
 .nav-inicio-btn:hover { background: var(--bg2); color: var(--text); }
 .nav-inicio-btn.active {
   background: var(--brand-red-lt);
@@ -1214,6 +1233,7 @@ tbody tr:hover td { background: var(--bg); }
   background: var(--surface);
   color: var(--text3);
   flex-shrink: 0;
+  overflow: hidden;
   transition: border-color .15s, box-shadow .15s;
 }
 .alo-daterange:focus-within {
@@ -1228,8 +1248,21 @@ tbody tr:hover td { background: var(--bg); }
   font-size: 11.5px;
   flex-shrink: 0;
   text-align: center;
+  background: transparent;
 }
 .alo-daterange input:focus { outline: none; box-shadow: none; border-color: transparent; }
+/* O browser destaca a cheque autopreenchimento/memória de valores com
+   um fundo azul próprio, que não respeita o arredondamento da pill à
+   volta e fica a sair pelos cantos — neutraliza-se forçando o fundo de
+   volta ao da própria pill. */
+.alo-daterange input:-webkit-autofill,
+.alo-daterange input:-webkit-autofill:hover,
+.alo-daterange input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+  box-shadow: 0 0 0 1000px var(--surface) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
 .alo-daterange-sep { font-size: 10.5px; flex-shrink: 0; }
 .alo-summary { font-size: 11.5px; color: var(--text2); margin-bottom: 8px; }
 .alo-summary-aviso { color: var(--amber); font-weight: 500; }
