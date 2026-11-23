@@ -332,6 +332,14 @@ body {
 .nav-inicio-icon.icon-compras { -webkit-mask-image: url('assets/icon-compras.png'); mask-image: url('assets/icon-compras.png'); }
 .nav-inicio-icon.icon-stock   { -webkit-mask-image: url('assets/icon-stock.png');   mask-image: url('assets/icon-stock.png'); }
 .nav-inicio-icon.icon-inicio  { -webkit-mask-image: url('assets/icon-inicio.png');  mask-image: url('assets/icon-inicio.png'); }
+/* Compensação de tamanho aparente — os ficheiros não têm todos a mesma
+   margem à volta do desenho dentro do canvas (medido: icon-stock só
+   preenche ~81% do canvas, icon-compras ~92%, os outros ~98-100%), o
+   que os fazia parecer mais pequenos lado a lado mesmo com a mesma
+   caixa CSS. Compensa-se por escala visual (transform), nunca a
+   recortar/editar os próprios ficheiros. */
+.nav-inicio-icon.icon-stock   { transform: scale(1.2); }
+.nav-inicio-icon.icon-compras { transform: scale(1.06); }
 .nav-inicio-btn:hover { background: var(--bg2); color: var(--text); }
 .nav-inicio-btn.active {
   background: var(--brand-red-lt);
