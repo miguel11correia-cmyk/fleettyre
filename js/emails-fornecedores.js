@@ -20,20 +20,26 @@ async function chamarFuncaoEmail(nomeComQuery, opcoes = {}) {
   }
 }
 
-async function initEmailsFornecedores() {
-  await carregarStatusEmail();
-  await carregarEmailsPendentes();
-}
-
-// Aba de ecrã inteiro acessível a partir de Início (ver botão "Faturas")
-// — tarefa do dia a dia (conferir/alocar/arquivar faturas), não uma
+// Parte operacional (lista de emails por processar) — tarefa do dia a
+// dia, acessível a partir de Início (ver botão "Faturas"), não uma
 // configuração, por isso deixou de estar dentro de "Registos". Só abre
 // a pedido (nunca tem entrada própria na barra lateral) e o botão
 // "Voltar" fecha-a sempre para Início, de onde é sempre aberta.
+async function initEmailsFornecedores() {
+  await carregarEmailsPendentes();
+}
+
 function abrirPainelEmailsFornecedores() {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.getElementById('page-emails-fornecedores').classList.remove('hidden');
   initEmailsFornecedores();
+}
+
+// Parte de configuração (ligar/gerir a caixa de email) — tarefa
+// pontual, por isso vive em Configuração > Integrações, junto da
+// Telemetria, não aqui dentro de "Faturas".
+async function initEmailIntegracao() {
+  await carregarStatusEmail();
 }
 
 function fecharPainelEmailsFornecedores() {
