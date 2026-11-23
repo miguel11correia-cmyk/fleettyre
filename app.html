@@ -254,6 +254,9 @@
         <div class="ni" onclick="navReg('telemetria',this)" data-page="telemetria">
           <span class="ni-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5a7.5 7.5 0 1 0 7.5 7.5"/><path d="M10 5.5v5l3.5 2"/><circle cx="10" cy="10" r="1"/></svg></span>Telemetria (KMs)
         </div>
+        <div class="ni" onclick="navReg('email-integracao',this)" data-page="email-integracao">
+          <span class="ni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></svg></span>Email (Faturas)
+        </div>
       </div>
 
       <!-- MENU VEÍCULOS -->
@@ -1108,17 +1111,28 @@
       </div>
     </div>
 
+    <!-- REGISTOS — EMAIL (ligação/credenciais) — a parte operacional
+         (emails a processar) fica à parte, dentro do botão "Faturas"
+         em Início; isto aqui é só a configuração da ligação, tarefa
+         pontual, por isso vive em Integrações como a Telemetria. -->
+    <div class="page hidden" id="page-email-integracao">
+      <div class="page-header">
+        <h2>Email (Faturas)</h2>
+      </div>
+      <div class="card">
+        <div class="ct">Ligação à caixa de email</div>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:12px">Liga a caixa de email da empresa para apanhar automaticamente as facturas de fornecedores de pneus que lá chegam — a lista fica disponível no botão "Faturas", em Início.</p>
+        <div id="email-forn-status"><p class="empty-msg">A carregar...</p></div>
+        <div id="email-forn-feedback" class="feedback hidden"></div>
+      </div>
+    </div>
+
     <!-- FATURAS POR EMAIL — aba de ecrã inteiro, só abre a partir do botão
          "Faturas" em Início; o botão "Voltar" fecha-a e volta para lá. -->
     <div class="page hidden" id="page-emails-fornecedores">
       <div class="page-header">
         <h2>Faturas por email</h2>
         <button class="btn btn-sm" onclick="fecharPainelEmailsFornecedores()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5 5 12l7 7"/><path d="M5 12h14"/></svg> Voltar</button>
-      </div>
-      <div class="card">
-        <div class="ct">Ligação à caixa de email</div>
-        <div id="email-forn-status"><p class="empty-msg">A carregar...</p></div>
-        <div id="email-forn-feedback" class="feedback hidden"></div>
       </div>
       <div class="card">
         <div class="ct">Emails por processar</div>

@@ -34,9 +34,10 @@ js/                                — lógica da secção "Veículos" + partilh
                                      password
   nav.js                           — troca de página dentro da app (nav/navR/navReg/navInicio/
                                      navCompras/navStock); páginas acessíveis só a partir de um botão
-                                     (nunca têm entrada própria na barra lateral — Registar pneu,
-                                     Faturas por email) são abertas directamente pela função do
-                                     próprio botão, não por aqui
+                                     (nunca têm entrada própria na barra lateral — Registar pneu, a
+                                     lista de facturas por email) são abertas directamente pela
+                                     função do próprio botão, não por aqui (a ligação da caixa de
+                                     email já tem entrada própria, em Configuração > Integrações)
   utils.js                         — helpers partilhados: formatação (`fmt`/`fmtEur`, separador
                                      de milhares sempre a espaço, nunca a depender do locale do
                                      browser), cálculos de desgaste, SLOTS_VEICULO/SLOTS_REBOQUE
@@ -74,12 +75,14 @@ js/                                — lógica da secção "Veículos" + partilh
                                      mantendo o <select> original escondido como fonte da verdade
   pdf-anexo.js                     — anexar/ver PDF em registos, faturas e pneus em oficina
                                      (mecanismo único partilhado pelos três contextos)
-  emails-fornecedores.js           — "Faturas por email": ligar/desligar a caixa de email da
-                                     empresa, sincronizar manualmente, listar/abrir/arquivar os
-                                     emails de fornecedores encontrados (ver secção própria) —
-                                     não é uma página de configuração, é uma aba de ecrã inteiro
-                                     que só abre a partir do botão "Faturas" em Início (tarefa do
-                                     dia a dia, não uma definição que se mexe uma vez e esquece)
+  emails-fornecedores.js           — "Faturas por email" (ver secção própria), dividido em duas
+                                     partes que vivem em sítios diferentes: ligar/desligar/
+                                     sincronizar a caixa de email (`initEmailIntegracao`) é
+                                     configuração pontual, fica em Configuração > Integrações,
+                                     junto da Telemetria; listar/abrir/arquivar os emails já
+                                     encontrados (`initEmailsFornecedores`) é tarefa do dia a dia,
+                                     fica na aba de ecrã inteiro aberta pelo botão "Faturas" em
+                                     Início — nunca uma definição que se mexe uma vez e se esquece
   telemetria.js                    — "Telemetria (KMs)": ligar/desligar/sincronizar a integração
                                      de telemetria da própria empresa (self-service) — esta sim
                                      fica em Configuração, num grupo "Integrações" à parte de
@@ -179,12 +182,19 @@ Cada fornecedor é um adaptador em `supabase/functions/_shared/<fornecedor>.ts`,
 
 Problema real que resolve: a oficina regista montagens/desmontagens em papel; o valor em € só chega semanas depois, por email, da parte do fornecedor — e encontrar essa factura no meio de centenas de emails não relacionados é o trabalho manual. Esta funcionalidade liga-se à caixa de email da empresa, filtra os emails que parecem facturas de pneus e deixa-os prontos (com o PDF já descarregado) para o utilizador consultar. **Não extrai valores automaticamente** — o utilizador continua a introduzir o custo manualmente no "Editar" de sempre, usando o PDF só como referência.
 
-Aba de ecrã inteiro aberta pelo botão "Faturas" em Início (`js/emails-fornecedores.js`) — deliberadamente fora de Configuração: é uma tarefa do dia a dia (conferir, alocar e arquivar facturas), não uma definição que se liga uma vez e se esquece. Fecha sempre com o botão "Voltar" (volta para Início, de onde é sempre aberta); o regresso do fluxo OAuth do Outlook/Google abre-a directamente, sem passar por mais nenhuma página. `integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
+Dividido em dois sítios diferentes, consoante o tipo de tarefa (`js/emails-fornecedores.js` serve os dois):
 
-- `email-status` — `{ligado, conta_email, ultima_sincronizacao}`, nunca os tokens.
-- `email-oauth-iniciar` / `email-oauth-callback` / `email-oauth-desligar` — fluxo OAuth partilhado por qualquer fornecedor OAuth (`?fornecedor=outlook` ou `?fornecedor=google`): "Ligar Outlook"/"Ligar Google" chama `-iniciar` (autenticado, gera um `state` assinado por HMAC com `empresa_id`+`fornecedor`+expiração curta) e o browser é redireccionado para o fornecedor; `-callback` (pública, sem verificação de JWT — é o fornecedor que a chama, nunca o utilizador directamente) lê o `fornecedor` do `state`, valida-o, troca o código pelos tokens através do adaptador certo e grava a integração — mesma função para os dois fornecedores, nunca precisou de ramificação por fornecedor.
+- **Ligar a caixa de email** — configuração pontual (liga-se uma vez, raramente se mexe), fica em **Configuração > Integrações > "Email (Faturas)"** (`#page-email-integracao`, `initEmailIntegracao`), ao lado da Telemetria — mesmo padrão. O regresso do fluxo OAuth do Outlook/Google abre esta página directamente (não a de baixo), já com o resultado.
+- **Conferir/alocar/arquivar as facturas encontradas** — tarefa do dia a dia, fica na aba de ecrã inteiro aberta pelo botão "Faturas" em Início (`#page-emails-fornecedores`, `initEmailsFornecedores`), deliberadamente fora de Configuração. Fecha sempre com o botão "Voltar" (volta para Início, de onde é sempre aberta).
+
+`integracoes_email` é só-admin (guarda tokens/credenciais), a UI nunca a lê directamente — só chama Edge Functions autenticadas, tal como a telemetria:
+
+Uma empresa pode ter **Outlook + Google + IMAP ligados ao mesmo tempo** (fornecedores diferentes, sem conflito nenhum na tabela — o índice único é em `empresa_id, fornecedor`) — a UI mostra sempre as 3 linhas possíveis, cada uma independente: já ligada mostra conta/última sincronização + "Sincronizar agora"/"Desligar"; por ligar mostra o botão (Outlook/Google) ou o formulário (IMAP). Não suporta ainda duas contas do **mesmo** fornecedor (ex.: dois IMAP distintos) — precisaria de tirar esse índice único e a UI passar a lista dentro de cada fornecedor, não só entre eles.
+
+- `email-status` — `{integracoes: [{fornecedor, conta_email, ultima_sincronizacao}, ...]}`, nunca os tokens.
+- `email-oauth-iniciar` / `email-oauth-callback` / `email-oauth-desligar` — fluxo OAuth partilhado por qualquer fornecedor OAuth (`?fornecedor=outlook` ou `?fornecedor=google`): "Ligar Outlook"/"Ligar Google" chama `-iniciar` (autenticado, gera um `state` assinado por HMAC com `empresa_id`+`fornecedor`+expiração curta) e o browser é redireccionado para o fornecedor; `-callback` (pública, sem verificação de JWT — é o fornecedor que a chama, nunca o utilizador directamente) lê o `fornecedor` do `state`, valida-o, troca o código pelos tokens através do adaptador certo e grava a integração — mesma função para os dois fornecedores, nunca precisou de ramificação por fornecedor. `-desligar` exige `?fornecedor=` (desliga só essa integração, nunca "a que estiver activa" — uma empresa pode ter várias).
 - `email-imap-ligar` — alternativa para contas de email que não são Microsoft 365/Google Workspace (ex.: email de hosting normal). Guarda as credenciais IMAP directamente; usa um cliente IMAP e um parser MIME escritos de raiz em `_shared/imap-cliente.ts`/`_shared/mime-parser.ts`, porque não existe biblioteca IMAP fiável para o runtime Deno das Edge Functions.
-- `email-sync` (cron, de 6 em 6h) / `email-sync-manual` (botão "Sincronizar agora") — ambas chamam `_shared/email-sync-logica.ts`, que por cada integração activa: renova o token OAuth se necessário, lista mensagens recentes, aplica o filtro de relevância, descarrega o PDF para o bucket `faturas-pdf` (subcaminho `{empresa_id}/emails/{mensagem_id}.pdf`) e insere em `emails_fornecedores_pendentes`.
+- `email-sync` (cron, de 6 em 6h) / `email-sync-manual` (botão "Sincronizar agora", exige `?fornecedor=` — sincroniza só a integração indicada) — ambas chamam `_shared/email-sync-logica.ts`, que por cada integração activa: renova o token OAuth se necessário, lista mensagens recentes, aplica o filtro de relevância, descarrega o PDF para o bucket `faturas-pdf` (subcaminho `{empresa_id}/emails/{mensagem_id}.pdf`) e insere em `emails_fornecedores_pendentes`. `email-sync` (o cron) já percorria todas as integrações activas da base toda — nunca precisou de mudar para suportar várias por empresa, só `email-status`/`email-sync-manual`/`email-oauth-desligar` (pensadas para "a" integração, não "as") é que precisaram.
 
 Cada fornecedor de email é um adaptador cumprindo o contrato `AdaptadorEmail` em `_shared/email-tipos.ts` — o mesmo padrão da telemetria. Hoje existem três: `outlook.ts` (Microsoft Graph), `google.ts` (Gmail API — serve tanto Google Workspace como Gmail pessoal, a Google não distingue os dois no OAuth) e `imap.ts`.
 
