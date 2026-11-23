@@ -1233,6 +1233,7 @@ tbody tr:hover td { background: var(--bg); }
   background: var(--surface);
   color: var(--text3);
   flex-shrink: 0;
+  overflow: hidden;
   transition: border-color .15s, box-shadow .15s;
 }
 .alo-daterange:focus-within {
@@ -1247,8 +1248,21 @@ tbody tr:hover td { background: var(--bg); }
   font-size: 11.5px;
   flex-shrink: 0;
   text-align: center;
+  background: transparent;
 }
 .alo-daterange input:focus { outline: none; box-shadow: none; border-color: transparent; }
+/* O browser destaca a cheque autopreenchimento/memória de valores com
+   um fundo azul próprio, que não respeita o arredondamento da pill à
+   volta e fica a sair pelos cantos — neutraliza-se forçando o fundo de
+   volta ao da própria pill. */
+.alo-daterange input:-webkit-autofill,
+.alo-daterange input:-webkit-autofill:hover,
+.alo-daterange input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+  box-shadow: 0 0 0 1000px var(--surface) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
 .alo-daterange-sep { font-size: 10.5px; flex-shrink: 0; }
 .alo-summary { font-size: 11.5px; color: var(--text2); margin-bottom: 8px; }
 .alo-summary-aviso { color: var(--amber); font-weight: 500; }
