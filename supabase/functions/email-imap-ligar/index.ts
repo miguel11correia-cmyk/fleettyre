@@ -47,6 +47,11 @@ Deno.serve(async (req) => {
   }
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  // onConflict por (empresa_id, fornecedor, conta_email) — não por
+  // (empresa_id, fornecedor) — para ligar esta mesma caixa de novo
+  // actualizar as credenciais em vez de duplicar, mas ligar uma caixa
+  // IMAP DIFERENTE da empresa criar uma integração nova, não substituir
+  // a existente (uma empresa pode ter várias caixas IMAP em simultâneo).
   const { error } = await sb.from("integracoes_email").upsert(
     {
       empresa_id: empresaId,
@@ -55,7 +60,7 @@ Deno.serve(async (req) => {
       tokens: { host, port, usuario, password },
       ativo: true,
     },
-    { onConflict: "empresa_id,fornecedor" }
+    { onConflict: "empresa_id,fornecedor,conta_email" }
   );
 
   if (error) {

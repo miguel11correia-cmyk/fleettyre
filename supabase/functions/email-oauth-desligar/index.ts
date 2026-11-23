@@ -2,10 +2,11 @@
 // Autenticado. Desliga UMA integração da PRÓPRIA empresa do utilizador
 // (nunca de um empresa_id vindo do pedido) — pára a sincronização,
 // não apaga os emails já apanhados. Uma empresa pode ter várias
-// integrações activas em simultâneo (Outlook + Google + IMAP), por
-// isso ?fornecedor= é obrigatório — identifica qual delas desligar,
-// nunca "a activa" (deixou de haver só uma; sem isto arriscava-se a
-// desligar todas de uma vez por engano).
+// integrações activas em simultâneo, incluindo mais do que uma do
+// mesmo fornecedor (ex.: duas caixas IMAP), por isso ?id= é
+// obrigatório — identifica exactamente qual desligar (fornecedor
+// deixou de ser único por empresa; sem isto arriscava-se a desligar
+// todas as desse fornecedor de uma vez por engano).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { obterEmpresaId } from "../_shared/auth.ts";
@@ -24,17 +25,17 @@ Deno.serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  const fornecedor = url.searchParams.get("fornecedor");
-  if (!fornecedor) {
-    return new Response(JSON.stringify({ ok: false, erro: "Falta indicar o fornecedor (?fornecedor=)." }), { status: 400, headers: corsHeaders(req) });
+  const id = url.searchParams.get("id");
+  if (!id) {
+    return new Response(JSON.stringify({ ok: false, erro: "Falta indicar a integração (?id=)." }), { status: 400, headers: corsHeaders(req) });
   }
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   const { error } = await sb
     .from("integracoes_email")
     .update({ ativo: false })
-    .eq("empresa_id", empresaId)
-    .eq("fornecedor", fornecedor);
+    .eq("id", id)
+    .eq("empresa_id", empresaId);
 
   if (error) {
     return new Response(JSON.stringify({ ok: false, erro: error.message }), { status: 500, headers: corsHeaders(req) });

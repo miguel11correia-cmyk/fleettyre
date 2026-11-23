@@ -48,10 +48,12 @@ function fecharPainelEmailsFornecedores() {
 
 const NOME_FORNECEDOR = { outlook: 'Outlook', google: 'Google', imap: 'IMAP' };
 
-// Uma empresa pode ter as 3 ligadas ao mesmo tempo (fornecedores
-// diferentes, sem conflito nenhum em integracoes_email) — por isso o
-// estado deixou de ser um único "ligado/desligado" global e passa a
-// ser uma linha por fornecedor, cada uma com a sua própria acção.
+// Uma empresa pode ter várias integrações ligadas ao mesmo tempo,
+// incluindo mais do que uma do MESMO fornecedor (ex.: duas caixas IMAP
+// distintas) — por isso cada fornecedor mostra uma lista (0 a N linhas
+// já ligadas) e continua sempre a oferecer "ligar mais uma", nunca um
+// estado binário ligado/desligado. Cada linha identifica-se sempre
+// pelo `id` da integração (fornecedor deixou de ser único por empresa).
 const FORNECEDORES_EMAIL = ['outlook', 'google', 'imap'];
 
 async function carregarStatusEmail() {
@@ -65,34 +67,40 @@ async function carregarStatusEmail() {
     return;
   }
 
-  const porFornecedor = {};
-  (resposta.integracoes || []).forEach(i => { porFornecedor[i.fornecedor] = i; });
+  const porFornecedor = { outlook: [], google: [], imap: [] };
+  (resposta.integracoes || []).forEach(i => { (porFornecedor[i.fornecedor] || (porFornecedor[i.fornecedor] = [])).push(i); });
 
-  el.innerHTML = FORNECEDORES_EMAIL.map(f => linhaStatusEmail(f, porFornecedor[f])).join('');
+  el.innerHTML = FORNECEDORES_EMAIL.map(f => blocoFornecedorEmail(f, porFornecedor[f] || [])).join('');
 }
 
-// Uma linha por fornecedor: já ligado mostra conta/última sincronização
-// + Sincronizar/Desligar; por ligar mostra o botão (Outlook/Google) ou
-// o formulário (IMAP, precisa de servidor/credenciais, não é só OAuth).
-function linhaStatusEmail(fornecedor, integ) {
-  const nome = NOME_FORNECEDOR[fornecedor] || fornecedor;
+// Uma linha por integração já ligada (conta/última sincronização +
+// Sincronizar/Desligar, identificada sempre pelo id).
+function linhaIntegracaoEmail(integ) {
+  const ultima = integ.ultima_sincronizacao
+    ? new Date(integ.ultima_sincronizacao).toLocaleString('pt-PT')
+    : 'ainda não sincronizado';
+  const conta = (integ.conta_email || '').replace(/'/g, "\\'");
+  return `<div class="card" style="margin-bottom:10px">
+    <p style="margin-bottom:10px">Ligado a <strong>${integ.conta_email || '—'}</strong> · última sincronização: ${ultima}</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="sincronizarEmailAgora(${integ.id}, this)">↻ Sincronizar agora</button>
+      <button class="btn" onclick="desligarEmail(${integ.id}, '${conta}')">Desligar</button>
+    </div>
+  </div>`;
+}
 
-  if (integ) {
-    const ultima = integ.ultima_sincronizacao
-      ? new Date(integ.ultima_sincronizacao).toLocaleString('pt-PT')
-      : 'ainda não sincronizado';
-    return `<div class="card" style="margin-bottom:10px">
-      <p style="margin-bottom:10px">Ligado via <strong>${nome}</strong> a <strong>${integ.conta_email || '—'}</strong> · última sincronização: ${ultima}</p>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-p" onclick="sincronizarEmailAgora('${fornecedor}', this)">↻ Sincronizar agora</button>
-        <button class="btn" onclick="desligarEmail('${fornecedor}')">Desligar</button>
-      </div>
-    </div>`;
-  }
+// Bloco de um fornecedor: as linhas já ligadas (0 a N), seguidas sempre
+// do botão (Outlook/Google) ou formulário (IMAP, precisa de servidor/
+// credenciais, não é só OAuth) para ligar mais uma — nunca escondido
+// só porque já há uma ligação desse fornecedor.
+function blocoFornecedorEmail(fornecedor, lista) {
+  const nome = NOME_FORNECEDOR[fornecedor] || fornecedor;
+  const linhas = lista.map(linhaIntegracaoEmail).join('');
 
   if (fornecedor === 'imap') {
-    return `<div class="card" style="margin-bottom:10px">
-      <p style="font-size:11px;color:var(--text2);margin-bottom:8px">Ligar por IMAP (email de alojamento normal, sem ser Microsoft 365/Google Workspace):</p>
+    const rotulo = lista.length > 0 ? 'Ligar outra caixa por IMAP' : 'Ligar por IMAP';
+    return `${linhas}<div class="card" style="margin-bottom:10px">
+      <p style="font-size:11px;color:var(--text2);margin-bottom:8px">${rotulo} (email de alojamento normal, sem ser Microsoft 365/Google Workspace):</p>
       <div class="g2">
         <div class="frow"><label>Servidor IMAP</label><input type="text" id="imap-host" placeholder="ex: mail.aempresa.pt"></div>
         <div class="frow"><label>Porta</label><input type="number" id="imap-port" value="993"></div>
@@ -106,9 +114,10 @@ function linhaStatusEmail(fornecedor, integ) {
   }
 
   const onclickLigar = fornecedor === 'outlook' ? 'ligarOutlook()' : 'ligarGoogle()';
-  return `<div class="card" style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+  const textoBotao = lista.length > 0 ? `+ Ligar outra conta ${nome}` : `Ligar ${nome}`;
+  return `${linhas}<div class="card" style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
     <span>${nome}</span>
-    <button class="btn btn-brand" onclick="${onclickLigar}">Ligar ${nome}</button>
+    <button class="btn btn-brand" onclick="${onclickLigar}">${textoBotao}</button>
   </div>`;
 }
 
@@ -157,21 +166,21 @@ async function ligarImap() {
   await carregarStatusEmail();
 }
 
-async function desligarEmail(fornecedor) {
-  const nome = NOME_FORNECEDOR[fornecedor] || fornecedor;
-  if (!confirm(`Desligar a ligação ${nome}? A sincronização automática desta caixa pára (os emails já apanhados continuam na lista).`)) return;
-  await chamarFuncaoEmail('email-oauth-desligar?fornecedor=' + encodeURIComponent(fornecedor), { method: 'POST' });
+async function desligarEmail(id, contaEmail) {
+  const rotulo = contaEmail ? ` (${contaEmail})` : '';
+  if (!confirm(`Desligar esta ligação${rotulo}? A sincronização automática desta caixa pára (os emails já apanhados continuam na lista).`)) return;
+  await chamarFuncaoEmail('email-oauth-desligar?id=' + encodeURIComponent(id), { method: 'POST' });
   await carregarStatusEmail();
 }
 
-async function sincronizarEmailAgora(fornecedor, btn) {
+async function sincronizarEmailAgora(id, btn) {
   const textoOriginal = btn?.innerHTML;
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-sm"></span>A sincronizar...';
   }
   showFeedback('email-forn-feedback', '', false);
-  const resultado = await chamarFuncaoEmail('email-sync-manual?fornecedor=' + encodeURIComponent(fornecedor), { method: 'POST' });
+  const resultado = await chamarFuncaoEmail('email-sync-manual?id=' + encodeURIComponent(id), { method: 'POST' });
   if (btn) {
     btn.disabled = false;
     btn.innerHTML = textoOriginal;
