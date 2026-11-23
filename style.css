@@ -331,6 +331,7 @@ body {
 .nav-inicio-icon.icon-config  { -webkit-mask-image: url('assets/icon-config.png');  mask-image: url('assets/icon-config.png'); }
 .nav-inicio-icon.icon-compras { -webkit-mask-image: url('assets/icon-compras.png'); mask-image: url('assets/icon-compras.png'); }
 .nav-inicio-icon.icon-stock   { -webkit-mask-image: url('assets/icon-stock.png');   mask-image: url('assets/icon-stock.png'); }
+.nav-inicio-icon.icon-inicio  { -webkit-mask-image: url('assets/icon-inicio.png');  mask-image: url('assets/icon-inicio.png'); }
 .nav-inicio-btn:hover { background: var(--bg2); color: var(--text); }
 .nav-inicio-btn.active {
   background: var(--brand-red-lt);
@@ -476,11 +477,8 @@ body {
 .dash-panel-eyebrow {
   display: flex;
   align-items: center;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--brand-red);
+  font-size: 18px;
+  color: var(--text);
 }
 /* Ícone fornecido tal como está (assets/icon-dashboard.png) — nunca
    redesenhado; a cor vem de o usar como máscara, não de o editar. */
@@ -490,7 +488,7 @@ body {
   height: 24px;
   margin-right: 8px;
   flex-shrink: 0;
-  background-color: var(--brand-red);
+  background-color: var(--text);
   -webkit-mask-image: url('assets/icon-dashboard.png');
   mask-image: url('assets/icon-dashboard.png');
   -webkit-mask-size: contain;
@@ -1350,52 +1348,6 @@ tbody tr:hover td { background: var(--bg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .live-dot::after { animation: none; }
-}
-
-/* Ícone do cartão "Precisa da tua atenção" (Início) — sino fornecido
-   como imagem (assets/icon-bell.png), tal como está, via mask-image;
-   crítico pulsa a vermelho (chama a atenção), ok fica verde parado
-   (não é um alerta, não precisa de pulsar). */
-.atencao-icon {
-  --icon: url('assets/icon-bell.png');
-  display: inline-block;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  position: relative;
-  background-color: var(--text3);
-  -webkit-mask-image: var(--icon);
-  mask-image: var(--icon);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-}
-.atencao-icon.critico { background-color: var(--red); }
-.atencao-icon.ok      { background-color: var(--green); }
-.atencao-icon.critico::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: inherit;
-  -webkit-mask-image: var(--icon);
-  mask-image: var(--icon);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  animation: atencao-pulse 1.8s ease-out infinite;
-}
-@keyframes atencao-pulse {
-  0%   { transform: scale(1);   opacity: 0.55; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .atencao-icon.critico::after { animation: none; }
 }
 
 /* ── CONFIRMAR SAIR ───────────────────────────────────────────── */
