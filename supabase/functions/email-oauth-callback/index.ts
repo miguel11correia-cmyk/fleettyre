@@ -40,6 +40,10 @@ Deno.serve(async (req) => {
     const tokens = await adaptador.trocarCodigoPorTokens(code, REDIRECT_URI);
 
     const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    // onConflict por (empresa_id, fornecedor, conta_email) — reautenticar
+    // a MESMA conta actualiza os tokens em vez de duplicar, mas ligar
+    // uma conta DIFERENTE do mesmo fornecedor cria uma integração nova
+    // (uma empresa pode ter várias contas Outlook/Google em simultâneo).
     const { error } = await sb.from("integracoes_email").upsert(
       {
         empresa_id: payload.empresa_id,
@@ -48,7 +52,7 @@ Deno.serve(async (req) => {
         tokens: { access_token: tokens.access_token, refresh_token: tokens.refresh_token, expires_at: tokens.expires_at },
         ativo: true,
       },
-      { onConflict: "empresa_id,fornecedor" }
+      { onConflict: "empresa_id,fornecedor,conta_email" }
     );
 
     if (error) throw error;
