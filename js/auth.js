@@ -139,11 +139,7 @@ async function mostrarApp() {
 // ── MUDAR PASSWORD ────────────────────────────────────────────────
 
 function abrirPainelPassword() {
-  document.getElementById('pw-atual').value = '';
-  document.getElementById('pw-nova').value = '';
-  document.getElementById('pw-confirmar').value = '';
-  document.getElementById('pw-passo-actual').classList.remove('hidden');
-  document.getElementById('pw-passo-nova').classList.add('hidden');
+  document.getElementById('pw-email-alvo').textContent = currentUser.email;
   document.getElementById('pw-feedback').classList.add('hidden');
   document.getElementById('painel-password').classList.add('open');
 }
@@ -152,55 +148,20 @@ function fecharPainelPassword() {
   document.getElementById('painel-password').classList.remove('open');
 }
 
-async function confirmarPasswordActual() {
-  const passwordActual = document.getElementById('pw-atual').value;
-  if (!passwordActual) {
-    showFeedback('pw-feedback', 'Introduz a tua password actual.', true);
-    return;
-  }
-
+// Mesma via do "Esqueci-me da password": envia um link de recuperação por
+// email em vez de mudar a password logo ali — a pessoa prossegue pelo link.
+async function enviarEmailMudarPassword() {
   loading(true);
-  // Reautentica com a password actual — confirma que está certa e, de
-  // caminho, renova a sessão (o Supabase exige sessão recente para
-  // mudar a password, com "Secure password change" activo).
-  const { error } = await sb.auth.signInWithPassword({ email: currentUser.email, password: passwordActual });
-  loading(false);
-
-  if (error) {
-    showFeedback('pw-feedback', 'Password actual incorrecta.', true);
-    return;
-  }
-
-  document.getElementById('pw-passo-actual').classList.add('hidden');
-  document.getElementById('pw-passo-nova').classList.remove('hidden');
-  document.getElementById('pw-feedback').classList.add('hidden');
-}
-
-async function guardarNovaPassword() {
-  const nova      = document.getElementById('pw-nova').value;
-  const confirmar = document.getElementById('pw-confirmar').value;
-
-  if (!nova || nova.length < 6) {
-    showFeedback('pw-feedback', 'A password tem de ter pelo menos 6 caracteres.', true);
-    return;
-  }
-  if (nova !== confirmar) {
-    showFeedback('pw-feedback', 'As passwords não coincidem.', true);
-    return;
-  }
-
-  loading(true);
-  const { error } = await sb.auth.updateUser({ password: nova });
+  const { error } = await sb.auth.resetPasswordForEmail(currentUser.email, {
+    redirectTo: 'https://fleet-tyre.com/app.html'
+  });
   loading(false);
 
   if (error) {
     showFeedback('pw-feedback', 'Erro: ' + error.message, true);
     return;
   }
-  showFeedback('pw-feedback', 'Password alterada com sucesso.');
-  document.getElementById('pw-nova').value = '';
-  document.getElementById('pw-confirmar').value = '';
-  setTimeout(fecharPainelPassword, 1200);
+  showFeedback('pw-feedback', 'Email enviado. Verifica a tua caixa de correio para definires a nova password.');
 }
 
 // ── ESQUECI-ME DA PASSWORD ───────────────────────────────────────
