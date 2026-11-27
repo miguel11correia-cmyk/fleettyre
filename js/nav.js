@@ -132,6 +132,7 @@ function navReg(id, el) {
   else if (id === 'frota-cadastro-r')     initFrotaCadastroReboques();
   else if (id === 'telemetria')           initTelemetria();
   else if (id === 'email-integracao')     initEmailIntegracao();
+  else if (id === 'utilizadores')         initUtilizadores();
 }
 
 function nav(id, el) {
