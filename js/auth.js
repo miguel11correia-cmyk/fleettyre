@@ -112,6 +112,7 @@ async function mostrarApp() {
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('user-email').textContent = currentUser.email;
+  document.getElementById('ni-utilizadores').classList.toggle('hidden', !isAdmin);
   carregarListasFornMarca();
   carregarListaSubtipos();
   // "Início" precisa de listaVeiculos/listaReboquesFrota já carregadas

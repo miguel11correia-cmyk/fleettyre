@@ -24,3 +24,12 @@ export async function obterEmpresaId(req: Request): Promise<string | null> {
   if (error || !data) return null;
   return data.empresa_id;
 }
+
+// Admin global do utilizador autenticado (via admins, sujeito a RLS —
+// a política só deixa cada um ver a própria linha, por isso um resultado
+// não-vazio já prova que é mesmo ele).
+export async function obterIsAdmin(req: Request): Promise<boolean> {
+  const sb = clienteComPedido(req);
+  const { data } = await sb.from("admins").select("user_id").maybeSingle();
+  return !!data;
+}
