@@ -232,7 +232,7 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    if (filePath.endsWith('app.html')) {
+    if (filePath.endsWith('app.html') || filePath.endsWith('reset-password.html')) {
       const html = injectEnv(data.toString());
       res.writeHead(200, headers);
       res.end(html);

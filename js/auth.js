@@ -153,7 +153,7 @@ function fecharPainelPassword() {
 async function enviarEmailMudarPassword() {
   loading(true);
   const { error } = await sb.auth.resetPasswordForEmail(currentUser.email, {
-    redirectTo: 'https://fleet-tyre.com/app.html'
+    redirectTo: 'https://fleet-tyre.com/reset-password.html'
   });
   loading(false);
 
@@ -177,7 +177,6 @@ function mostrarRecuperarPassword() {
 
 function voltarLogin() {
   document.getElementById('login-step-recuperar').classList.add('hidden');
-  document.getElementById('login-step-nova-password').classList.add('hidden');
   document.getElementById('login-step-cred').classList.remove('hidden');
   const err = document.getElementById('l-err');
   err.style.color = '';
@@ -193,7 +192,7 @@ async function enviarLinkRecuperacao() {
 
   loading(true);
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://fleet-tyre.com/app.html'
+    redirectTo: 'https://fleet-tyre.com/reset-password.html'
   });
   loading(false);
 
@@ -202,52 +201,8 @@ async function enviarLinkRecuperacao() {
   err.textContent = 'Se esse email existir, foi enviado um link de recuperação.';
 }
 
-async function guardarPasswordRecuperada() {
-  const nova      = document.getElementById('lnp-nova').value;
-  const confirmar = document.getElementById('lnp-confirmar').value;
-  const err       = document.getElementById('l-err');
-  err.style.color = '';
-
-  if (!nova || nova.length < 6) { err.textContent = 'A password tem de ter pelo menos 6 caracteres.'; return; }
-  if (nova !== confirmar) { err.textContent = 'As passwords não coincidem.'; return; }
-
-  loading(true);
-  const { error } = await sb.auth.updateUser({ password: nova });
-  loading(false);
-
-  if (error) { err.textContent = 'Erro: ' + error.message; return; }
-
-  document.getElementById('login-step-nova-password').classList.add('hidden');
-  await prosseguirAposAutenticacao();
-}
-
-// Capturado já no arranque do script, antes de o Supabase poder limpar o
-// hash do URL — identifica se foi ESTE separador que abriu o link de
-// recuperação. O Supabase propaga o evento PASSWORD_RECOVERY para todos os
-// separadores abertos da app (via BroadcastChannel), não só para aquele que
-// tem o link na barra de endereço — sem esta verificação, abrir o link de
-// recuperação noutro separador "rebenta" o estado do separador já aberto.
-const vemDeLinkRecuperacao = window.location.hash.includes('type=recovery');
-
-// Link de recuperação: o Supabase cria uma sessão temporária e dispara este
-// evento em vez de um login normal — mostra o formulário de nova password
-// em vez de avançar logo para a app.
-sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'PASSWORD_RECOVERY' && vemDeLinkRecuperacao) {
-    currentUser = session.user;
-    document.getElementById('login-step-cred').classList.add('hidden');
-    document.getElementById('login-step-empresa').classList.add('hidden');
-    document.getElementById('login-step-recuperar').classList.add('hidden');
-    document.getElementById('login-step-nova-password').classList.remove('hidden');
-    document.getElementById('l-err').textContent = '';
-  }
-});
-
 // Verificar sessão ao carregar
 window.addEventListener('load', async () => {
-  // Link de recuperação — deixa o evento PASSWORD_RECOVERY acima tratar disto.
-  if (vemDeLinkRecuperacao) return;
-
   const { data } = await sb.auth.getSession();
   if (data.session) {
     currentUser = data.session.user;
