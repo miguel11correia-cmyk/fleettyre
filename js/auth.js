@@ -221,11 +221,19 @@ async function guardarPasswordRecuperada() {
   await prosseguirAposAutenticacao();
 }
 
+// Capturado já no arranque do script, antes de o Supabase poder limpar o
+// hash do URL — identifica se foi ESTE separador que abriu o link de
+// recuperação. O Supabase propaga o evento PASSWORD_RECOVERY para todos os
+// separadores abertos da app (via BroadcastChannel), não só para aquele que
+// tem o link na barra de endereço — sem esta verificação, abrir o link de
+// recuperação noutro separador "rebenta" o estado do separador já aberto.
+const vemDeLinkRecuperacao = window.location.hash.includes('type=recovery');
+
 // Link de recuperação: o Supabase cria uma sessão temporária e dispara este
 // evento em vez de um login normal — mostra o formulário de nova password
 // em vez de avançar logo para a app.
 sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'PASSWORD_RECOVERY') {
+  if (event === 'PASSWORD_RECOVERY' && vemDeLinkRecuperacao) {
     currentUser = session.user;
     document.getElementById('login-step-cred').classList.add('hidden');
     document.getElementById('login-step-empresa').classList.add('hidden');
@@ -238,7 +246,7 @@ sb.auth.onAuthStateChange((event, session) => {
 // Verificar sessão ao carregar
 window.addEventListener('load', async () => {
   // Link de recuperação — deixa o evento PASSWORD_RECOVERY acima tratar disto.
-  if (window.location.hash.includes('type=recovery')) return;
+  if (vemDeLinkRecuperacao) return;
 
   const { data } = await sb.auth.getSession();
   if (data.session) {
